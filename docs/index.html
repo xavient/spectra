@@ -23,15 +23,17 @@ letter-spacing:-.02em;color:var(--accent)}
 .prereq h2{font-size:.78rem;margin:0 0 .5em;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
 .prereq ul{margin:0;padding-left:1.2em}
 .prereq code,.badges code,.dl code,.sec-lead code{background:#221d33;border:1px solid var(--border);border-radius:6px;padding:1px 6px;font-size:.85em}
-.sec-title{font-size:1.12rem;margin:40px 0 2px;color:var(--fg);font-weight:700;letter-spacing:-.01em}
-.sec-title .num{color:var(--accent)}
-.sec-lead{color:var(--muted);margin:.25em 0 14px;max-width:64ch}
+.sec-title{font-size:1.5rem;margin:48px 0 2px;color:var(--fg);font-weight:800;letter-spacing:-.01em;border-bottom:1px solid var(--border);padding-bottom:8px}
+.sec-lead{color:var(--muted);margin:.5em 0 14px;max-width:64ch}
+.subhead{font-size:1.12rem;margin:28px 0 2px;color:var(--fg);font-weight:700;letter-spacing:-.01em}
 .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 24px;margin:14px 0}
 .card header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .card h2{font-size:1.3rem;margin:0;color:var(--fg)}
 .ver{color:var(--muted);font-size:.85rem}
 .desc{color:var(--muted)}
 label{display:block;font-size:.82rem;color:var(--muted);margin:16px 0 6px}
+.btn{display:inline-flex;align-items:center;gap:9px;background:linear-gradient(135deg,#7c5cde,#a78bfa);color:#fff;text-decoration:none;font-weight:600;font-size:.98rem;padding:13px 24px;border-radius:11px;border:1px solid rgba(167,139,250,.5);box-shadow:0 8px 26px rgba(167,139,250,.22);transition:transform .15s ease,filter .15s ease}
+.btn:hover{transform:translateY(-1px);filter:brightness(1.07)}
 .cmd{display:flex;gap:8px;align-items:stretch}
 .cmd pre{flex:1;margin:0;background:var(--codebg);color:var(--codefg);border:1px solid var(--border);
 border-radius:9px;padding:12px 14px;overflow-x:auto;font-size:.88rem}
@@ -41,6 +43,7 @@ padding:0 16px;cursor:pointer;font-size:.85rem;white-space:nowrap}
 button.copy:hover{background:#262038;border-color:var(--accent)}
 .dl{margin:12px 0 0;font-size:.9rem;color:var(--muted)}
 .dl a,a{color:var(--accent)}
+.dl strong{color:var(--fg)}
 .cmds{list-style:none;margin:14px 0 0;padding:14px 0 0;border-top:1px solid var(--border)}
 .cmds li{margin:0 0 12px}
 .cmds li:last-child{margin-bottom:0}
@@ -66,35 +69,54 @@ footer{margin-top:48px;color:var(--muted);font-size:.82rem;border-top:1px solid 
   <section class="prereq">
     <h2>Before you start</h2>
     <ul>
-      <li>Spectra builds on <a href="https://github.com/github/spec-kit">Spec Kit</a> &mdash; install it first.
-      Install the <code>specify</code> CLI (see the
-      <a href="https://github.com/github/spec-kit#-get-started">Spec Kit install guide</a>), then run
-      <code>specify init</code> to set up a project.</li>
-      <li>Run every command below from inside that Spec Kit project.</li>
-      <li>After an extension installs, <strong>restart your agent</strong> so it picks up the new command.</li>
+      <li>Spectra builds on <a href="https://github.com/github/spec-kit">Spec Kit</a> and installs <strong>into a Spec Kit project</strong> &mdash; a folder containing <code>.specify/</code>.</li>
+      <li>Run everything below from <strong>inside that project</strong>. Don&rsquo;t have one yet? The installer offers to run <code>specify init</code> for you.</li>
+      <li>After Spectra installs, <strong>restart your agent</strong> so it picks up the new commands.</li>
     </ul>
   </section>
 
-  <h2 class="sec-title"><span class="num">Step 1</span> &middot; Add the Spectra catalog</h2>
-  <p class="sec-lead">Register Spectra as an install-allowed catalog &mdash; once per project. After this you
-  install any extension below by name, with no &ldquo;untrusted source&rdquo; prompt.</p>
+  <h2 class="sec-title">Installation</h2>
+  <p class="sec-lead">Two ways to set up Spectra: the <strong>installer</strong> does everything for you, or
+  <strong>manual setup</strong> is a copy-paste path. The catalog is <strong>public</strong> &mdash; no GitHub
+  login or token needed.</p>
+
+  <h3 class="subhead">Spectra Installer</h3>
+  <p class="sec-lead">The recommended path. Download the single installer script and run it from inside your
+  Spec Kit project &mdash; it installs Spec Kit if needed, offers to initialize the project, registers the
+  Spectra catalog, and installs the extension.</p>
   <article class="card">
-    <div class="cmd"><pre><code>specify extension catalog add https://raw.githubusercontent.com/xavient/spectra/main/catalog.json --name spectra --install-allowed</code></pre><button class="copy" type="button" data-cmd="specify extension catalog add https://raw.githubusercontent.com/xavient/spectra/main/catalog.json --name spectra --install-allowed">Copy</button></div>
+    <a class="btn" href="https://github.com/xavient/spectra/releases/latest/download/spectra-setup.py">&#8681;&nbsp; Download the installer</a>
+    <p class="dl">Always fetches the <strong>latest</strong> release &mdash; or browse the
+    <a href="https://github.com/xavient/spectra/releases/latest">releases page</a>.</p>
+    <label>Then run it from inside your Spec Kit project:</label>
+    <div class="cmd"><pre><code>python3 spectra-setup.py</code></pre><button class="copy" type="button" data-cmd="python3 spectra-setup.py">Copy</button></div>
+    <p class="dl"><strong>Run it inside a Spec Kit project</strong> (a folder containing <code>.specify/</code>).
+    Not in one yet? The installer offers to run <code>specify init</code> first. When it finishes, Spectra is
+    installed &mdash; restart your agent, then see <a href="#agents">Agents</a> below. You can delete the
+    installer script afterward.</p>
   </article>
 
-  <h2 class="sec-title"><span class="num">Step 2</span> &middot; Install the extension</h2>
-  <p class="sec-lead">Spectra ships as a single extension &mdash; install it once and get every command. Restart your
-  agent afterward. Commands are listed by their agent-agnostic manifest name under the unified
-  <code>speckit.spectra.*</code> namespace (e.g. <code>speckit.spectra.adr</code>) with an example invocation.
-  <strong>The examples use Claude&rsquo;s trigger form</strong> &mdash; a leading slash with dashes, like
-  <code>/speckit-spectra-adr</code>. Other agents differ (kiro-cli, for instance, uses <code>/speckit.spectra.adr</code>);
-  your agent&rsquo;s own command/skill list shows the exact trigger.</p>
+  <h3 class="subhead">Manual setup</h3>
+  <p class="sec-lead">Prefer copy-paste? Register the public catalog once per project (this marks it
+  install-allowed, so installs resolve by name with no &ldquo;untrusted source&rdquo; prompt), then install the
+  extension and restart your agent.</p>
+  <article class="card">
+    <label>1 &middot; Register the Spectra catalog &mdash; run inside a Spec Kit project:</label>
+    <div class="cmd"><pre><code>specify extension catalog add https://raw.githubusercontent.com/xavient/spectra/main/catalog.json --name spectra --install-allowed</code></pre><button class="copy" type="button" data-cmd="specify extension catalog add https://raw.githubusercontent.com/xavient/spectra/main/catalog.json --name spectra --install-allowed">Copy</button></div>
+    <label>2 &middot; Install the extension, then restart your agent:</label>
+    <div class="cmd"><pre><code>specify extension add spectra</code></pre><button class="copy" type="button" data-cmd="specify extension add spectra">Copy</button></div>
+  </article>
+
+  <h2 class="sec-title" id="agents">Agents</h2>
+  <p class="sec-lead">Spectra ships as a <strong>single extension</strong> under the unified
+  <code>speckit.spectra.*</code> namespace &mdash; install once and get every command. <strong>Examples use
+  Claude&rsquo;s trigger form</strong> &mdash; a leading slash with dashes, like <code>/speckit-spectra-adr</code>.
+  Other agents differ (kiro-cli uses <code>/speckit.spectra.adr</code>); your agent&rsquo;s own command/skill
+  list shows the exact trigger.</p>
   <section class="extensions">
     <article class="card">
       <header><h2>Spectra</h2><span class="badges"><code>spectra</code> <span class="ver">v1.1.0</span></span></header>
       <p class="desc">Spectra&rsquo;s agentic SDLC commands for Spec Kit, bundled as a single extension: context-aware Architecture Decision Records, business-domain guardrail analysis, and correctly-targeted GitHub PR delivery.</p>
-      <label>Install &mdash; run inside a Spec Kit project, then restart your agent:</label>
-      <div class="cmd"><pre><code>specify extension add spectra</code></pre><button class="copy" type="button" data-cmd="specify extension add spectra">Copy</button></div>
       <label>Commands</label>
       <ul class="cmds">
         <li><code>speckit.spectra.adr</code><span class="cdesc">Create a context-aware Architecture Decision Record grounded in your codebase, prior ADRs, and constitution &mdash; it asks a few clarifying questions, then writes the ADR under <code>Docs/ADR/</code>. Use it when making a significant architecture or technology choice.</span><span class="args"><strong>Arguments:</strong> a short description of the decision. If omitted, you&rsquo;ll be asked for one before drafting.</span><span class="ex"><span class="lbl">Example (Claude)</span><pre>/speckit-spectra-adr We should standardize on PostgreSQL for all primary data stores</pre></span></li>
@@ -106,7 +128,7 @@ footer{margin-top:48px;color:var(--muted);font-size:.82rem;border-top:1px solid 
     </article>
   </section>
 
-  <footer>Generated 2026-07-09 00:00 UTC &middot; 1 extension(s)</footer>
+  <footer>SPECTRA &middot; a single Spec Kit extension &middot; 3 commands &middot; by TELUS Digital</footer>
 </main>
 <script>
 document.querySelectorAll('button.copy').forEach(function (btn) {

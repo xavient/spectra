@@ -1147,7 +1147,7 @@
   <div class="wrap">
     <h2>Agentic speed. <span class="glow">Enterprise discipline.</span> Delivered.</h2>
     <p>SPECTRA brings a spec-driven workflow your teams can trust &mdash; with the loop, the standards, and the human gates that make it safe to scale.</p>
-    <button class="cta-btn" id="ctaBtn" type="button">Get started <span class="arr">&rarr;</span></button>
+    <a class="cta-btn" href="https://xavient.github.io/spectra/">Get started <span class="arr">&rarr;</span></a>
   </div>
 </section>
 
@@ -1157,24 +1157,6 @@
     <span>A TELUS Digital platform &middot; Human-gated by design</span>
   </div>
 </footer>
-
-<!-- email CTA modal -->
-<div class="modal-overlay" id="emailModal" role="dialog" aria-modal="true" aria-labelledby="emailModalTitle">
-  <div class="modal-card">
-    <button class="modal-close" id="emailModalClose" type="button" aria-label="Close">&times;</button>
-    <div class="modal-check">&#10003;</div>
-    <h3 id="emailModalTitle">Copied &mdash; ready to draft</h3>
-    <p>Both addresses below are on your clipboard &mdash; paste them straight into the <b>To</b> field of a new email, tell us what you'd like to build, and we'll take it from there.</p>
-    <button class="modal-email" id="emailCopyBtn" type="button" title="Click to copy both">
-      <span class="addrs">
-        <span>ali.bahaloo@telusdigital.com</span>
-        <span>emily.judge@telusdigital.com</span>
-      </span>
-      <span class="ic">&#10697;</span>
-    </button>
-    <div class="modal-toast" id="emailToast">Both addresses copied</div>
-  </div>
-</div>
 
 <script>
 (function(){
@@ -1267,60 +1249,5 @@
 })();
 </script>
 
-<script>
-(function(){
-  var EMAIL = 'ali.bahaloo@telusdigital.com, emily.judge@telusdigital.com';
-  var btn = document.getElementById('ctaBtn');
-  var modal = document.getElementById('emailModal');
-  if(!btn || !modal) return;
-  var closeBtn = document.getElementById('emailModalClose');
-  var pill = document.getElementById('emailCopyBtn');
-  var toast = document.getElementById('emailToast');
-  var toastTimer;
-
-  function fallbackCopy(text){
-    try{
-      var ta = document.createElement('textarea');
-      ta.value = text; ta.setAttribute('readonly','');
-      ta.style.position = 'fixed'; ta.style.top = '-9999px';
-      document.body.appendChild(ta); ta.focus(); ta.select();
-      var ok = document.execCommand('copy');
-      document.body.removeChild(ta);
-      return ok;
-    } catch(e){ return false; }
-  }
-  function copy(text){
-    if(navigator.clipboard && window.isSecureContext){
-      return navigator.clipboard.writeText(text).then(function(){ return true; }, function(){ return fallbackCopy(text); });
-    }
-    return Promise.resolve(fallbackCopy(text));
-  }
-  function flashToast(){
-    if(!toast) return;
-    toast.classList.add('show');
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(function(){ toast.classList.remove('show'); }, 2200);
-  }
-  function onKey(e){ if(e.key === 'Escape' || e.keyCode === 27) closeModal(); }
-  function openModal(){
-    Promise.resolve(copy(EMAIL)).then(function(ok){ if(ok) flashToast(); });
-    modal.classList.add('open');
-    document.addEventListener('keydown', onKey);
-    if(closeBtn) closeBtn.focus();
-  }
-  function closeModal(){
-    modal.classList.remove('open');
-    document.removeEventListener('keydown', onKey);
-    btn.focus();
-  }
-
-  btn.addEventListener('click', openModal);
-  if(closeBtn) closeBtn.addEventListener('click', closeModal);
-  if(pill) pill.addEventListener('click', function(){
-    Promise.resolve(copy(EMAIL)).then(function(ok){ if(ok) flashToast(); });
-  });
-  modal.addEventListener('click', function(e){ if(e.target === modal) closeModal(); });
-})();
-</script>
 </body>
 </html>

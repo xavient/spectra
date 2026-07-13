@@ -3,7 +3,7 @@
 
 Run this from inside a Spec Kit project. It makes sure the prerequisites are in
 place (the `specify` CLI and a Spec Kit project), registers the Spectra catalog,
-and lists the available extensions.
+and installs the Spectra extension into the project.
 
 Spectra is distributed from a **public** catalog, so there is no GitHub login,
 token, or `gh` setup — Spec Kit fetches the catalog and extension packages over
@@ -42,7 +42,7 @@ from pathlib import Path
 # Constants
 # --------------------------------------------------------------------------- #
 
-__version__ = "2.0.0"
+__version__ = "1.1.0"
 
 CATALOG_URL = "https://raw.githubusercontent.com/xavient/spectra/main/catalog.json"
 SPECKIT_INSTALL_URL = "https://github.com/github/spec-kit"
@@ -167,6 +167,16 @@ def splash() -> None:
     print()
 
 
+def intro_note() -> None:
+    """Remind the user this runs inside the target project folder."""
+    line = "─" * 72
+    print(f"{PURPLE_DIM}┌{line}{RESET}")
+    print(f"{PURPLE_DIM}│{RESET} {BOLD}Run this from inside the project you want Spectra in.{RESET}")
+    print(f"{PURPLE_DIM}│{RESET} That means a Spec Kit project — a folder containing a {BOLD}.specify/{RESET} directory.")
+    print(f"{PURPLE_DIM}│{RESET} Not initialized yet? This installer can set it up for you (step 2).")
+    print(f"{PURPLE_DIM}└{line}{RESET}")
+
+
 # --------------------------------------------------------------------------- #
 # Subprocess helpers
 # --------------------------------------------------------------------------- #
@@ -178,6 +188,9 @@ def run(cmd: list[str], **kwargs) -> subprocess.CompletedProcess:
 
 def run_interactive(cmd: list[str]) -> int:
     """Run a command attached to the terminal (for interactive flows)."""
+    # Flush our own buffered output first so it appears before the child's,
+    # even when stdout is piped (e.g. `| tee`) rather than a live terminal.
+    sys.stdout.flush()
     try:
         return subprocess.call(cmd)
     except KeyboardInterrupt:
@@ -346,8 +359,12 @@ def check_in_specify_project() -> Path:
     return here
 
 
-def add_catalog() -> None:
-    step(3, "Registering the Spectra catalog and listing extensions")
+def add_catalog() -> bool:
+    """Register the Spectra catalog, then install the extension into this project.
+
+    Returns True once the extension is installed.
+    """
+    step(3, "Registering the Spectra catalog and installing Spectra")
     info("Adding the Spectra catalog…")
     add = run(
         [
@@ -364,15 +381,18 @@ def add_catalog() -> None:
         warn("Could not register the catalog automatically:")
         print(textwrap.indent((add.stdout + add.stderr).strip(), "  "))
         print("  You can retry the command shown in the README.")
+        return False
 
     print()
-    info("Searching the Spectra catalog…")
+    info("Installing the Spectra extension…")
     print()
-    search = run(["specify", "extension", "search"])
-    sys.stdout.write(search.stdout)
-    if search.returncode != 0:
-        warn("Search returned an error:")
-        print(textwrap.indent(search.stderr.strip(), "  "))
+    code = run_interactive(["specify", "extension", "add", "spectra"])
+    if code != 0:
+        print()
+        warn("Could not install the Spectra extension automatically.")
+        print(f"  Install it yourself: {BOLD}specify extension add spectra{RESET}")
+        return False
+    return True
 
 
 # --------------------------------------------------------------------------- #
@@ -381,17 +401,22 @@ def add_catalog() -> None:
 
 def main() -> None:
     splash()
+    intro_note()
     ensure_specify_installed()
     check_in_specify_project()
-    add_catalog()
+    installed = add_catalog()
 
     print()
-    print(f"{GREEN}{BOLD}All set!{RESET} {PURPLE}Spectra is ready.{RESET}")
-    print()
-    print(
-        f"Install the extension with {BOLD}specify extension add spectra{RESET}, "
-        "then restart your AI agent to pick up its commands."
-    )
+    if installed:
+        print(f"{GREEN}{BOLD}All set!{RESET} {PURPLE}Spectra is ready to use.{RESET}")
+        print()
+        print("Restart your AI agent to pick up the new commands.")
+        print(f"{PURPLE_DIM}This installer has done its job — you can safely delete spectra-setup.py now.{RESET}")
+    else:
+        print(
+            f"{YELLOW}{BOLD}Almost there.{RESET} The catalog is registered — finish with "
+            f"{BOLD}specify extension add spectra{RESET}."
+        )
     print()
 
 
