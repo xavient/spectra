@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 3 &mdash; Greenfield Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,400;1,9..144,500&family=JetBrains+Mono:wght@400;500;600&family=Mona+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FAF9F5;
+    --bg-elev: #F4F1E8;
+    --text: #1A1614;
+    --text-muted: #6B6357;
+    --text-subtle: #94897A;
+    --accent: #B45309;
+    --accent-soft: rgba(180, 83, 9, 0.09);
+    --accent-line: rgba(180, 83, 9, 0.25);
+    --border: #E8E2D4;
+    --border-strong: #D4CCB8;
+    --code-bg: #1A1614;
+    --code-text: #F0EAD8;
+    --code-comment: #94897A;
+    --code-accent: #F0B070;
+    --success: #166534;
+    --success-soft: rgba(22, 101, 52, 0.08);
+    --error: #991B1B;
+    --error-soft: rgba(153, 27, 27, 0.06);
+    --shadow-sm: 0 1px 2px rgba(26, 22, 20, 0.04);
+    --shadow-md: 0 4px 12px rgba(26, 22, 20, 0.06);
+    --max-w: 720px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Mona Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    font-weight: 400;
+    font-size: 17px;
+    line-height: 1.7;
+    color: var(--text);
+    background: var(--bg);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  main {
+    max-width: var(--max-w);
+    margin: 0 auto;
+    padding: 64px 28px 120px;
+  }
+  /* Hero */
+  .hero { margin-bottom: 56px; padding-bottom: 40px; border-bottom: 1px solid var(--border); }
+  .hero-eyebrow {
+    font-family: 'Fraunces', Georgia, serif;
+    font-style: italic; font-weight: 400;
+    font-size: 17px; color: var(--accent); letter-spacing: 0.01em;
+    margin-bottom: 18px;
+  }
+  .hero h1 {
+    font-family: 'Mona Sans', sans-serif;
+    font-weight: 600; font-size: 44px; line-height: 1.1;
+    letter-spacing: -0.025em; margin-bottom: 22px; color: var(--text);
+  }
+  .hero-lede {
+    font-size: 19px; line-height: 1.55; color: var(--text-muted); max-width: 600px;
+  }
+  /* Meta block */
+  .meta {
+    display: flex; flex-wrap: wrap;
+    margin-top: 32px; padding: 18px 22px;
+    background: var(--bg-elev); border: 1px solid var(--border);
+    border-radius: 6px; font-size: 14px;
+  }
+  .meta-item {
+    display: flex; flex-direction: column; gap: 2px;
+    padding-right: 32px; margin-right: 32px;
+    border-right: 1px solid var(--border-strong);
+  }
+  .meta-item:last-child { border-right: none; padding-right: 0; margin-right: 0; }
+  .meta-label {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--text-subtle); font-weight: 500;
+  }
+  .meta-value { color: var(--text); font-weight: 500; }
+  /* Article typography */
+  article h2 {
+    font-family: 'Mona Sans', sans-serif;
+    font-weight: 600; font-size: 28px; line-height: 1.25;
+    letter-spacing: -0.018em; margin-top: 56px; margin-bottom: 18px; color: var(--text);
+  }
+  article h2 .h2-num {
+    font-family: 'Fraunces', Georgia, serif; font-style: italic;
+    font-weight: 400; color: var(--accent); margin-right: 14px;
+  }
+  article h3 {
+    font-weight: 600; font-size: 20px; line-height: 1.3;
+    letter-spacing: -0.012em; margin-top: 36px; margin-bottom: 12px; color: var(--text);
+  }
+  article h4 {
+    font-weight: 600; font-size: 16px;
+    margin-top: 28px; margin-bottom: 8px; color: var(--text);
+  }
+  article p { margin-bottom: 18px; }
+  article ul, article ol { margin: 0 0 22px 0; padding-left: 22px; }
+  article li { margin-bottom: 8px; padding-left: 4px; }
+  article li::marker { color: var(--text-subtle); }
+  article ul ul, article ol ol, article ul ol, article ol ul { margin: 8px 0 4px 0; }
+  article a {
+    color: var(--accent); text-decoration: none;
+    border-bottom: 1px solid var(--accent-line);
+    transition: border-color 0.15s ease;
+  }
+  article a:hover { border-bottom-color: var(--accent); }
+  article strong { font-weight: 600; color: var(--text); }
+  article em { font-style: italic; }
+  /* Inline code */
+  article code {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 0.86em; background: var(--bg-elev);
+    border: 1px solid var(--border); padding: 1px 6px;
+    border-radius: 4px; color: var(--text); font-weight: 500;
+  }
+  /* Code blocks */
+  .code-block { position: relative; margin: 22px 0 26px; }
+  pre {
+    background: var(--code-bg); color: var(--code-text);
+    padding: 18px 20px; border-radius: 8px; overflow-x: auto;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 14px; line-height: 1.6; box-shadow: var(--shadow-sm);
+  }
+  pre code {
+    background: none; border: none; padding: 0;
+    color: inherit; font-size: inherit; font-weight: 400;
+  }
+  .copy-btn {
+    position: absolute; top: 10px; right: 10px;
+    background: rgba(240, 234, 216, 0.08);
+    border: 1px solid rgba(240, 234, 216, 0.18);
+    color: var(--code-text); font-family: 'Mona Sans', sans-serif;
+    font-size: 11px; font-weight: 500; letter-spacing: 0.04em;
+    text-transform: uppercase; padding: 5px 10px;
+    border-radius: 4px; cursor: pointer; opacity: 0;
+    transition: all 0.15s ease;
+  }
+  .code-block:hover .copy-btn { opacity: 1; }
+  .copy-btn:hover { background: rgba(240, 234, 216, 0.18); }
+  .copy-btn.copied { background: rgba(34, 197, 94, 0.2); border-color: rgba(34, 197, 94, 0.4); }
+  /* Blockquotes & callouts */
+  blockquote {
+    margin: 24px 0; padding: 16px 22px;
+    background: var(--accent-soft); border-left: 3px solid var(--accent);
+    border-radius: 0 6px 6px 0; color: var(--text); font-size: 16px;
+  }
+  blockquote p { margin-bottom: 12px; }
+  blockquote p:last-child { margin-bottom: 0; }
+  blockquote strong { color: var(--text); }
+  /* Tables */
+  .table-wrap {
+    overflow-x: auto; margin: 22px 0 26px;
+    border: 1px solid var(--border); border-radius: 6px;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 15px; }
+  th, td {
+    text-align: left; padding: 12px 16px;
+    border-bottom: 1px solid var(--border); vertical-align: top;
+  }
+  th {
+    background: var(--bg-elev); font-weight: 600;
+    font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em;
+    color: var(--text-muted);
+  }
+  tr:last-child td { border-bottom: none; }
+  td code, th code { font-size: 13px; }
+  /* HR */
+  hr { border: none; border-top: 1px solid var(--border); margin: 56px 0; }
+  /* Module list (README) */
+  .module-list {
+    display: flex; flex-direction: column; gap: 0;
+    margin: 28px 0 32px;
+    border: 1px solid var(--border); border-radius: 8px;
+    overflow: hidden; background: var(--bg-elev);
+  }
+  .module-row {
+    display: grid; grid-template-columns: 48px 1fr auto auto;
+    gap: 18px; align-items: center;
+    padding: 16px 22px; border-bottom: 1px solid var(--border);
+    background: var(--bg);
+  }
+  .module-row:last-child { border-bottom: none; }
+  .module-row.featured {
+    background: linear-gradient(to right, var(--accent-soft), transparent 60%);
+  }
+  .module-num {
+    font-family: 'Fraunces', Georgia, serif; font-style: italic;
+    font-size: 22px; font-weight: 500; color: var(--accent);
+  }
+  .module-title { font-weight: 600; font-size: 16px; color: var(--text); line-height: 1.35; }
+  .module-title-sub { font-size: 13px; color: var(--text-muted); margin-top: 2px; font-weight: 400; }
+  .module-format { font-size: 13px; color: var(--text-subtle); font-style: italic; }
+  .module-time { font-size: 13px; color: var(--text-muted); font-weight: 500;
+    font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .star { color: var(--accent); margin-left: 4px; }
+  .path-grid { display: grid; grid-template-columns: 1fr; gap: 14px; margin: 22px 0 28px; }
+  .path-card { padding: 18px 22px; background: var(--bg-elev);
+    border: 1px solid var(--border); border-radius: 6px; }
+  .path-card-title { font-weight: 600; font-size: 15px; margin-bottom: 4px; color: var(--text); }
+  .path-card-body { font-size: 14px; color: var(--text-muted); line-height: 1.55; }
+  .footer-note {
+    margin-top: 80px; padding-top: 32px;
+    border-top: 1px solid var(--border);
+    font-size: 14px; color: var(--text-subtle); text-align: center;
+  }
+  /* Quiz (Module 1) */
+  .quiz {
+    margin: 28px 0 32px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg-elev);
+    overflow: hidden;
+  }
+  .quiz-header {
+    padding: 16px 22px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .quiz-title {
+    font-family: 'Fraunces', Georgia, serif; font-style: italic;
+    font-size: 14px; color: var(--accent); letter-spacing: 0.02em;
+  }
+  .quiz-progress { font-size: 13px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+  .quiz-question { padding: 20px 22px; border-bottom: 1px solid var(--border); }
+  .quiz-question:last-child { border-bottom: none; }
+  .quiz-q-prompt { font-weight: 600; margin-bottom: 14px; font-size: 16px; }
+  .quiz-options { display: flex; flex-direction: column; gap: 8px; }
+  .quiz-opt {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 11px 14px;
+    border: 1px solid var(--border); border-radius: 6px;
+    background: var(--bg); cursor: pointer;
+    font-size: 15px; line-height: 1.45;
+    transition: all 0.15s ease;
+    text-align: left;
+    width: 100%;
+    color: var(--text);
+    font-family: inherit;
+  }
+  .quiz-opt:hover:not(:disabled) { border-color: var(--accent-line); background: var(--accent-soft); }
+  .quiz-opt:disabled { cursor: default; }
+  .quiz-opt-letter {
+    flex-shrink: 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px; font-weight: 600;
+    color: var(--text-muted);
+    width: 18px;
+  }
+  .quiz-opt.correct {
+    background: var(--success-soft);
+    border-color: var(--success);
+  }
+  .quiz-opt.correct .quiz-opt-letter { color: var(--success); }
+  .quiz-opt.incorrect {
+    background: var(--error-soft);
+    border-color: var(--error);
+  }
+  .quiz-opt.incorrect .quiz-opt-letter { color: var(--error); }
+  .quiz-opt.dim { opacity: 0.55; }
+  .quiz-feedback {
+    margin-top: 14px;
+    padding: 14px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    line-height: 1.55;
+    display: none;
+  }
+  .quiz-feedback.show { display: block; }
+  .quiz-feedback.correct { background: var(--success-soft); border: 1px solid rgba(22, 101, 52, 0.25); }
+  .quiz-feedback.incorrect { background: var(--error-soft); border: 1px solid rgba(153, 27, 27, 0.18); }
+  .quiz-feedback-title { font-weight: 600; margin-bottom: 4px; }
+  .quiz-feedback.correct .quiz-feedback-title { color: var(--success); }
+  .quiz-feedback.incorrect .quiz-feedback-title { color: var(--error); }
+  /* Open-ended quiz answer (no options) */
+  .quiz-open-toggle {
+    margin-top: 8px;
+    padding: 9px 16px;
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 6px; cursor: pointer;
+    font-family: inherit; font-size: 14px; font-weight: 500;
+    color: var(--text-muted);
+    transition: all 0.15s ease;
+  }
+  .quiz-open-toggle:hover { background: var(--accent-soft); color: var(--accent); border-color: var(--accent-line); }
+  .quiz-open-answer {
+    margin-top: 12px; padding: 14px 16px;
+    background: var(--accent-soft); border: 1px solid var(--accent-line);
+    border-radius: 6px; font-size: 14px; line-height: 1.6;
+    display: none;
+  }
+  .quiz-open-answer.show { display: block; }
+  /* Reveal block (sample solutions) */
+  .reveal {
+    margin: 24px 0 28px;
+    border: 1px dashed var(--border-strong);
+    border-radius: 8px;
+    background: var(--bg-elev);
+    overflow: hidden;
+  }
+  .reveal-trigger {
+    width: 100%;
+    padding: 16px 22px;
+    background: none; border: none;
+    cursor: pointer;
+    font-family: inherit; font-size: 15px; font-weight: 500;
+    color: var(--text); text-align: left;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px;
+    transition: background 0.15s ease;
+  }
+  .reveal-trigger:hover { background: var(--accent-soft); }
+  .reveal-trigger-label {
+    font-family: 'Fraunces', Georgia, serif; font-style: italic;
+    color: var(--accent); font-size: 14px; margin-right: 8px;
+  }
+  .reveal-trigger-icon {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-muted); font-size: 14px;
+    transition: transform 0.2s ease;
+  }
+  .reveal.open .reveal-trigger-icon { transform: rotate(45deg); }
+  .reveal-content {
+    display: none;
+    padding: 4px 22px 22px;
+    border-top: 1px solid var(--border);
+    background: var(--bg);
+  }
+  .reveal.open .reveal-content { display: block; }
+  .reveal-content > *:first-child { margin-top: 18px; }
+  /* Lab placeholder card (Module 4) */
+  .lab-card {
+    margin: 28px 0;
+    padding: 22px 24px;
+    background: linear-gradient(135deg, var(--accent-soft), transparent 80%);
+    border: 1px solid var(--accent-line);
+    border-radius: 10px;
+    display: flex; align-items: center; gap: 18px;
+    flex-wrap: wrap;
+  }
+  .lab-card-icon {
+    font-family: 'Fraunces', Georgia, serif; font-style: italic;
+    font-size: 36px; color: var(--accent); line-height: 1;
+  }
+  .lab-card-body { flex: 1; min-width: 240px; }
+  .lab-card-title { font-weight: 600; font-size: 16px; margin-bottom: 4px; }
+  .lab-card-meta { font-size: 13px; color: var(--text-muted); }
+  .lab-card-link {
+    display: inline-block;
+    padding: 9px 18px;
+    background: var(--accent); color: var(--bg);
+    font-weight: 500; font-size: 14px;
+    border-radius: 6px;
+    text-decoration: none; border: none;
+    transition: background 0.15s ease;
+  }
+  .lab-card-link:hover { background: #92400E; border-bottom: none; }
+  .lab-card-link.placeholder {
+    background: var(--bg-elev); color: var(--text-muted);
+    border: 1px dashed var(--border-strong); cursor: not-allowed;
+    pointer-events: none; font-style: italic;
+  }
+  /* Note callout (distinct from blockquote) */
+  .note {
+    margin: 22px 0;
+    padding: 14px 18px 14px 18px;
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 15px;
+  }
+  .note-label {
+    display: inline-block;
+    font-family: 'Fraunces', Georgia, serif; font-style: italic;
+    color: var(--accent); margin-right: 6px;
+    font-size: 14px;
+  }
+  /* Checklist (visual only) */
+  .checklist { list-style: none; padding-left: 0; margin: 14px 0 22px; }
+  .checklist li {
+    padding-left: 28px; position: relative; margin-bottom: 8px;
+  }
+  .checklist li::before {
+    content: ""; position: absolute; left: 0; top: 0.45em;
+    width: 14px; height: 14px;
+    border: 1.5px solid var(--border-strong); border-radius: 3px;
+    background: var(--bg);
+  }
+  /* TOC at top of module pages (within-page only — no cross-page links) */
+  .toc {
+    margin: 28px 0 40px;
+    padding: 18px 22px;
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+  }
+  .toc-title {
+    font-family: 'Fraunces', Georgia, serif; font-style: italic;
+    color: var(--accent); font-size: 14px; margin-bottom: 10px;
+  }
+  .toc ol { padding-left: 22px; margin: 0; font-size: 14px; }
+  .toc ol li { margin-bottom: 4px; }
+  .toc a { border-bottom: none; color: var(--text-muted); }
+  .toc a:hover { color: var(--accent); border-bottom: 1px solid var(--accent-line); }
+  /* Diagram (ASCII flow) */
+  .diagram {
+    margin: 24px 0;
+    padding: 22px;
+    background: var(--code-bg); color: var(--code-text);
+    border-radius: 8px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 13px; line-height: 1.5;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  /* Responsive */
+  @media (max-width: 600px) {
+    main { padding: 40px 20px 80px; }
+    .hero h1 { font-size: 32px; }
+    .hero-lede { font-size: 17px; }
+    article h2 { font-size: 24px; margin-top: 44px; }
+    article h3 { font-size: 18px; }
+    .meta { flex-direction: column; gap: 12px; padding: 14px 18px; }
+    .meta-item { border-right: none; padding-right: 0; margin-right: 0;
+      border-bottom: 1px solid var(--border-strong); padding-bottom: 12px;
+      margin-bottom: 0; }
+    .meta-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .module-row { grid-template-columns: 36px 1fr; gap: 14px; padding: 14px 18px; }
+    .module-format, .module-time { grid-column: 2; font-size: 12px; }
+    .quiz-header { flex-direction: column; align-items: flex-start; gap: 4px; }
+    .lab-card { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+<style>
+  /* Course navigation bar (shared) */
+  .course-nav {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(250, 249, 245, 0.85);
+    -webkit-backdrop-filter: saturate(180%) blur(12px);
+    backdrop-filter: saturate(180%) blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .course-nav-inner {
+    max-width: 820px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; padding: 11px 28px;
+  }
+  .course-nav-brand {
+    display: flex; align-items: baseline; gap: 10px;
+    text-decoration: none; border-bottom: none; white-space: nowrap;
+  }
+  .course-nav-brand-mark {
+    font-family: 'Fraunces', Georgia, serif; font-style: italic;
+    font-weight: 500; font-size: 18px; color: var(--accent);
+  }
+  .course-nav-brand-text {
+    font-size: 13px; color: var(--text-muted); font-weight: 500; letter-spacing: 0.01em;
+  }
+  .course-nav-brand:hover .course-nav-brand-text { color: var(--accent); }
+  .course-nav-brand.is-active .course-nav-brand-text { color: var(--text); }
+  .course-nav-modules {
+    display: flex; align-items: center; gap: 6px;
+    overflow-x: auto; scrollbar-width: none;
+  }
+  .course-nav-modules::-webkit-scrollbar { display: none; }
+  .course-nav-modules a {
+    flex-shrink: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 30px; height: 30px; padding: 0 9px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 13px; font-weight: 600;
+    color: var(--text-muted); text-decoration: none;
+    border: 1px solid var(--border); border-radius: 6px;
+    background: var(--bg);
+    transition: all 0.15s ease;
+  }
+  .course-nav-modules a:hover {
+    border-color: var(--accent-line); color: var(--accent); background: var(--accent-soft);
+  }
+  .course-nav-modules a.is-active {
+    background: var(--accent); color: var(--bg); border-color: var(--accent);
+  }
+  .course-nav-home {
+    font-family: 'Mona Sans', sans-serif; font-weight: 600;
+    padding: 0 13px; margin-right: 8px;
+  }
+  /* Module footer navigation (prev / next) */
+  .module-footer-nav {
+    margin-top: 56px; padding-top: 28px;
+    border-top: 1px solid var(--border);
+    display: flex; align-items: stretch; justify-content: space-between;
+    gap: 16px; flex-wrap: wrap;
+  }
+  .mod-nav-prev, .mod-nav-next {
+    display: inline-flex; flex-direction: column; gap: 3px;
+    text-decoration: none; border-bottom: none; border-radius: 8px;
+    transition: all 0.15s ease;
+  }
+  .mod-nav-label {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 500;
+  }
+  .mod-nav-prev {
+    align-items: flex-start; padding: 10px 4px; color: var(--text-muted);
+  }
+  .mod-nav-prev .mod-nav-label { color: var(--text-subtle); }
+  .mod-nav-prev .mod-nav-title { font-weight: 500; font-size: 15px; color: var(--text); }
+  .mod-nav-prev:hover .mod-nav-title { color: var(--accent); }
+  .mod-nav-next {
+    margin-left: auto; align-items: flex-end; text-align: right;
+    padding: 12px 20px; background: var(--accent); color: var(--bg);
+  }
+  .mod-nav-next .mod-nav-label { color: var(--bg); opacity: 0.82; }
+  .mod-nav-next .mod-nav-title { font-weight: 600; font-size: 15px; color: var(--bg); }
+  .mod-nav-next:hover { background: #92400E; }
+  @media (max-width: 600px) {
+    .course-nav-inner { padding: 10px 16px; }
+    .course-nav-brand-text { display: none; }
+    .module-footer-nav { gap: 12px; }
+    .mod-nav-next { padding: 10px 16px; }
+  }
+</style>
+<nav class="course-nav">
+  <div class="course-nav-inner">
+    <a class="course-nav-brand" href="index.html">
+      <span class="course-nav-brand-mark">SDD</span>
+      <span class="course-nav-brand-text">Course handbook</span>
+    </a>
+    <div class="course-nav-modules">
+      <a href="index.html" class="course-nav-home" title="Course handbook">Home</a>
+      <a href="module-1.html" title="Module 1 — SDD Foundations">1</a>
+      <a href="module-2.html" title="Module 2 — Anatomy of a Good Spec">2</a>
+      <a href="module-3.html" title="Module 3 — Greenfield Lab — Spec Kit from Scratch" class="is-active">3</a>
+      <a href="module-4.html" title="Module 4 — Brownfield Lab — Add “Due Date” ★">4</a>
+      <a href="module-5.html" title="Module 5 — Best Practices &amp; Pitfalls">5</a>
+      <a href="module-6.html" title="Module 6 — Quality, Testing &amp; Team Collaboration">6</a>
+      <a href="module-7.html" title="Module 7 — Measurement &amp; Adoption Roadmap">7</a>
+    </div>
+  </div>
+</nav>
+<main>
+  <header class="hero">
+    <div class="hero-eyebrow">Module 3</div>
+    <h1>Greenfield Lab &mdash; Spec Kit from Scratch</h1>
+    <p class="hero-lede">Install GitHub Spec Kit, walk through the four-phase workflow on a small to-do app, and feel the workflow in your hands before applying it to a real codebase.</p>
+    <div class="meta">
+      <div class="meta-item">
+        <span class="meta-label">Time</span>
+        <span class="meta-value">90 min</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Format</span>
+        <span class="meta-value">Hands-on lab</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Prerequisites</span>
+        <span class="meta-value">Modules 1, 2; an AI agent; Node 18+; Python 3.11+</span>
+      </div>
+    </div>
+  </header>
+
+  <article>
+
+    <h3>Learning objectives</h3>
+    <p>By the end of this module, you will be able to:</p>
+    <ol>
+      <li>Install GitHub Spec Kit and initialize a new project with a chosen AI agent.</li>
+      <li>Walk through the four-phase workflow (<code>/specify</code> &rarr; <code>/plan</code> &rarr; <code>/tasks</code> &rarr; <code>/implement</code>) end to end on a small greenfield feature.</li>
+      <li>Identify the artifacts produced at each phase and review them critically.</li>
+      <li>Recognize when the agent is making assumptions you should have specified explicitly.</li>
+    </ol>
+
+    <h3>What you'll build</h3>
+    <p>A simple <strong>single-page to-do web app</strong>. Users can add tasks, see them listed, mark them done (and undo), and delete them. Tasks persist in the browser via <code>localStorage</code> &mdash; no database, no backend.</p>
+    <p>Tech stack:</p>
+    <ul>
+      <li><strong>Next.js 14</strong> (App Router) for the framework</li>
+      <li><strong>React 18</strong> with TypeScript</li>
+      <li><strong>Tailwind CSS</strong> for styling</li>
+      <li><strong>localStorage</strong> for persistence</li>
+    </ul>
+    <p>This is small enough to finish in 90 minutes, but real enough to require thinking about edge cases. It's also a useful mirror for Module 4: when you start the brownfield lab, you'll be working with a starter app that looks structurally similar to what you build here. Same stack; different starting point.</p>
+    <div class="note"><span class="note-label">A note on Git.</span>This lab deliberately skips Git. Everything stays local on disk. You'll see the four-phase artifacts as files in your project, not as commits. In real work, committing at each phase boundary is a useful habit (covered in Module 5) &mdash; but for a 90-minute lab, the ceremony gets in the way of feeling the workflow.</div>
+
+    <h2><span class="h2-num">1.</span>Setup (15 minutes)</h2>
+
+    <h3>1.1 Pick your AI agent</h3>
+    <p>Spec Kit supports several. Pick whichever you have access to:</p>
+    <ul>
+      <li><strong>Claude Code</strong> (recommended for this lab &mdash; strongest spec-writing performance)</li>
+      <li><strong>GitHub Copilot</strong> (in VS Code)</li>
+      <li><strong>Cursor</strong></li>
+      <li><strong>Gemini CLI</strong></li>
+    </ul>
+    <p>If your team has mixed adoption, this is a good moment to pair up &mdash; one person drives, one observes.</p>
+
+    <h3>1.2 Scaffold the Next.js project</h3>
+    <p>Use the official <code>create-next-app</code> to scaffold. From a directory of your choice:</p>
+<pre><code>npx create-next-app@14 todo-app --typescript --tailwind --app --no-src-dir --no-eslint --import-alias "@/*"
+cd todo-app</code></pre>
+    <p>When prompted by older versions of the CLI, accept the defaults (App Router, Tailwind, TypeScript, no <code>src/</code> directory). The flags above pre-answer those prompts.</p>
+    <p>Verify the scaffold:</p>
+<pre><code>npm run dev</code></pre>
+    <p>Open <a href="http://localhost:3000">http://localhost:3000</a>. You should see the default Next.js welcome page. Stop the dev server with <code>Ctrl+C</code> when you've confirmed it works.</p>
+
+    <h3>1.3 Install Spec Kit</h3>
+    <p>Spec Kit ships as a Python package. The recommended install path uses <a href="https://docs.astral.sh/uv/"><code>uv</code></a> (a fast Python package manager), but <code>pipx</code> works too.</p>
+<pre><code># Option A: with uv (recommended)
+uv tool install specify-cli --from git+https://github.com/github/spec-kit.git
+
+# Option B: with pipx
+pipx install git+https://github.com/github/spec-kit.git</code></pre>
+    <p>Verify:</p>
+<pre><code>specify --version</code></pre>
+    <p>If you hit issues, check the <a href="https://github.com/github/spec-kit#installation">Spec Kit installation docs</a>. The most common gotcha is Python version &mdash; you need 3.11 or newer.</p>
+
+    <h3>1.4 Initialize Spec Kit on the scaffolded project</h3>
+    <p>From the <code>todo-app/</code> directory:</p>
+<pre><code>specify init --here</code></pre>
+    <p>The CLI will ask which AI agent you're using. Pick the one you chose in 1.1.</p>
+    <p>After init, your directory will contain (in addition to the Next.js scaffold):</p>
+<pre><code>.specify/                # Spec Kit's internal state
+memory/
+&#8594; constitution.md      # Project-wide context (initially a template)
+.claude/                 # Or .github/, .cursor/, etc., depending on agent</code></pre>
+    <p>The slash commands (<code>/specify</code>, <code>/plan</code>, <code>/tasks</code>, <code>/implement</code>) are now available inside your AI agent's chat interface for this directory.</p>
+
+    <h3>1.5 Sanity-check the agent</h3>
+    <p>Open your AI agent in this directory and try a no-op:</p>
+<pre><code>/specify</code></pre>
+    <p>You should see a prompt asking what feature you want to specify. If you see that, setup is done. If you don't, the agent isn't seeing the slash commands &mdash; most often a fixable matter of restarting the agent or pointing it at the right directory.</p>
+
+    <h2><span class="h2-num">2.</span>Author the Constitution (10 minutes)</h2>
+    <p>The Constitution holds project-wide context that doesn't belong in any single spec. Open <code>memory/constitution.md</code>. It starts as a template; replace it with the following.</p>
+    <div class="note"><span class="note-label">Note.</span>Some Spec Kit versions auto-generate a richer Constitution template. If yours has more sections than this, that's fine &mdash; the content below is the <em>minimum</em> for this lab. Keep what's there if it helps, but don't add ceremony for ceremony's sake.</div>
+<pre><code># Todo app &mdash; Constitution
+
+## Stack
+- Next.js 14 (App Router) with TypeScript
+- React 18
+- Tailwind CSS for styling
+- localStorage for persistence &mdash; no backend, no database, no API routes
+
+## Code organisation
+- Page lives in `app/page.tsx`
+- Components live in `app/components/`
+- Storage helpers and shared types live in `lib/storage.ts`
+- Components that use browser APIs (localStorage, useState, useEffect)
+  declare `"use client"` at the top
+
+## Styling conventions
+- Tailwind utility classes only &mdash; no separate CSS files for layout
+- `app/globals.css` contains only the three Tailwind directives
+- Default Tailwind palette; no custom theme extension for this lab
+
+## Data conventions
+- Todos are objects: `{ id: string, text: string, completed: boolean, createdAt: string }`
+- `createdAt` is an ISO 8601 string
+- IDs are generated using `crypto.randomUUID()` (collision-safe; available in
+  all modern browsers)
+- The localStorage key is exposed as a single named constant in `lib/storage.ts`,
+  not duplicated as a magic string
+
+## UI conventions
+- Single page, no routing
+- Empty state when there are no tasks
+- Newest task at the top of the list
+- Completed tasks show a strikethrough; the row is not removed</code></pre>
+    <p>This is short on purpose. The Constitution should hold <em>durable</em> conventions, not the world. If something here turns out to be wrong later, you'll change it once and every future spec inherits the change.</p>
+    <div class="note"><span class="note-label">Why are some specifics here?</span>You'll notice the Constitution names <code>crypto.randomUUID()</code> and a single named constant for the storage key. These aren't ceremony for its own sake &mdash; they're decisions worth pinning at the project level so the agent doesn't reinvent them in every spec. Compare the brownfield lab in Module 4, where the starter codebase doesn't follow either of these and you'll see why having them in the Constitution matters.</div>
+
+    <h2><span class="h2-num">3.</span><code>/specify</code> (15 minutes)</h2>
+    <p>In your AI agent, run:</p>
+<pre><code>/specify
+
+Build a single-page to-do web app. The user can add a task, see all
+tasks in a list, mark a task as done (and undo), and delete a task.
+Tasks persist across page reloads via localStorage. The home page
+("/") is the only page. Newest tasks appear at the top.</code></pre>
+    <p>The agent will produce a draft spec at <code>specs/&lt;NNN&gt;-todo-app/spec.md</code> (or similar &mdash; the path varies slightly by Spec Kit version). It will likely ask clarifying questions, or include <code>[NEEDS CLARIFICATION]</code> markers in the draft. Engage with these &mdash; the dialogue is part of the practice, not a flaw.</p>
+
+    <h3>3.1 Review checklist</h3>
+    <p>Once the agent produces a draft, <strong>don't accept it as-is</strong>. Open the file and check it against the six-element framework from Module 2:</p>
+    <ul class="checklist">
+      <li><strong>Outcomes</strong> are observable (someone can tell whether the work is done by using the app)</li>
+      <li><strong>In-scope</strong> items are listed</li>
+      <li><strong>Out-of-scope</strong> items are listed (this is the one most often missing)</li>
+      <li><strong>Constraints</strong> are stated (or covered by the Constitution and not repeated here)</li>
+      <li><strong>Decisions made</strong> &mdash; empty input handling, ordering, completed-task display</li>
+      <li><strong>Verification criteria</strong> &mdash; concrete, runnable checks, not vibes</li>
+    </ul>
+    <p>If any of these are weak, edit the spec directly. You can also re-prompt the agent: <em>&ldquo;The out-of-scope list is missing &mdash; please add at least four items based on what the Constitution and the request imply.&rdquo;</em></p>
+
+    <h3>3.2 Things to deliberately decide</h3>
+    <p>These are the questions a thin spec will leave unanswered. You should make explicit decisions:</p>
+    <ul>
+      <li><strong>Empty input.</strong> What happens when a user presses &ldquo;Add&rdquo; with an empty string? With only whitespace? Reject silently, show an error, disable the button?</li>
+      <li><strong>Sorting and ordering.</strong> Newest at the top, but what about completed tasks &mdash; do they stay in place, sink to the bottom, or hide?</li>
+      <li><strong>Editing existing tasks.</strong> In or out of scope? (For this lab, recommend <strong>out of scope</strong> &mdash; it's a Module 4 brownfield exercise candidate.)</li>
+      <li><strong>Maximum length.</strong> Should there be a character limit on task text?</li>
+      <li><strong>Confirmation on delete.</strong> Hard delete with no confirmation, or a &ldquo;Are you sure?&rdquo; step? (For 90 minutes, recommend hard delete with no confirmation.)</li>
+      <li><strong>localStorage failures.</strong> What if the browser is in private mode and writes throw? Crash, ignore silently, or show a toast?</li>
+    </ul>
+    <p>You won't get all of these perfect. The point is to notice that you're making decisions, not letting the agent silently make them for you.</p>
+
+    <h3>3.3 Stop when</h3>
+    <p>You stop iterating on the spec when <strong>a new engineer could implement the app from your spec without asking you anything</strong>. Not before. If you'd still need to clarify something to write the code, the spec isn't done.</p>
+
+    <h2><span class="h2-num">4.</span><code>/plan</code> (15 minutes)</h2>
+    <p>In your agent:</p>
+<pre><code>/plan</code></pre>
+    <p>The agent generates a <code>plan.md</code> (and possibly supporting files) describing <em>how</em> to build what the spec describes. This is where you make implementation decisions: file layout, component structure, what state lives where, how localStorage is read and written.</p>
+
+    <h3>4.1 Review checklist for the plan</h3>
+    <p>The plan should:</p>
+    <ul class="checklist">
+      <li>Identify the components to create &mdash; minimum: a form, a list, and a list-item component</li>
+      <li>State where state lives (the page, lifted up; not scattered across components)</li>
+      <li>Describe the localStorage read/write pattern (load once on mount; save on change; handle the SSR case where <code>window</code> is undefined)</li>
+      <li>Decide which fields exist on a Todo object and where the type is defined</li>
+      <li>Match the Constitution's conventions (file layout, <code>crypto.randomUUID()</code>, single storage-key constant)</li>
+    </ul>
+
+    <h3>4.2 What the plan should <em>not</em> contain</h3>
+    <ul>
+      <li>Full component bodies (that's <code>/implement</code>'s job)</li>
+      <li>Specifics that contradict the Constitution (if it does, fix one or the other &mdash; both being authoritative is the point of having both)</li>
+      <li>Things that should have been in the spec (&ldquo;we should also support tags&rdquo; &mdash; no, that's a scope change, go back to <code>/specify</code>)</li>
+    </ul>
+    <p>If the plan is wrong, fix it before moving on. The cost of a wrong plan caught here is minutes. The cost of a wrong plan caught at <code>/implement</code> is potentially the whole afternoon.</p>
+
+    <h3>4.3 SSR / hydration: the one gotcha to watch for</h3>
+    <p>Next.js renders pages on the server first, then hydrates them in the browser. <code>localStorage</code> doesn't exist on the server. If the plan reads localStorage during the initial render, the client and server will produce different HTML and React will throw a hydration warning.</p>
+    <p>The right pattern: the page renders an empty initial state on first paint, then a <code>useEffect</code> hook reads localStorage after mount and updates state. The plan should call this out explicitly. If it doesn't, push back: <em>&ldquo;How does this avoid hydration mismatch when localStorage is read?&rdquo;</em></p>
+    <p>This is the kind of stack-specific issue the Constitution can't anticipate but the plan must.</p>
+
+    <h2><span class="h2-num">5.</span><code>/tasks</code> (10 minutes)</h2>
+<pre><code>/tasks</code></pre>
+    <p>The agent breaks the plan into a list of discrete, ordered tasks in <code>tasks.md</code>. Each task should be small enough to implement and verify on its own.</p>
+
+    <h3>5.1 Review checklist</h3>
+    <ul class="checklist">
+      <li>Tasks are roughly the right size &mdash; neither &ldquo;build the app&rdquo; (too big) nor &ldquo;import useState&rdquo; (too small)</li>
+      <li>Tasks are ordered so dependencies resolve naturally (storage helpers and types before components; form before list; list before delete)</li>
+      <li>Each task has a clear &ldquo;done&rdquo; criterion you could check off without ambiguity</li>
+      <li>The hydration handling is its own task or explicitly part of the page-component task</li>
+    </ul>
+
+    <h3>5.2 Common defects</h3>
+    <ul>
+      <li><strong>Mega-task syndrome</strong> &mdash; &ldquo;Build the page&rdquo; with no breakdown. Push back: split into state setup, render, mount-effect for load, change-effect for save.</li>
+      <li><strong>Missing wiring</strong> &mdash; components listed but no task to connect them on the page. Add it.</li>
+      <li><strong>No verification step</strong> &mdash; the last task should be &ldquo;manually verify against spec criteria&rdquo; or similar. If it's missing, add it.</li>
+    </ul>
+
+    <h2><span class="h2-num">6.</span><code>/implement</code> (20 minutes)</h2>
+<pre><code>/implement</code></pre>
+    <p>The agent works through the task list, generating code for each task. Depending on your agent, it may:</p>
+    <ul>
+      <li>Stop after each task and ask for confirmation (Claude Code default)</li>
+      <li>Run through the whole list and report at the end (some Cursor configurations)</li>
+      <li>Pause when it hits ambiguity (most agents)</li>
+    </ul>
+
+    <h3>6.1 Watch for these moments</h3>
+    <ul>
+      <li><strong>The agent invents a new requirement.</strong> If it suddenly adds a &ldquo;due date&rdquo; field that wasn't in the spec, stop it. Either the spec was wrong (go back and fix it) or the agent is hallucinating scope. (Note: if you find yourself wanting due dates, don't add them here &mdash; that's the Module 4 brownfield exercise.)</li>
+      <li><strong>The agent uses <code>Date.now()</code> for IDs.</strong> The Constitution specified <code>crypto.randomUUID()</code>. If the agent ignores it, push back. This is exactly the kind of small Constitution violation that becomes cruft over time if uncaught.</li>
+      <li><strong>The agent hardcodes the localStorage key.</strong> Same logic &mdash; the Constitution specified a single named constant. If the agent inlines <code>"todos"</code> strings, push back.</li>
+      <li><strong>The agent skips the hydration consideration.</strong> If you see localStorage being read in a component body (not inside a <code>useEffect</code>), the build will warn. Have the agent fix it.</li>
+    </ul>
+
+    <h3>6.2 Run the app</h3>
+    <p>Once <code>/implement</code> finishes:</p>
+<pre><code>npm run dev</code></pre>
+    <p>Open <a href="http://localhost:3000">http://localhost:3000</a>. Try:</p>
+    <ol>
+      <li>Add a task. Does it appear at the top of the list?</li>
+      <li>Mark it done. Does the strikethrough appear?</li>
+      <li>Mark it undone. Does the strikethrough disappear?</li>
+      <li>Delete it. Does it vanish from the list?</li>
+      <li>Add three tasks, refresh the page. Are all three still there?</li>
+      <li>Open the browser devtools &rarr; Application &rarr; Local Storage. Is there a key matching the constant from your Constitution? Does its value look like a JSON array of todo objects?</li>
+    </ol>
+    <p>If any of these fail, you have a divergence between spec and code. Investigate:</p>
+    <ul>
+      <li>Is the spec wrong? (Did you not specify what you actually wanted?)</li>
+      <li>Is the code wrong? (Did the agent miss something the spec stated?)</li>
+    </ul>
+    <p>Whichever is wrong, fix that one. Then re-verify.</p>
+
+    <h2><span class="h2-num">7.</span>Reflection (10 minutes)</h2>
+    <p>Spend 10 minutes writing answers to these in a <code>REFLECTION.md</code> file in your project root. You don't need to share these with anyone, but writing them down is the difference between learning the practice and just executing the steps.</p>
+    <ol>
+      <li><strong>Where did you make decisions during <code>/specify</code> that the agent would have made wrongly if you'd left them implicit?</strong></li>
+      <li><strong>What got caught at <code>/plan</code> review that would have been more painful to fix at <code>/implement</code>?</strong> (The hydration handling is the obvious candidate &mdash; was there anything else?)</li>
+      <li><strong>Did the agent ever invent scope? How did you notice?</strong></li>
+      <li><strong>How does this feel compared to &ldquo;just write a prompt and let the agent code&rdquo;? Faster? Slower? Different in kind?</strong></li>
+      <li><strong>Of the conventions in your Constitution, which ones did the agent honor without prompting, and which did you have to reinforce?</strong></li>
+    </ol>
+    <p>There's no right answer to any of these. The honest one is the useful one.</p>
+
+    <h2><span class="h2-num">8.</span>Common issues and how to handle them</h2>
+
+    <h3>&ldquo;The agent's spec is way too long&rdquo;</h3>
+    <p>Edit it down. Spec Kit's default templates can be verbose, and some agents pad them further. Anything that doesn't add information should go. The good test from Module 2 still applies: if a sentence wouldn't change the agent's behavior, it doesn't belong.</p>
+
+    <h3>&ldquo;The agent ignored my Constitution&rdquo;</h3>
+    <p>Some agents have weaker context discipline than others. If the Constitution says <code>crypto.randomUUID()</code> and the agent uses <code>Date.now()</code> anyway, two things to try:</p>
+    <ol>
+      <li>Reference the Constitution explicitly in the spec or plan: <em>&ldquo;Per the Constitution, IDs use <code>crypto.randomUUID()</code>.&rdquo;</em></li>
+      <li>Re-prompt mid-implement: <em>&ldquo;The Constitution requires <code>crypto.randomUUID()</code> for IDs. Replace the <code>Date.now()</code> calls.&rdquo;</em></li>
+    </ol>
+    <p>If your agent consistently ignores Constitutions, that's a tooling-level concern worth raising on your team.</p>
+
+    <h3>&ldquo;The phases blur into each other&rdquo;</h3>
+    <p>Especially common with Claude Code, which can helpfully (or annoyingly, depending on context) do all four phases in one pass when you give it a sufficiently specific request. To prevent this, run the slash commands one at a time and review the artifact between each. The whole point of the workflow is the review checkpoints.</p>
+
+    <h3>&ldquo;I want to skip /tasks&rdquo;</h3>
+    <p>You can. Some teams find <code>/specify</code> + <code>/plan</code> + direct implementation works fine for small features. The argument for keeping <code>/tasks</code> is that it forces explicit task-sizing decisions. The argument against is overhead.</p>
+    <p>For this lab, do all four. After the lab, decide for your team.</p>
+
+    <h3>&ldquo;The hydration warning won't go away&rdquo;</h3>
+    <p>The classic causes:</p>
+    <ul>
+      <li>localStorage being read during render rather than inside a <code>useEffect</code>.</li>
+      <li>The initial state of <code>useState</code> differing between server and client.</li>
+      <li>A component that uses <code>Date.now()</code> or <code>Math.random()</code> during render (different value on server vs client).</li>
+    </ul>
+    <p>The fix in all three cases is the same: render a stable initial state on the server, then update once mounted. The Spec Kit plan should have called this out &mdash; if it didn't, that's a useful note for your reflection.</p>
+
+    <hr>
+
+    <h3>What you should now know</h3>
+    <ul>
+      <li>Spec Kit's four phases produce four reviewable artifacts (<code>spec.md</code>, <code>plan.md</code>, <code>tasks.md</code>, working code) with explicit review checkpoints between each.</li>
+      <li>The Constitution holds durable conventions; the spec holds task-specific intent. Keeping them separate keeps both readable.</li>
+      <li>Each phase forces a different kind of decision &mdash; <em>what</em> (specify), <em>how</em> (plan), <em>steps</em> (tasks), <em>code</em> (implement). Mixing them produces vague specs, kitchen-sink plans, or untested code.</li>
+      <li>Stack-specific gotchas (like Next.js hydration) belong in the plan, not the Constitution. The Constitution is for durable team conventions; the plan is for how-this-feature-works-on-this-stack.</li>
+    </ul>
+
+    <h3>What's next</h3>
+    <p>In <strong>Module 4</strong> you'll apply the same workflow to a <em>brownfield</em> codebase &mdash; a starter to-do app shipped with this course. The mechanics are the same, but the context-management challenge is fundamentally different. You'll see why the brownfield case is where most teams struggle, and how the incremental approach Module 1 introduced actually plays out in practice. The brownfield starter uses the same stack you just used, so what you learned here transfers directly.</p>
+
+    <div class="module-footer-nav">
+      <a class="mod-nav-prev" href="module-2.html">
+        <span class="mod-nav-label">← Previous · Module 2</span>
+        <span class="mod-nav-title">Anatomy of a Good Spec</span>
+      </a>
+      <a class="mod-nav-next" href="module-4.html">
+        <span class="mod-nav-label">Next · Module 4 →</span>
+        <span class="mod-nav-title">Brownfield Lab</span>
+      </a>
+    </div>
+  </article>
+</main>
+<script>
+  // Auto-attach copy buttons to all <pre> blocks
+  document.querySelectorAll('pre').forEach((pre) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'code-block';
+    pre.parentNode.insertBefore(wrap, pre);
+    wrap.appendChild(pre);
+    const btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.type = 'button';
+    btn.textContent = 'Copy';
+    btn.addEventListener('click', async () => {
+      const text = pre.innerText;
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch (e) {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      }
+      btn.textContent = 'Copied';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'Copy';
+        btn.classList.remove('copied');
+      }, 1400);
+    });
+    wrap.appendChild(btn);
+  });
+
+  // Reveal-on-click blocks
+  document.querySelectorAll('.reveal-trigger').forEach((trigger) => {
+    trigger.addEventListener('click', () => {
+      trigger.parentElement.classList.toggle('open');
+    });
+  });
+
+  // Quiz logic — multiple choice
+  document.querySelectorAll('.quiz-question[data-type="mc"]').forEach((q) => {
+    const correct = q.dataset.correct;
+    const opts = q.querySelectorAll('.quiz-opt');
+    const feedback = q.querySelector('.quiz-feedback');
+    opts.forEach((opt) => {
+      opt.addEventListener('click', () => {
+        const choice = opt.dataset.choice;
+        opts.forEach((o) => {
+          o.disabled = true;
+          if (o.dataset.choice === correct) {
+            o.classList.add('correct');
+          } else if (o === opt) {
+            o.classList.add('incorrect');
+          } else {
+            o.classList.add('dim');
+          }
+        });
+        if (feedback) {
+          feedback.classList.add('show');
+          feedback.classList.add(choice === correct ? 'correct' : 'incorrect');
+        }
+      });
+    });
+  });
+
+  // Quiz logic — open-ended (just reveal)
+  document.querySelectorAll('.quiz-open-toggle').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const ans = btn.nextElementSibling;
+      if (ans && ans.classList.contains('quiz-open-answer')) {
+        ans.classList.toggle('show');
+        btn.textContent = ans.classList.contains('show') ? 'Hide answer' : 'Reveal answer';
+      }
+    });
+  });
+</script>
+</body>
+</html>

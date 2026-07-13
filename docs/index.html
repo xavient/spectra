@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spectra -- Spec Kit extensions by TELUS Digital</title>
+<style>:root{--bg:#0c0a16;--fg:#e9e7f2;--muted:#a3a0b5;--accent:#a78bfa;
+--card:#15121f;--border:#2a2540;--codebg:#0d0b17;--codefg:#e6edf3}
+*{box-sizing:border-box}
+body{margin:0;color:var(--fg);
+background:radial-gradient(1100px 520px at 12% -8%,#241b46 0%,rgba(36,27,70,0) 55%),var(--bg);
+background-attachment:fixed;min-height:100vh;
+font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+main{max-width:860px;margin:0 auto;padding:40px 24px 90px}
+.hero{padding:6px 0 8px}
+.logo{height:30px;width:auto;display:block;margin:0 0 44px}
+.wordmark{font-size:clamp(3.5rem,12vw,6.5rem);line-height:.95;margin:0;font-weight:800;
+letter-spacing:-.02em;color:var(--accent)}
+.tagline{font-size:clamp(1.2rem,3.2vw,1.7rem);color:#d4d2e4;font-weight:500;margin:.45em 0 0}
+.lead{color:var(--muted);font-size:1.05rem;margin:1.2em 0 0;max-width:62ch}
+.lead a{color:var(--accent)}
+.prereq{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 22px;margin:44px 0 8px}
+.prereq h2{font-size:.78rem;margin:0 0 .5em;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.prereq ul{margin:0;padding-left:1.2em}
+.prereq code,.badges code,.dl code,.sec-lead code{background:#221d33;border:1px solid var(--border);border-radius:6px;padding:1px 6px;font-size:.85em}
+.sec-title{font-size:1.12rem;margin:40px 0 2px;color:var(--fg);font-weight:700;letter-spacing:-.01em}
+.sec-title .num{color:var(--accent)}
+.sec-lead{color:var(--muted);margin:.25em 0 14px;max-width:64ch}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 24px;margin:14px 0}
+.card header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.card h2{font-size:1.3rem;margin:0;color:var(--fg)}
+.ver{color:var(--muted);font-size:.85rem}
+.desc{color:var(--muted)}
+label{display:block;font-size:.82rem;color:var(--muted);margin:16px 0 6px}
+.cmd{display:flex;gap:8px;align-items:stretch}
+.cmd pre{flex:1;margin:0;background:var(--codebg);color:var(--codefg);border:1px solid var(--border);
+border-radius:9px;padding:12px 14px;overflow-x:auto;font-size:.88rem}
+.cmd code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+button.copy{border:1px solid var(--border);background:#1d1930;color:var(--fg);border-radius:9px;
+padding:0 16px;cursor:pointer;font-size:.85rem;white-space:nowrap}
+button.copy:hover{background:#262038;border-color:var(--accent)}
+.dl{margin:12px 0 0;font-size:.9rem;color:var(--muted)}
+.dl a,a{color:var(--accent)}
+.cmds{list-style:none;margin:14px 0 0;padding:14px 0 0;border-top:1px solid var(--border)}
+.cmds li{margin:0 0 12px}
+.cmds li:last-child{margin-bottom:0}
+.cmds code{background:#221d33;border:1px solid var(--border);border-radius:6px;padding:1px 6px;font-size:.82rem;color:var(--fg)}
+.cmds .cdesc{display:block;margin-top:5px;color:var(--muted);font-size:.9rem}
+.cmds .args{display:block;margin-top:7px;font-size:.84rem;color:var(--muted)}
+.cmds .args strong{color:var(--fg);font-weight:600}
+.cmds .ex{display:block;margin-top:8px;font-size:.85rem;color:var(--muted)}
+.cmds .ex .lbl{text-transform:uppercase;letter-spacing:.06em;font-size:.72rem;color:var(--muted);margin-right:6px}
+.cmds .ex pre{margin:5px 0 0;background:var(--codebg);color:var(--codefg);border:1px solid var(--border);border-radius:9px;padding:10px 12px;overflow-x:auto;font-size:.84rem;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+footer{margin-top:48px;color:var(--muted);font-size:.82rem;border-top:1px solid var(--border);padding-top:18px}</style>
+</head>
+<body>
+<main>
+  <header class="hero">
+    <img class="logo" src="../assets/TELUS_Digital_logo.png" alt="TELUS Digital">
+    <h1 class="wordmark">SPECTRA</h1>
+    <p class="tagline">Agentic software engineering across the entire SDLC</p>
+    <p class="lead">A catalog of <a href="https://github.com/github/spec-kit">Spec Kit</a> extensions for
+    full agentic development across the SDLC, by TELUS Digital.</p>
+  </header>
+
+  <section class="prereq">
+    <h2>Before you start</h2>
+    <ul>
+      <li>Spectra builds on <a href="https://github.com/github/spec-kit">Spec Kit</a> &mdash; install it first.
+      Install the <code>specify</code> CLI (see the
+      <a href="https://github.com/github/spec-kit#-get-started">Spec Kit install guide</a>), then run
+      <code>specify init</code> to set up a project.</li>
+      <li>Run every command below from inside that Spec Kit project.</li>
+      <li>After an extension installs, <strong>restart your agent</strong> so it picks up the new command.</li>
+    </ul>
+  </section>
+
+  <h2 class="sec-title"><span class="num">Step 1</span> &middot; Add the Spectra catalog</h2>
+  <p class="sec-lead">Register Spectra as an install-allowed catalog &mdash; once per project. After this you
+  install any extension below by name, with no &ldquo;untrusted source&rdquo; prompt.</p>
+  <article class="card">
+    <div class="cmd"><pre><code>specify extension catalog add https://raw.githubusercontent.com/xavient/spectra/main/catalog.json --name spectra --install-allowed</code></pre><button class="copy" type="button" data-cmd="specify extension catalog add https://raw.githubusercontent.com/xavient/spectra/main/catalog.json --name spectra --install-allowed">Copy</button></div>
+  </article>
+
+  <h2 class="sec-title"><span class="num">Step 2</span> &middot; Install the extension</h2>
+  <p class="sec-lead">Spectra ships as a single extension &mdash; install it once and get every command. Restart your
+  agent afterward. Commands are listed by their agent-agnostic manifest name under the unified
+  <code>speckit.spectra.*</code> namespace (e.g. <code>speckit.spectra.adr</code>) with an example invocation.
+  <strong>The examples use Claude&rsquo;s trigger form</strong> &mdash; a leading slash with dashes, like
+  <code>/speckit-spectra-adr</code>. Other agents differ (kiro-cli, for instance, uses <code>/speckit.spectra.adr</code>);
+  your agent&rsquo;s own command/skill list shows the exact trigger.</p>
+  <section class="extensions">
+    <article class="card">
+      <header><h2>Spectra</h2><span class="badges"><code>spectra</code> <span class="ver">v1.1.0</span></span></header>
+      <p class="desc">Spectra&rsquo;s agentic SDLC commands for Spec Kit, bundled as a single extension: context-aware Architecture Decision Records, business-domain guardrail analysis, and correctly-targeted GitHub PR delivery.</p>
+      <label>Install &mdash; run inside a Spec Kit project, then restart your agent:</label>
+      <div class="cmd"><pre><code>specify extension add spectra</code></pre><button class="copy" type="button" data-cmd="specify extension add spectra">Copy</button></div>
+      <label>Commands</label>
+      <ul class="cmds">
+        <li><code>speckit.spectra.adr</code><span class="cdesc">Create a context-aware Architecture Decision Record grounded in your codebase, prior ADRs, and constitution &mdash; it asks a few clarifying questions, then writes the ADR under <code>Docs/ADR/</code>. Use it when making a significant architecture or technology choice.</span><span class="args"><strong>Arguments:</strong> a short description of the decision. If omitted, you&rsquo;ll be asked for one before drafting.</span><span class="ex"><span class="lbl">Example (Claude)</span><pre>/speckit-spectra-adr We should standardize on PostgreSQL for all primary data stores</pre></span></li>
+        <li><code>speckit.spectra.domain-analyzer</code><span class="cdesc">Scan the existing codebase, docs, and ADRs to infer the project&#x27;s domain, then write an opt-in proposal of candidate guardrails for SME review and handoff to the constitution. It never edits the constitution or source &mdash; you choose what to adopt.</span><span class="args"><strong>Arguments:</strong> none required &mdash; runs on the whole project (ideal for brownfield). Optionally pass a domain hint to steer it.</span><span class="ex"><span class="lbl">Example (Claude)</span><pre>/speckit-spectra-domain-analyzer
+/speckit-spectra-domain-analyzer this is a banking system</pre></span></li>
+        <li><code>speckit.spectra.create-pr</code><span class="cdesc">Open a correctly-targeted GitHub PR for the current spec branch, deriving the base from your promotion strategy and returning the PR URL. Confirms before any push, and is also offered automatically after <code>implement</code>.</span><span class="args"><strong>Arguments:</strong> none opens a <strong>ready-for-review</strong> PR (default); <code>--draft</code> opens a draft; <code>--base &lt;branch&gt;</code> overrides the derived base branch (confirmed first).</span><span class="ex"><span class="lbl">Example (Claude)</span><pre>/speckit-spectra-create-pr
+/speckit-spectra-create-pr --draft</pre></span></li>
+      </ul>
+    </article>
+  </section>
+
+  <footer>Generated 2026-07-09 00:00 UTC &middot; 1 extension(s)</footer>
+</main>
+<script>
+document.querySelectorAll('button.copy').forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    navigator.clipboard.writeText(btn.getAttribute('data-cmd')).then(function () {
+      var prev = btn.textContent;
+      btn.textContent = 'Copied';
+      setTimeout(function () { btn.textContent = prev; }, 1200);
+    });
+  });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 5 &mdash; Best Practices &amp; Pitfalls</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,400;1,9..144,500&family=JetBrains+Mono:wght@400;500;600&family=Mona+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FAF9F5;
+    --bg-elev: #F4F1E8;
+    --text: #1A1614;
+    --text-muted: #6B6357;
+    --text-subtle: #94897A;
+    --accent: #B45309;
+    --accent-soft: rgba(180, 83, 9, 0.09);
+    --accent-line: rgba(180, 83, 9, 0.25);
+    --border: #E8E2D4;
+    --border-strong: #D4CCB8;
+    --code-bg: #1A1614;
+    --code-text: #F0EAD8;
+    --code-comment: #94897A;
+    --code-accent: #F0B070;
+    --success: #166534;
+    --success-soft: rgba(22, 101, 52, 0.08);
+    --error: #991B1B;
+    --error-soft: rgba(153, 27, 27, 0.06);
+    --shadow-sm: 0 1px 2px rgba(26, 22, 20, 0.04);
+    --shadow-md: 0 4px 12px rgba(26, 22, 20, 0.06);
+    --max-w: 720px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Mona Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    font-weight: 400;
+    font-size: 17px;
+    line-height: 1.7;
+    color: var(--text);
+    background: var(--bg);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  main {
+    max-width: var(--max-w);
+    margin: 0 auto;
+    padding: 64px 28px 120px;
+  }
+  /* Hero */
+  .hero { margin-bottom: 56px; padding-bottom: 40px; border-bottom: 1px solid var(--border); }
+  .hero-eyebrow {
+    font-family: 'Fraunces', Georgia, serif;
+    font-style: italic; font-weight: 400;
+    font-size: 17px; color: var(--accent); letter-spacing: 0.01em;
+    margin-bottom: 18px;
+  }
+  .hero h1 {
+    font-family: 'Mona Sans', sans-serif;
+    font-weight: 600; font-size: 44px; line-height: 1.1;
+    letter-spacing: -0.025em; margin-bottom: 22px; color: var(--text);
+  }
+  .hero-lede {
+    font-size: 19px; line-height: 1.55; color: var(--text-muted); max-width: 600px;
+  }
+  /* Meta block */
+  .meta {
+    display: flex; flex-wrap: wrap;
+    margin-top: 32px; padding: 18px 22px;
+    background: var(--bg-elev); border: 1px solid var(--border);
+    border-radius: 6px; font-size: 14px;
+  }
+  .meta-item {
+    display: flex; flex-direction: column; gap: 2px;
+    padding-right: 32px; margin-right: 32px;
+    border-right: 1px solid var(--border-strong);
+  }
+  .meta-item:last-child { border-right: none; padding-right: 0; margin-right: 0; }
+  .meta-label {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--text-subtle); font-weight: 500;
+  }
+  .meta-value { color: var(--text); font-weight: 500; }
+  /* Article typography */
+  article h2 {
+    font-family: 'Mona Sans', sans-serif;
+    font-weight: 600; font-size: 28px; line-height: 1.25;
+    letter-spacing: -0.018em; margin-top: 56px; margin-bottom: 18px; color: var(--text);
+  }
+  article h2 .h2-num {
+    font-family: 'Fraunces', Georgia, serif; font-style: italic;
+    font-weight: 400; color: var(--accent); margin-right: 14px;
+  }
+  article h3 {
+    font-weight: 600; font-size: 20px; line-height: 1.3;
+    letter-spacing: -0.012em; margin-top: 36px; margin-bottom: 12px; color: var(--text);
+  }
+  article h4 {
+    font-weight: 600; font-size: 16px;
+    margin-top: 28px; margin-bottom: 8px; color: var(--text);
+  }
+  article p { margin-bottom: 18px; }
+  article ul, article ol { margin: 0 0 22px 0; padding-left: 22px; }
+  article li { margin-bottom: 8px; padding-left: 4px; }
+  article li::marker { color: var(--text-subtle); }
+  article ul ul, article ol ol, article ul ol, article ol ul { margin: 8px 0 4px 0; }
+  article a {
+    color: var(--accent); text-decoration: none;
+    border-bottom: 1px solid var(--accent-line);
+    transition: border-color 0.15s ease;
+  }
+  article a:hover { border-bottom-color: var(--accent); }
+  article strong { font-weight: 600; color: var(--text); }
+  article em { font-style: italic; }
+  /* Inline code */
+  article code {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 0.86em; background: var(--bg-elev);
+    border: 1px solid var(--border); padding: 1px 6px;
+    border-radius: 4px; color: var(--text); font-weight: 500;
+  }
+  /* Code blocks */
+  .code-block { position: relative; margin: 22px 0 26px; }
+  pre {
+    background: var(--code-bg); color: var(--code-text);
+    padding: 18px 20px; border-radius: 8px; overflow-x: auto;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 14px; line-height: 1.6; box-shadow: var(--shadow-sm);
+  }
+  pre code {
+    background: none; border: none; padding: 0;
+    color: inherit; font-size: inherit; font-weight: 400;
+  }
+  .copy-btn {
+    position: absolute; top: 10px; right: 10px;
+    background: rgba(240, 234, 216, 0.08);
+    border: 1px solid rgba(240, 234, 216, 0.18);
+    color: var(--code-text); font-family: 'Mona Sans', sans-serif;
+    font-size: 11px; font-weight: 500; letter-spacing: 0.04em;
+    text-transform: uppercase; padding: 5px 10px;
+    border-radius: 4px; cursor: pointer; opacity: 0;
+    transition: all 0.15s ease;
+  }
+  .code-block:hover .copy-btn { opacity: 1; }
+  .copy-btn:hover { background: rgba(240, 234, 216, 0.18); }
+  .copy-btn.copied { background: rgba(34, 197, 94, 0.2); border-color: rgba(34, 197, 94, 0.4); }
+  /* Blockquotes & callouts */
+  blockquote {
+    margin: 24px 0; padding: 16px 22px;
+    background: var(--accent-soft); border-left: 3px solid var(--accent);
+    border-radius: 0 6px 6px 0; color: var(--text); font-size: 16px;
+  }
+  blockquote p { margin-bottom: 12px; }
+  blockquote p:last-child { margin-bottom: 0; }
+  blockquote strong { color: var(--text); }
+  /* Tables */
+  .table-wrap {
+    overflow-x: auto; margin: 22px 0 26px;
+    border: 1px solid var(--border); border-radius: 6px;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 15px; }
+  th, td {
+    text-align: left; padding: 12px 16px;
+    border-bottom: 1px solid var(--border); vertical-align: top;
+  }
+  th {
+    background: var(--bg-elev); font-weight: 600;
+    font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em;
+    color: var(--text-muted);
+  }
+  tr:last-child td { border-bottom: none; }
+  td code, th code { font-size: 13px; }
+  /* HR */
+  hr { border: none; border-top: 1px solid var(--border); margin: 56px 0; }
+  /* Module list (README) */
+  .module-list {
+    display: flex; flex-direction: column; gap: 0;
+    margin: 28px 0 32px;
+    border: 1px solid var(--border); border-radius: 8px;
+    overflow: hidden; background: var(--bg-elev);
+  }
+  .module-row {
+    display: grid; grid-template-columns: 48px 1fr auto auto;
+    gap: 18px; align-items: center;
+    padding: 16px 22px; border-bottom: 1px solid var(--border);
+    background: var(--bg);
+  }
+  .module-row:last-child { border-bottom: none; }
+  .module-row.featured {
+    background: linear-gradient(to right, var(--accent-soft), transparent 60%);
+  }
+  .module-num {
+    font-family: 'Fraunces', Georgia, serif; font-style: italic;
+    font-size: 22px; font-weight: 500; color: var(--accent);
+  }
+  .module-title { font-weight: 600; font-size: 16px; color: var(--text); line-height: 1.35; }
+  .module-title-sub { font-size: 13px; color: var(--text-muted); margin-top: 2px; font-weight: 400; }
+  .module-format { font-size: 13px; color: var(--text-subtle); font-style: italic; }
+  .module-time { font-size: 13px; color: var(--text-muted); font-weight: 500;
+    font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .star { color: var(--accent); margin-left: 4px; }
+  .path-grid { display: grid; grid-template-columns: 1fr; gap: 14px; margin: 22px 0 28px; }
+  .path-card { padding: 18px 22px; background: var(--bg-elev);
+    border: 1px solid var(--border); border-radius: 6px; }
+  .path-card-title { font-weight: 600; font-size: 15px; margin-bottom: 4px; color: var(--text); }
+  .path-card-body { font-size: 14px; color: var(--text-muted); line-height: 1.55; }
+  .footer-note {
+    margin-top: 80px; padding-top: 32px;
+    border-top: 1px solid var(--border);
+    font-size: 14px; color: var(--text-subtle); text-align: center;
+  }
+  /* Quiz (Module 1) */
+  .quiz {
+    margin: 28px 0 32px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg-elev);
+    overflow: hidden;
+  }
+  .quiz-header {
+    padding: 16px 22px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .quiz-title {
+    font-family: 'Fraunces', Georgia, serif; font-style: italic;
+    font-size: 14px; color: var(--accent); letter-spacing: 0.02em;
+  }
+  .quiz-progress { font-size: 13px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+  .quiz-question { padding: 20px 22px; border-bottom: 1px solid var(--border); }
+  .quiz-question:last-child { border-bottom: none; }
+  .quiz-q-prompt { font-weight: 600; margin-bottom: 14px; font-size: 16px; }
+  .quiz-options { display: flex; flex-direction: column; gap: 8px; }
+  .quiz-opt {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 11px 14px;
+    border: 1px solid var(--border); border-radius: 6px;
+    background: var(--bg); cursor: pointer;
+    font-size: 15px; line-height: 1.45;
+    transition: all 0.15s ease;
+    text-align: left;
+    width: 100%;
+    color: var(--text);
+    font-family: inherit;
+  }
+  .quiz-opt:hover:not(:disabled) { border-color: var(--accent-line); background: var(--accent-soft); }
+  .quiz-opt:disabled { cursor: default; }
+  .quiz-opt-letter {
+    flex-shrink: 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px; font-weight: 600;
+    color: var(--text-muted);
+    width: 18px;
+  }
+  .quiz-opt.correct {
+    background: var(--success-soft);
+    border-color: var(--success);
+  }
+  .quiz-opt.correct .quiz-opt-letter { color: var(--success); }
+  .quiz-opt.incorrect {
+    background: var(--error-soft);
+    border-color: var(--error);
+  }
+  .quiz-opt.incorrect .quiz-opt-letter { color: var(--error); }
+  .quiz-opt.dim { opacity: 0.55; }
+  .quiz-feedback {
+    margin-top: 14px;
+    padding: 14px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    line-height: 1.55;
+    display: none;
+  }
+  .quiz-feedback.show { display: block; }
+  .quiz-feedback.correct { background: var(--success-soft); border: 1px solid rgba(22, 101, 52, 0.25); }
+  .quiz-feedback.incorrect { background: var(--error-soft); border: 1px solid rgba(153, 27, 27, 0.18); }
+  .quiz-feedback-title { font-weight: 600; margin-bottom: 4px; }
+  .quiz-feedback.correct .quiz-feedback-title { color: var(--success); }
+  .quiz-feedback.incorrect .quiz-feedback-title { color: var(--error); }
+  /* Open-ended quiz answer (no options) */
+  .quiz-open-toggle {
+    margin-top: 8px;
+    padding: 9px 16px;
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 6px; cursor: pointer;
+    font-family: inherit; font-size: 14px; font-weight: 500;
+    color: var(--text-muted);
+    transition: all 0.15s ease;
+  }
+  .quiz-open-toggle:hover { background: var(--accent-soft); color: var(--accent); border-color: var(--accent-line); }
+  .quiz-open-answer {
+    margin-top: 12px; padding: 14px 16px;
+    background: var(--accent-soft); border: 1px solid var(--accent-line);
+    border-radius: 6px; font-size: 14px; line-height: 1.6;
+    display: none;
+  }
+  .quiz-open-answer.show { display: block; }
+  /* Reveal block (sample solutions) */
+  .reveal {
+    margin: 24px 0 28px;
+    border: 1px dashed var(--border-strong);
+    border-radius: 8px;
+    background: var(--bg-elev);
+    overflow: hidden;
+  }
+  .reveal-trigger {
+    width: 100%;
+    padding: 16px 22px;
+    background: none; border: none;
+    cursor: pointer;
+    font-family: inherit; font-size: 15px; font-weight: 500;
+    color: var(--text); text-align: left;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px;
+    transition: background 0.15s ease;
+  }
+  .reveal-trigger:hover { background: var(--accent-soft); }
+  .reveal-trigger-label {
+    font-family: 'Fraunces', Georgia, serif; font-style: italic;
+    color: var(--accent); font-size: 14px; margin-right: 8px;
+  }
+  .reveal-trigger-icon {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-muted); font-size: 14px;
+    transition: transform 0.2s ease;
+  }
+  .reveal.open .reveal-trigger-icon { transform: rotate(45deg); }
+  .reveal-content {
+    display: none;
+    padding: 4px 22px 22px;
+    border-top: 1px solid var(--border);
+    background: var(--bg);
+  }
+  .reveal.open .reveal-content { display: block; }
+  .reveal-content > *:first-child { margin-top: 18px; }
+  /* Lab placeholder card (Module 4) */
+  .lab-card {
+    margin: 28px 0;
+    padding: 22px 24px;
+    background: linear-gradient(135deg, var(--accent-soft), transparent 80%);
+    border: 1px solid var(--accent-line);
+    border-radius: 10px;
+    display: flex; align-items: center; gap: 18px;
+    flex-wrap: wrap;
+  }
+  .lab-card-icon {
+    font-family: 'Fraunces', Georgia, serif; font-style: italic;
+    font-size: 36px; color: var(--accent); line-height: 1;
+  }
+  .lab-card-body { flex: 1; min-width: 240px; }
+  .lab-card-title { font-weight: 600; font-size: 16px; margin-bottom: 4px; }
+  .lab-card-meta { font-size: 13px; color: var(--text-muted); }
+  .lab-card-link {
+    display: inline-block;
+    padding: 9px 18px;
+    background: var(--accent); color: var(--bg);
+    font-weight: 500; font-size: 14px;
+    border-radius: 6px;
+    text-decoration: none; border: none;
+    transition: background 0.15s ease;
+  }
+  .lab-card-link:hover { background: #92400E; border-bottom: none; }
+  .lab-card-link.placeholder {
+    background: var(--bg-elev); color: var(--text-muted);
+    border: 1px dashed var(--border-strong); cursor: not-allowed;
+    pointer-events: none; font-style: italic;
+  }
+  /* Note callout (distinct from blockquote) */
+  .note {
+    margin: 22px 0;
+    padding: 14px 18px 14px 18px;
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 15px;
+  }
+  .note-label {
+    display: inline-block;
+    font-family: 'Fraunces', Georgia, serif; font-style: italic;
+    color: var(--accent); margin-right: 6px;
+    font-size: 14px;
+  }
+  /* Checklist (visual only) */
+  .checklist { list-style: none; padding-left: 0; margin: 14px 0 22px; }
+  .checklist li {
+    padding-left: 28px; position: relative; margin-bottom: 8px;
+  }
+  .checklist li::before {
+    content: ""; position: absolute; left: 0; top: 0.45em;
+    width: 14px; height: 14px;
+    border: 1.5px solid var(--border-strong); border-radius: 3px;
+    background: var(--bg);
+  }
+  /* TOC at top of module pages (within-page only — no cross-page links) */
+  .toc {
+    margin: 28px 0 40px;
+    padding: 18px 22px;
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+  }
+  .toc-title {
+    font-family: 'Fraunces', Georgia, serif; font-style: italic;
+    color: var(--accent); font-size: 14px; margin-bottom: 10px;
+  }
+  .toc ol { padding-left: 22px; margin: 0; font-size: 14px; }
+  .toc ol li { margin-bottom: 4px; }
+  .toc a { border-bottom: none; color: var(--text-muted); }
+  .toc a:hover { color: var(--accent); border-bottom: 1px solid var(--accent-line); }
+  /* Diagram (ASCII flow) */
+  .diagram {
+    margin: 24px 0;
+    padding: 22px;
+    background: var(--code-bg); color: var(--code-text);
+    border-radius: 8px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 13px; line-height: 1.5;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  /* Responsive */
+  @media (max-width: 600px) {
+    main { padding: 40px 20px 80px; }
+    .hero h1 { font-size: 32px; }
+    .hero-lede { font-size: 17px; }
+    article h2 { font-size: 24px; margin-top: 44px; }
+    article h3 { font-size: 18px; }
+    .meta { flex-direction: column; gap: 12px; padding: 14px 18px; }
+    .meta-item { border-right: none; padding-right: 0; margin-right: 0;
+      border-bottom: 1px solid var(--border-strong); padding-bottom: 12px;
+      margin-bottom: 0; }
+    .meta-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .module-row { grid-template-columns: 36px 1fr; gap: 14px; padding: 14px 18px; }
+    .module-format, .module-time { grid-column: 2; font-size: 12px; }
+    .quiz-header { flex-direction: column; align-items: flex-start; gap: 4px; }
+    .lab-card { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+<style>
+  /* Course navigation bar (shared) */
+  .course-nav {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(250, 249, 245, 0.85);
+    -webkit-backdrop-filter: saturate(180%) blur(12px);
+    backdrop-filter: saturate(180%) blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .course-nav-inner {
+    max-width: 820px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; padding: 11px 28px;
+  }
+  .course-nav-brand {
+    display: flex; align-items: baseline; gap: 10px;
+    text-decoration: none; border-bottom: none; white-space: nowrap;
+  }
+  .course-nav-brand-mark {
+    font-family: 'Fraunces', Georgia, serif; font-style: italic;
+    font-weight: 500; font-size: 18px; color: var(--accent);
+  }
+  .course-nav-brand-text {
+    font-size: 13px; color: var(--text-muted); font-weight: 500; letter-spacing: 0.01em;
+  }
+  .course-nav-brand:hover .course-nav-brand-text { color: var(--accent); }
+  .course-nav-brand.is-active .course-nav-brand-text { color: var(--text); }
+  .course-nav-modules {
+    display: flex; align-items: center; gap: 6px;
+    overflow-x: auto; scrollbar-width: none;
+  }
+  .course-nav-modules::-webkit-scrollbar { display: none; }
+  .course-nav-modules a {
+    flex-shrink: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 30px; height: 30px; padding: 0 9px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 13px; font-weight: 600;
+    color: var(--text-muted); text-decoration: none;
+    border: 1px solid var(--border); border-radius: 6px;
+    background: var(--bg);
+    transition: all 0.15s ease;
+  }
+  .course-nav-modules a:hover {
+    border-color: var(--accent-line); color: var(--accent); background: var(--accent-soft);
+  }
+  .course-nav-modules a.is-active {
+    background: var(--accent); color: var(--bg); border-color: var(--accent);
+  }
+  .course-nav-home {
+    font-family: 'Mona Sans', sans-serif; font-weight: 600;
+    padding: 0 13px; margin-right: 8px;
+  }
+  /* Module footer navigation (prev / next) */
+  .module-footer-nav {
+    margin-top: 56px; padding-top: 28px;
+    border-top: 1px solid var(--border);
+    display: flex; align-items: stretch; justify-content: space-between;
+    gap: 16px; flex-wrap: wrap;
+  }
+  .mod-nav-prev, .mod-nav-next {
+    display: inline-flex; flex-direction: column; gap: 3px;
+    text-decoration: none; border-bottom: none; border-radius: 8px;
+    transition: all 0.15s ease;
+  }
+  .mod-nav-label {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 500;
+  }
+  .mod-nav-prev {
+    align-items: flex-start; padding: 10px 4px; color: var(--text-muted);
+  }
+  .mod-nav-prev .mod-nav-label { color: var(--text-subtle); }
+  .mod-nav-prev .mod-nav-title { font-weight: 500; font-size: 15px; color: var(--text); }
+  .mod-nav-prev:hover .mod-nav-title { color: var(--accent); }
+  .mod-nav-next {
+    margin-left: auto; align-items: flex-end; text-align: right;
+    padding: 12px 20px; background: var(--accent); color: var(--bg);
+  }
+  .mod-nav-next .mod-nav-label { color: var(--bg); opacity: 0.82; }
+  .mod-nav-next .mod-nav-title { font-weight: 600; font-size: 15px; color: var(--bg); }
+  .mod-nav-next:hover { background: #92400E; }
+  @media (max-width: 600px) {
+    .course-nav-inner { padding: 10px 16px; }
+    .course-nav-brand-text { display: none; }
+    .module-footer-nav { gap: 12px; }
+    .mod-nav-next { padding: 10px 16px; }
+  }
+</style>
+<nav class="course-nav">
+  <div class="course-nav-inner">
+    <a class="course-nav-brand" href="index.html">
+      <span class="course-nav-brand-mark">SDD</span>
+      <span class="course-nav-brand-text">Course handbook</span>
+    </a>
+    <div class="course-nav-modules">
+      <a href="index.html" class="course-nav-home" title="Course handbook">Home</a>
+      <a href="module-1.html" title="Module 1 — SDD Foundations">1</a>
+      <a href="module-2.html" title="Module 2 — Anatomy of a Good Spec">2</a>
+      <a href="module-3.html" title="Module 3 — Greenfield Lab — Spec Kit from Scratch">3</a>
+      <a href="module-4.html" title="Module 4 — Brownfield Lab — Add “Due Date” ★">4</a>
+      <a href="module-5.html" title="Module 5 — Best Practices &amp; Pitfalls" class="is-active">5</a>
+      <a href="module-6.html" title="Module 6 — Quality, Testing &amp; Team Collaboration">6</a>
+      <a href="module-7.html" title="Module 7 — Measurement &amp; Adoption Roadmap">7</a>
+    </div>
+  </div>
+</nav>
+<main>
+  <header class="hero">
+    <div class="hero-eyebrow">Module 5</div>
+    <h1>Best Practices &amp; Pitfalls</h1>
+    <p class="hero-lede">Patterns that consistently produce good outcomes, the eight failure modes that consistently sabotage adoption, and a critique exercise on three deliberately broken specs.</p>
+    <div class="meta">
+      <div class="meta-item">
+        <span class="meta-label">Time</span>
+        <span class="meta-value">60 min</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Format</span>
+        <span class="meta-value">Reading + critique exercise</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Prerequisites</span>
+        <span class="meta-value">Modules 1&ndash;4</span>
+      </div>
+    </div>
+  </header>
+
+  <article>
+
+    <h3>Learning objectives</h3>
+    <p>By the end of this module, you will be able to:</p>
+    <ol>
+      <li>Apply the human-reviewability test to decide when a spec is too big.</li>
+      <li>Use the adversarial agent pattern to catch failures a single agent would miss.</li>
+      <li>Tier AI models by role to avoid overspending on cheap tasks and underspending on expensive ones.</li>
+      <li>Recognize the eight most common pitfalls before they consume a sprint.</li>
+      <li>Critique a poorly written spec and suggest specific, actionable fixes.</li>
+    </ol>
+
+    <h2><span class="h2-num">1.</span>Best practices that consistently work</h2>
+    <p>The labs in Modules 3 and 4 exposed you to a lot of small judgment calls. This section names the patterns that repeatedly produce good outcomes across teams that have been doing SDD for a while.</p>
+
+    <h3>1.1 Human reviewability is the master test</h3>
+    <blockquote>If you find yourself skimming a spec thinking &ldquo;the AI probably got it right,&rdquo; the feature is too large.</blockquote>
+    <p>That single sentence (paraphrased from intent-driven.dev) is the most useful heuristic in SDD. It applies at every phase. If the spec is too long to read carefully, slice it. If the plan has too many components to think through, break it. If the task list is too long to review, fewer tasks per spec.</p>
+    <p>Two practical sub-rules:</p>
+    <ol>
+      <li><strong>Hard cap on per-feature spec content.</strong> Around 500 words of substantive content (not counting boilerplate). Hard cases get exceptions, but treat them as exceptions.</li>
+      <li><strong>Decompose using INVEST.</strong> Independent, Negotiable, Valuable, Estimable, Small, Testable. If a feature fails any of these, it's a candidate for slicing into smaller specs.</li>
+    </ol>
+    <p>The human-reviewability test isn't a guideline; it's the thing that prevents the markdown-monster failure mode. Take it seriously.</p>
+
+    <h3>1.2 Specify just enough to remove ambiguity</h3>
+    <p>Piskala calls this the &ldquo;Golden Rule&rdquo; of SDD: use the minimum specification rigor that removes ambiguity for your context. Not maximum. Not comprehensive. <strong>Minimum.</strong></p>
+    <p>The trigger from Augment is worth committing to memory:</p>
+    <blockquote>If you'd be annoyed to have the agent interpret requirements differently than you meant, write the spec. If you could fix the output in a quick follow-up prompt, skip it.</blockquote>
+    <p>Two implications:</p>
+    <ul>
+      <li><strong>Stakes calibrate rigor.</strong> A 30-line auth bug fix might warrant a careful spec because misinterpretation has security consequences. A 200-line refactor of a private utility might not, because errors are caught on diff.</li>
+      <li><strong>Spec depth is per-feature, not per-team.</strong> Don't decree that &ldquo;every spec must have all six sections fully populated.&rdquo; Some sections are obvious from context for some features. Trust the writer to decide what's needed.</li>
+    </ul>
+
+    <h3>1.3 Use adversarial agent patterns when stakes are high</h3>
+    <p>For high-stakes features (security boundaries, payment flows, anything in regulated domains), a single agent reviewing its own output is overconfident by design. Use multiple agents with opposing roles:</p>
+    <ul>
+      <li><strong>Coordinator agent:</strong> decomposes the spec into work units.</li>
+      <li><strong>Implementor agents:</strong> in parallel, each work on a discrete task. Their job is to produce code that satisfies the spec.</li>
+      <li><strong>Verifier agent:</strong> checks each implementor's output against the spec. Its job is to <em>find divergence</em>, not to be polite.</li>
+    </ul>
+    <p>The Verifier's opposing goal is the load-bearing part. Implementing agents are trained to be helpful, which means they're optimistic about their own output. A Verifier with the opposing instruction &mdash; &ldquo;find every way this output fails to match the spec&rdquo; &mdash; catches mistakes the implementor missed.</p>
+    <p>A practical signal you need this pattern: you've shipped a bug that the spec clearly described as out-of-bounds, but the agent generated it anyway and the team's review missed it. That's exactly the gap a Verifier closes.</p>
+    <p>This pattern also forces your spec to be more explicit, because the Verifier has to be able to check it. Vague verification criteria make the Verifier useless. Bring the discipline upstream.</p>
+
+    <h3>1.4 Tier your models by role</h3>
+    <p>Different phases need different model capabilities, and using the same model for everything either wastes money or sacrifices quality.</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Role</th><th>Model class</th><th>Why</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Spec writing / refining</td><td>Most capable available</td><td>Errors here propagate to every later phase</td></tr>
+          <tr><td>Plan and tasks</td><td>Most capable available</td><td>Same logic &mdash; design errors are expensive</td></tr>
+          <tr><td>Implementation</td><td>Mid-tier (Sonnet-class, GPT-5.1-Codex)</td><td>Code generation is well-served by mid-tier models; the spec already constrains the output heavily</td></tr>
+          <tr><td>Verification</td><td>Fast / cheap</td><td>Checking is a narrower task than generating; smaller models do it well at much lower cost</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>The mistake to avoid: using a top-tier model for implementation and a cheap one for spec authoring. That's exactly backward. A bad spec can't be saved by a good implementation; a good spec can be implemented well by a mid-tier model.</p>
+    <p>If your team is locked into a single model, default to &ldquo;good enough across all phases&rdquo; rather than the cheapest option &mdash; the spec phase has the most leverage and is least forgiving.</p>
+
+    <h3>1.5 Pair specs with project-level context</h3>
+    <p>Every meaningful SDD tool has a Constitution-equivalent: GitHub Spec Kit's <code>constitution.md</code>, Kiro's Steering, OpenSpec's profiles, the more generic <code>AGENTS.md</code> convention. Use it.</p>
+    <p>The right division (revisiting Module 2):</p>
+    <ul>
+      <li><strong>Constitution:</strong> durable conventions that apply across all features (stack, error response shape, auth pattern, file layout)</li>
+      <li><strong>Spec:</strong> task-specific intent (what changes for this feature, what's in/out of scope, decisions made for this work)</li>
+    </ul>
+    <p>Don't cram Constitution-level conventions into every spec, &ldquo;to be safe.&rdquo; That's how specs bloat into markdown monsters. Trust the Constitution. If a convention is missing, fix the Constitution once instead of repeating it in every spec.</p>
+    <p>A Constitution maintenance habit: review it quarterly. Conventions drift. New patterns become standard, old ones become obsolete. A stale Constitution is worse than no Constitution because it teaches the agent the wrong patterns.</p>
+
+    <h3>1.6 Apply systems thinking for cross-feature analysis</h3>
+    <p>Specs are usually authored one feature at a time. But features interact in non-linear ways. The classic example (intent-driven.dev): an inventory-alert feature combined with an existing notification system can produce notification storms during peak traffic &mdash; a problem only visible if you analyze the specs together as a system, not as isolated features.</p>
+    <p>Practical implication: when a spec touches a system area that other specs also touch (notifications, auth, data egress), do a brief cross-feature review before implementing. Not a full architecture review &mdash; just &ldquo;do any other features in this area cause the new one to behave badly, or vice versa?&rdquo;</p>
+    <p>The Architecture role from Module 6 owns this. If your team doesn't have someone in that role yet, designate it informally for the duration of a feature.</p>
+
+    <h3>1.7 Commit at every phase boundary</h3>
+    <p>Commit your spec, plan, and tasks separately, before generating code. This gives you natural rollback points and makes the artifacts greppable in Git history.</p>
+    <p>The minimum hygiene:</p>
+<pre><code>git commit -m "spec: &lt;feature&gt;"
+git commit -m "plan: &lt;feature&gt;"
+git commit -m "tasks: &lt;feature&gt;"
+git commit -m "feat: &lt;feature&gt; (spec-driven)"</code></pre>
+    <p>If the implementation goes sideways, you can <code>git reset --hard &lt;plan-commit&gt;</code> and re-run <code>/tasks</code> and <code>/implement</code> without losing the upstream work.</p>
+
+    <h2><span class="h2-num">2.</span>Pitfalls that consistently sabotage SDD adoption</h2>
+    <p>The labs probably surfaced one or two of these. The full list:</p>
+
+    <h3>Pitfall 1 &mdash; Over-specification</h3>
+    <p>The spec reads like pseudo-code. Function names, exact error messages, schema column names appear before the plan phase. The abstraction benefit is lost; the agent has nothing to figure out, so the spec is just a slow way of typing the code.</p>
+    <p><strong>Symptom:</strong> you find yourself thinking &ldquo;this would be easier to just write.&rdquo;</p>
+    <p><strong>Cure:</strong> strip implementation detail. Ask: does this constrain <em>what</em> should happen, or <em>how</em>? If &ldquo;how,&rdquo; it belongs in the plan.</p>
+
+    <h3>Pitfall 2 &mdash; Spec rot</h3>
+    <p>You're spec-anchored on paper, but specs aren't updated when code changes. Six months in, the specs are lies. The build still passes because the validation gates were never set up to catch drift.</p>
+    <p><strong>Symptom:</strong> specs in your repo from a year ago that nobody has read since they merged.</p>
+    <p><strong>Cure:</strong> treat spec edits as part of the change, not a follow-up. Make spec updates required for any PR that changes behavior the spec covered. Use CI to fail builds where new behavior isn't reflected in any spec.</p>
+
+    <h3>Pitfall 3 &mdash; Specification theater (the markdown monster)</h3>
+    <p>You're producing elaborate specs that nobody actually reviews. Specs get rubber-stamped because they're long, and a long doc nobody read is just expensive overhead.</p>
+    <p><strong>Symptom:</strong> specs are getting longer over time and review comments are getting shorter.</p>
+    <p><strong>Cure:</strong> apply the human-reviewability test. If specs are too long to review, slice them. Reward concision in code review.</p>
+
+    <h3>Pitfall 4 &mdash; False confidence from passing spec tests</h3>
+    <p>A passing spec test only proves code matches spec. If the spec is wrong, the code is faithfully wrong. A green CI on a faulty spec is more dangerous than a red CI on a missing spec, because it produces undeserved trust.</p>
+    <p><strong>Symptom:</strong> a bug ships that &ldquo;should have been caught&rdquo; but the spec test passed.</p>
+    <p><strong>Cure:</strong> when bugs surface, classify them with the SpecOps loop (intent-to-spec vs spec-to-implementation). Intent-to-spec bugs mean your elicitation patterns need work; treat them as a higher-priority fix than the bug itself.</p>
+
+    <h3>Pitfall 5 &mdash; Tooling cargo-culting</h3>
+    <p>You're applying full Spec Kit ceremony (Constitution + spec + plan + tasks + implement) to every change, including mechanical ones. The tool has become a religion.</p>
+    <p><strong>Symptom:</strong> small bug fixes that take a day instead of an hour.</p>
+    <p><strong>Cure:</strong> the &ldquo;skip the spec&rdquo; criteria from Module 1 are real. Mechanical, well-understood, quickly reviewable changes don't need ceremony. Empower engineers to choose.</p>
+
+    <h3>Pitfall 6 &mdash; AI-generated spec bloat</h3>
+    <p>You let the agent write the first-draft spec and accept it without editing. The agent over-includes &ldquo;to be safe.&rdquo; The spec is verbose, repetitive, and harder to review than the code it directs.</p>
+    <p><strong>Symptom:</strong> specs averaging 1500+ words for routine features.</p>
+    <p><strong>Cure:</strong> treat agent drafts as input, not output. Edit ruthlessly. The team that writes the <em>shortest</em> clear spec wins.</p>
+
+    <h3>Pitfall 7 &mdash; Premature comprehensiveness</h3>
+    <p>You try to spec the whole system upfront, often when adopting SDD on a brownfield codebase (the temptation Module 4 warned about). The result: a giant spec nobody reads, written before you've learned anything from doing SDD on real changes.</p>
+    <p><strong>Symptom:</strong> &ldquo;we'll roll out SDD once we finish writing the system spec.&rdquo;</p>
+    <p><strong>Cure:</strong> never write the system spec. Spec changes incrementally. Frequently-touched areas accumulate spec coverage organically. Premature comprehensiveness is how SDD adoptions die.</p>
+
+    <h3>Pitfall 8 &mdash; &ldquo;SpecFall&rdquo;</h3>
+    <p>You install Spec Kit, run a training, and don't change anything else about how product, architecture, and engineering collaborate. SDD becomes a technical artifact in an unchanged process. Krishnan calls this &ldquo;SpecFall&rdquo; &mdash; analogous to the classic &ldquo;Scrumerfall&rdquo; failure where teams adopt Scrum ceremonies on top of waterfall thinking and wonder why nothing changes.</p>
+    <p><strong>Symptom:</strong> PMs still write Jira tickets exactly as before, engineers translate them into specs in isolation, nothing about cross-functional collaboration has changed.</p>
+    <p><strong>Cure:</strong> treat SDD adoption as a process change, not a tooling change. Specs become the shared interface where PM/architecture/engineering meet. Module 6 covers this in depth; for now, just notice that adopting Spec Kit without changing how your team collaborates produces almost no benefit.</p>
+
+    <hr>
+
+    <h2>Critique exercise</h2>
+    <p>Spend 20 minutes on this. Three deliberately broken specs follow. For each, write a short critique:</p>
+    <ul>
+      <li>What's wrong with it?</li>
+      <li>Which best practice is it violating, or which pitfall is it falling into?</li>
+      <li>How would you fix it?</li>
+    </ul>
+    <p>Sample critiques are revealable below each spec &mdash; <strong>work through these yourself before peeking</strong>.</p>
+
+    <h3>Spec A &mdash; &ldquo;User profile picture&rdquo;</h3>
+    <blockquote>Add the ability for users to upload a profile picture. The function should be called <code>uploadProfilePicture(userId, file)</code>. It should resize the image using sharp's <code>.resize(256, 256)</code> method, then save it to S3 using <code>s3.putObject({ Bucket: 'profile-pics', Key: `${userId}.jpg`, Body: resizedBuffer })</code>. Update the <code>users</code> table by setting <code>profile_picture_url = `https://profile-pics.s3.amazonaws.com/${userId}.jpg`</code> for that user.</blockquote>
+
+    <div class="reveal">
+      <button class="reveal-trigger">
+        <span><span class="reveal-trigger-label">Sample critique &mdash; A</span> Reveal</span>
+        <span class="reveal-trigger-icon">+</span>
+      </button>
+      <div class="reveal-content">
+        <p><strong>What's wrong:</strong> This is the <em>over-specification</em> pitfall (Pitfall 1) in its purest form. The &ldquo;spec&rdquo; is mostly an implementation. It names a function (<code>uploadProfilePicture</code>), specifies a library (<code>sharp</code>), provides exact API call shapes (<code>s3.putObject(...)</code>), and even hardcodes the URL pattern. There's nothing for a plan or implementation phase to add.</p>
+        <p>It's also missing every element except a thin sketch of in-scope work:</p>
+        <ul>
+          <li>No outcomes (what does the user actually experience? Where do they upload? When does the picture appear?)</li>
+          <li>No out-of-scope items (cropping? animations? video?)</li>
+          <li>No verification criteria (what's the failure case? What if the file isn't an image?)</li>
+          <li>No constraints (size limits? Allowed formats? Auth?)</li>
+        </ul>
+        <p><strong>How to fix it:</strong> rewrite at the behavior level. Something like:</p>
+        <blockquote>
+          <p><strong>Outcomes:</strong> a signed-in user can upload an image to use as their profile picture. The new picture replaces any existing one. The picture appears in the user's avatar slot wherever it's currently shown, within 5 seconds of upload.</p>
+          <p><strong>In scope:</strong> JPEG and PNG only, max 5MB, single picture per user, replaces previous on upload.</p>
+          <p style="margin-bottom: 0;"><strong>Out of scope:</strong> cropping UI, multiple historical pictures, removing without replacing, gravatar fallback changes.</p>
+        </blockquote>
+        <p>The implementation details (sharp, S3, schema column) belong in the plan, not the spec.</p>
+      </div>
+    </div>
+
+    <h3>Spec B &mdash; &ldquo;Better search&rdquo;</h3>
+    <blockquote>Users want a better search experience. Improve the search to be faster, more relevant, and more user-friendly. Should handle typos and synonyms. The search bar should give a great experience overall. Make it work well on mobile too. Should integrate with the existing search infrastructure where possible. Performance should be acceptable.</blockquote>
+
+    <div class="reveal">
+      <button class="reveal-trigger">
+        <span><span class="reveal-trigger-label">Sample critique &mdash; B</span> Reveal</span>
+        <span class="reveal-trigger-icon">+</span>
+      </button>
+      <div class="reveal-content">
+        <p><strong>What's wrong:</strong> This is <em>verification by vibe</em> (a sub-pattern of Pitfall 1's opposite &mdash; Module 2 Failure 3). The spec is full of words like &ldquo;better,&rdquo; &ldquo;faster,&rdquo; &ldquo;more relevant,&rdquo; &ldquo;great experience,&rdquo; &ldquo;acceptable&rdquo; &mdash; none of which are verifiable. It also lacks every other element of a good spec.</p>
+        <p>Three specific failures:</p>
+        <ol>
+          <li><strong>No measurable outcomes.</strong> &ldquo;Better&rdquo; doesn't tell the agent (or a reviewer) what to build. Faster than what? More relevant by what definition?</li>
+          <li><strong>Vague scope.</strong> Search across what data? Posts? Users? Products? All of the above?</li>
+          <li><strong>No verification criteria.</strong> What test would prove this is done?</li>
+        </ol>
+        <p><strong>How to fix it:</strong> make every adjective measurable. &ldquo;Faster&rdquo; becomes &ldquo;p95 search latency under 100ms (currently 400ms).&rdquo; &ldquo;More relevant&rdquo; becomes &ldquo;top-3 results for the test query set match human-rated top results in 80% of cases (currently 60%).&rdquo; &ldquo;Handle typos&rdquo; becomes &ldquo;single-character typos in user names produce the correct result.&rdquo; &ldquo;Mobile&rdquo; becomes &ldquo;the search input is reachable and usable at viewports as narrow as 375px.&rdquo;</p>
+        <p>Without measurability, the spec just gives the agent vibes to chase. You'll get something. It probably won't be what you wanted. You won't be able to prove either way.</p>
+      </div>
+    </div>
+
+    <h3>Spec C &mdash; &ldquo;Reports module&rdquo;</h3>
+    <blockquote>
+      <p>Build a reports module that lets administrators generate reports about user activity. Reports should include: daily active users, weekly active users, monthly active users, retention curves (1-day, 7-day, 30-day), revenue per user, churn rate, average session length, conversion rates from each funnel step, geographic distribution of users, device type breakdown, and exportable CSV downloads of all metrics. Reports should be schedulable (daily, weekly, monthly) and emailable. Each report should have visual charts. Charts should support drill-down by clicking. Admins should be able to define custom reports by combining metrics. Custom reports should be shareable. Custom reports should support permissioning so different admins can see different reports.</p>
+      <p style="margin-bottom: 0;"><strong>Out of scope:</strong> Real-time reports (we'll add streaming later)</p>
+    </blockquote>
+
+    <div class="reveal">
+      <button class="reveal-trigger">
+        <span><span class="reveal-trigger-label">Sample critique &mdash; C</span> Reveal</span>
+        <span class="reveal-trigger-icon">+</span>
+      </button>
+      <div class="reveal-content">
+        <p><strong>What's wrong:</strong> This is <em>premature comprehensiveness</em> (Pitfall 7) and a failed <em>human-reviewability test</em> (Best Practice 1.1). The &ldquo;feature&rdquo; is at least eight features in a trench coat: scheduled reports, exportable reports, custom report builder, charting, drill-down, permissioning, sharing, geographic analytics, conversion funnel analytics. Each one is its own feature.</p>
+        <p>The out-of-scope list has one item, which is a tell: when in-scope is sprawling and out-of-scope is empty, the author hasn't drawn the boundaries deliberately. They've just listed every feature they could think of.</p>
+        <p><strong>How to fix it:</strong> decompose using INVEST and MoSCoW. A reasonable v1 might be only &ldquo;daily active users&rdquo; &mdash; one metric, one chart, no scheduling, no custom reports, no permissioning, no email. Ship it. Then layer:</p>
+        <ul>
+          <li>Spec 2: weekly + monthly active users (extends the existing UI)</li>
+          <li>Spec 3: CSV export</li>
+          <li>Spec 4: scheduled email delivery</li>
+          <li>Spec 5: revenue per user</li>
+          <li>Spec 6: retention curves</li>
+          <li>&hellip; etc.</li>
+        </ul>
+        <p>Each spec is independently reviewable, independently testable, and independently shippable. None of them is bigger than 500 words.</p>
+        <p>The original spec is worth shipping eventually, but as a <em>roadmap</em>, not as a single spec. Specs are not the right document for a roadmap. A roadmap is. Don't conflate them.</p>
+      </div>
+    </div>
+
+    <hr>
+
+    <h2><span class="h2-num">3.</span>Putting it together</h2>
+    <p>The patterns and pitfalls above are descriptive, not prescriptive. They describe what tends to happen, not what you must do. When in doubt, return to the principle behind them:</p>
+    <blockquote>The goal of SDD is to make intent explicit and enforceable, with the minimum overhead that achieves that goal.</blockquote>
+    <p>Everything else is implementation detail. Concision over completeness. Review over generation. Slicing over comprehensiveness. The pitfalls are mostly variations on &ldquo;we forgot to apply that principle.&rdquo; When you notice you're drifting into a pitfall, ask whether you're optimizing for the principle or for the appearance of doing SDD. Drop whatever isn't serving the principle.</p>
+
+    <h3>What's next</h3>
+    <p><strong>Module 6</strong> turns from individual practice to team practice &mdash; how SDD changes the collaboration between PM, architecture, engineering, and quality. It's the most important module for anyone in a leadership or coordination role, and it's also the module where most SDD adoptions either succeed or quietly fail.</p>
+
+    <div class="module-footer-nav">
+      <a class="mod-nav-prev" href="module-4.html">
+        <span class="mod-nav-label">← Previous · Module 4</span>
+        <span class="mod-nav-title">Brownfield Lab</span>
+      </a>
+      <a class="mod-nav-next" href="module-6.html">
+        <span class="mod-nav-label">Next · Module 6 →</span>
+        <span class="mod-nav-title">Quality, Testing &amp; Team Collaboration</span>
+      </a>
+    </div>
+  </article>
+</main>
+<script>
+  // Auto-attach copy buttons to all <pre> blocks
+  document.querySelectorAll('pre').forEach((pre) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'code-block';
+    pre.parentNode.insertBefore(wrap, pre);
+    wrap.appendChild(pre);
+    const btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.type = 'button';
+    btn.textContent = 'Copy';
+    btn.addEventListener('click', async () => {
+      const text = pre.innerText;
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch (e) {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      }
+      btn.textContent = 'Copied';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'Copy';
+        btn.classList.remove('copied');
+      }, 1400);
+    });
+    wrap.appendChild(btn);
+  });
+
+  // Reveal-on-click blocks
+  document.querySelectorAll('.reveal-trigger').forEach((trigger) => {
+    trigger.addEventListener('click', () => {
+      trigger.parentElement.classList.toggle('open');
+    });
+  });
+
+  // Quiz logic — multiple choice
+  document.querySelectorAll('.quiz-question[data-type="mc"]').forEach((q) => {
+    const correct = q.dataset.correct;
+    const opts = q.querySelectorAll('.quiz-opt');
+    const feedback = q.querySelector('.quiz-feedback');
+    opts.forEach((opt) => {
+      opt.addEventListener('click', () => {
+        const choice = opt.dataset.choice;
+        opts.forEach((o) => {
+          o.disabled = true;
+          if (o.dataset.choice === correct) {
+            o.classList.add('correct');
+          } else if (o === opt) {
+            o.classList.add('incorrect');
+          } else {
+            o.classList.add('dim');
+          }
+        });
+        if (feedback) {
+          feedback.classList.add('show');
+          feedback.classList.add(choice === correct ? 'correct' : 'incorrect');
+        }
+      });
+    });
+  });
+
+  // Quiz logic — open-ended (just reveal)
+  document.querySelectorAll('.quiz-open-toggle').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const ans = btn.nextElementSibling;
+      if (ans && ans.classList.contains('quiz-open-answer')) {
+        ans.classList.toggle('show');
+        btn.textContent = ans.classList.contains('show') ? 'Hide answer' : 'Reveal answer';
+      }
+    });
+  });
+</script>
+</body>
+</html>

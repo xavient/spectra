@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 4 &mdash; Brownfield Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,400;1,9..144,500&family=JetBrains+Mono:wght@400;500;600&family=Mona+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FAF9F5;
+    --bg-elev: #F4F1E8;
+    --text: #1A1614;
+    --text-muted: #6B6357;
+    --text-subtle: #94897A;
+    --accent: #B45309;
+    --accent-soft: rgba(180, 83, 9, 0.09);
+    --accent-line: rgba(180, 83, 9, 0.25);
+    --border: #E8E2D4;
+    --border-strong: #D4CCB8;
+    --code-bg: #1A1614;
+    --code-text: #F0EAD8;
+    --code-comment: #94897A;
+    --code-accent: #F0B070;
+    --success: #166534;
+    --success-soft: rgba(22, 101, 52, 0.08);
+    --error: #991B1B;
+    --error-soft: rgba(153, 27, 27, 0.06);
+    --shadow-sm: 0 1px 2px rgba(26, 22, 20, 0.04);
+    --shadow-md: 0 4px 12px rgba(26, 22, 20, 0.06);
+    --max-w: 720px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Mona Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    font-weight: 400;
+    font-size: 17px;
+    line-height: 1.7;
+    color: var(--text);
+    background: var(--bg);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  main {
+    max-width: var(--max-w);
+    margin: 0 auto;
+    padding: 64px 28px 120px;
+  }
+  /* Hero */
+  .hero { margin-bottom: 56px; padding-bottom: 40px; border-bottom: 1px solid var(--border); }
+  .hero-eyebrow {
+    font-family: 'Fraunces', Georgia, serif;
+    font-style: italic; font-weight: 400;
+    font-size: 17px; color: var(--accent); letter-spacing: 0.01em;
+    margin-bottom: 18px;
+  }
+  .hero h1 {
+    font-family: 'Mona Sans', sans-serif;
+    font-weight: 600; font-size: 44px; line-height: 1.1;
+    letter-spacing: -0.025em; margin-bottom: 22px; color: var(--text);
+  }
+  .hero-lede {
+    font-size: 19px; line-height: 1.55; color: var(--text-muted); max-width: 600px;
+  }
+  /* Meta block */
+  .meta {
+    display: flex; flex-wrap: wrap;
+    margin-top: 32px; padding: 18px 22px;
+    background: var(--bg-elev); border: 1px solid var(--border);
+    border-radius: 6px; font-size: 14px;
+  }
+  .meta-item {
+    display: flex; flex-direction: column; gap: 2px;
+    padding-right: 32px; margin-right: 32px;
+    border-right: 1px solid var(--border-strong);
+  }
+  .meta-item:last-child { border-right: none; padding-right: 0; margin-right: 0; }
+  .meta-label {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--text-subtle); font-weight: 500;
+  }
+  .meta-value { color: var(--text); font-weight: 500; }
+  /* Article typography */
+  article h2 {
+    font-family: 'Mona Sans', sans-serif;
+    font-weight: 600; font-size: 28px; line-height: 1.25;
+    letter-spacing: -0.018em; margin-top: 56px; margin-bottom: 18px; color: var(--text);
+  }
+  article h2 .h2-num {
+    font-family: 'Fraunces', Georgia, serif; font-style: italic;
+    font-weight: 400; color: var(--accent); margin-right: 14px;
+  }
+  article h3 {
+    font-weight: 600; font-size: 20px; line-height: 1.3;
+    letter-spacing: -0.012em; margin-top: 36px; margin-bottom: 12px; color: var(--text);
+  }
+  article h4 {
+    font-weight: 600; font-size: 16px;
+    margin-top: 28px; margin-bottom: 8px; color: var(--text);
+  }
+  article p { margin-bottom: 18px; }
+  article ul, article ol { margin: 0 0 22px 0; padding-left: 22px; }
+  article li { margin-bottom: 8px; padding-left: 4px; }
+  article li::marker { color: var(--text-subtle); }
+  article ul ul, article ol ol, article ul ol, article ol ul { margin: 8px 0 4px 0; }
+  article a {
+    color: var(--accent); text-decoration: none;
+    border-bottom: 1px solid var(--accent-line);
+    transition: border-color 0.15s ease;
+  }
+  article a:hover { border-bottom-color: var(--accent); }
+  article strong { font-weight: 600; color: var(--text); }
+  article em { font-style: italic; }
+  /* Inline code */
+  article code {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 0.86em; background: var(--bg-elev);
+    border: 1px solid var(--border); padding: 1px 6px;
+    border-radius: 4px; color: var(--text); font-weight: 500;
+  }
+  /* Code blocks */
+  .code-block { position: relative; margin: 22px 0 26px; }
+  pre {
+    background: var(--code-bg); color: var(--code-text);
+    padding: 18px 20px; border-radius: 8px; overflow-x: auto;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 14px; line-height: 1.6; box-shadow: var(--shadow-sm);
+  }
+  pre code {
+    background: none; border: none; padding: 0;
+    color: inherit; font-size: inherit; font-weight: 400;
+  }
+  .copy-btn {
+    position: absolute; top: 10px; right: 10px;
+    background: rgba(240, 234, 216, 0.08);
+    border: 1px solid rgba(240, 234, 216, 0.18);
+    color: var(--code-text); font-family: 'Mona Sans', sans-serif;
+    font-size: 11px; font-weight: 500; letter-spacing: 0.04em;
+    text-transform: uppercase; padding: 5px 10px;
+    border-radius: 4px; cursor: pointer; opacity: 0;
+    transition: all 0.15s ease;
+  }
+  .code-block:hover .copy-btn { opacity: 1; }
+  .copy-btn:hover { background: rgba(240, 234, 216, 0.18); }
+  .copy-btn.copied { background: rgba(34, 197, 94, 0.2); border-color: rgba(34, 197, 94, 0.4); }
+  /* Blockquotes & callouts */
+  blockquote {
+    margin: 24px 0; padding: 16px 22px;
+    background: var(--accent-soft); border-left: 3px solid var(--accent);
+    border-radius: 0 6px 6px 0; color: var(--text); font-size: 16px;
+  }
+  blockquote p { margin-bottom: 12px; }
+  blockquote p:last-child { margin-bottom: 0; }
+  blockquote strong { color: var(--text); }
+  /* Tables */
+  .table-wrap {
+    overflow-x: auto; margin: 22px 0 26px;
+    border: 1px solid var(--border); border-radius: 6px;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 15px; }
+  th, td {
+    text-align: left; padding: 12px 16px;
+    border-bottom: 1px solid var(--border); vertical-align: top;
+  }
+  th {
+    background: var(--bg-elev); font-weight: 600;
+    font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em;
+    color: var(--text-muted);
+  }
+  tr:last-child td { border-bottom: none; }
+  td code, th code { font-size: 13px; }
+  /* HR */
+  hr { border: none; border-top: 1px solid var(--border); margin: 56px 0; }
+  /* Module list (README) */
+  .module-list {
+    display: flex; flex-direction: column; gap: 0;
+    margin: 28px 0 32px;
+    border: 1px solid var(--border); border-radius: 8px;
+    overflow: hidden; background: var(--bg-elev);
+  }
+  .module-row {
+    display: grid; grid-template-columns: 48px 1fr auto auto;
+    gap: 18px; align-items: center;
+    padding: 16px 22px; border-bottom: 1px solid var(--border);
+    background: var(--bg);
+  }
+  .module-row:last-child { border-bottom: none; }
+  .module-row.featured {
+    background: linear-gradient(to right, var(--accent-soft), transparent 60%);
+  }
+  .module-num {
+    font-family: 'Fraunces', Georgia, serif; font-style: italic;
+    font-size: 22px; font-weight: 500; color: var(--accent);
+  }
+  .module-title { font-weight: 600; font-size: 16px; color: var(--text); line-height: 1.35; }
+  .module-title-sub { font-size: 13px; color: var(--text-muted); margin-top: 2px; font-weight: 400; }
+  .module-format { font-size: 13px; color: var(--text-subtle); font-style: italic; }
+  .module-time { font-size: 13px; color: var(--text-muted); font-weight: 500;
+    font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .star { color: var(--accent); margin-left: 4px; }
+  .path-grid { display: grid; grid-template-columns: 1fr; gap: 14px; margin: 22px 0 28px; }
+  .path-card { padding: 18px 22px; background: var(--bg-elev);
+    border: 1px solid var(--border); border-radius: 6px; }
+  .path-card-title { font-weight: 600; font-size: 15px; margin-bottom: 4px; color: var(--text); }
+  .path-card-body { font-size: 14px; color: var(--text-muted); line-height: 1.55; }
+  .footer-note {
+    margin-top: 80px; padding-top: 32px;
+    border-top: 1px solid var(--border);
+    font-size: 14px; color: var(--text-subtle); text-align: center;
+  }
+  /* Quiz (Module 1) */
+  .quiz {
+    margin: 28px 0 32px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg-elev);
+    overflow: hidden;
+  }
+  .quiz-header {
+    padding: 16px 22px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .quiz-title {
+    font-family: 'Fraunces', Georgia, serif; font-style: italic;
+    font-size: 14px; color: var(--accent); letter-spacing: 0.02em;
+  }
+  .quiz-progress { font-size: 13px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+  .quiz-question { padding: 20px 22px; border-bottom: 1px solid var(--border); }
+  .quiz-question:last-child { border-bottom: none; }
+  .quiz-q-prompt { font-weight: 600; margin-bottom: 14px; font-size: 16px; }
+  .quiz-options { display: flex; flex-direction: column; gap: 8px; }
+  .quiz-opt {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 11px 14px;
+    border: 1px solid var(--border); border-radius: 6px;
+    background: var(--bg); cursor: pointer;
+    font-size: 15px; line-height: 1.45;
+    transition: all 0.15s ease;
+    text-align: left;
+    width: 100%;
+    color: var(--text);
+    font-family: inherit;
+  }
+  .quiz-opt:hover:not(:disabled) { border-color: var(--accent-line); background: var(--accent-soft); }
+  .quiz-opt:disabled { cursor: default; }
+  .quiz-opt-letter {
+    flex-shrink: 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px; font-weight: 600;
+    color: var(--text-muted);
+    width: 18px;
+  }
+  .quiz-opt.correct {
+    background: var(--success-soft);
+    border-color: var(--success);
+  }
+  .quiz-opt.correct .quiz-opt-letter { color: var(--success); }
+  .quiz-opt.incorrect {
+    background: var(--error-soft);
+    border-color: var(--error);
+  }
+  .quiz-opt.incorrect .quiz-opt-letter { color: var(--error); }
+  .quiz-opt.dim { opacity: 0.55; }
+  .quiz-feedback {
+    margin-top: 14px;
+    padding: 14px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    line-height: 1.55;
+    display: none;
+  }
+  .quiz-feedback.show { display: block; }
+  .quiz-feedback.correct { background: var(--success-soft); border: 1px solid rgba(22, 101, 52, 0.25); }
+  .quiz-feedback.incorrect { background: var(--error-soft); border: 1px solid rgba(153, 27, 27, 0.18); }
+  .quiz-feedback-title { font-weight: 600; margin-bottom: 4px; }
+  .quiz-feedback.correct .quiz-feedback-title { color: var(--success); }
+  .quiz-feedback.incorrect .quiz-feedback-title { color: var(--error); }
+  /* Open-ended quiz answer (no options) */
+  .quiz-open-toggle {
+    margin-top: 8px;
+    padding: 9px 16px;
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 6px; cursor: pointer;
+    font-family: inherit; font-size: 14px; font-weight: 500;
+    color: var(--text-muted);
+    transition: all 0.15s ease;
+  }
+  .quiz-open-toggle:hover { background: var(--accent-soft); color: var(--accent); border-color: var(--accent-line); }
+  .quiz-open-answer {
+    margin-top: 12px; padding: 14px 16px;
+    background: var(--accent-soft); border: 1px solid var(--accent-line);
+    border-radius: 6px; font-size: 14px; line-height: 1.6;
+    display: none;
+  }
+  .quiz-open-answer.show { display: block; }
+  /* Reveal block (sample solutions) */
+  .reveal {
+    margin: 24px 0 28px;
+    border: 1px dashed var(--border-strong);
+    border-radius: 8px;
+    background: var(--bg-elev);
+    overflow: hidden;
+  }
+  .reveal-trigger {
+    width: 100%;
+    padding: 16px 22px;
+    background: none; border: none;
+    cursor: pointer;
+    font-family: inherit; font-size: 15px; font-weight: 500;
+    color: var(--text); text-align: left;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px;
+    transition: background 0.15s ease;
+  }
+  .reveal-trigger:hover { background: var(--accent-soft); }
+  .reveal-trigger-label {
+    font-family: 'Fraunces', Georgia, serif; font-style: italic;
+    color: var(--accent); font-size: 14px; margin-right: 8px;
+  }
+  .reveal-trigger-icon {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-muted); font-size: 14px;
+    transition: transform 0.2s ease;
+  }
+  .reveal.open .reveal-trigger-icon { transform: rotate(45deg); }
+  .reveal-content {
+    display: none;
+    padding: 4px 22px 22px;
+    border-top: 1px solid var(--border);
+    background: var(--bg);
+  }
+  .reveal.open .reveal-content { display: block; }
+  .reveal-content > *:first-child { margin-top: 18px; }
+  /* Lab placeholder card (Module 4) */
+  .lab-card {
+    margin: 28px 0;
+    padding: 22px 24px;
+    background: linear-gradient(135deg, var(--accent-soft), transparent 80%);
+    border: 1px solid var(--accent-line);
+    border-radius: 10px;
+    display: flex; align-items: center; gap: 18px;
+    flex-wrap: wrap;
+  }
+  .lab-card-icon {
+    font-family: 'Fraunces', Georgia, serif; font-style: italic;
+    font-size: 36px; color: var(--accent); line-height: 1;
+  }
+  .lab-card-body { flex: 1; min-width: 240px; }
+  .lab-card-title { font-weight: 600; font-size: 16px; margin-bottom: 4px; }
+  .lab-card-meta { font-size: 13px; color: var(--text-muted); }
+  .lab-card-link {
+    display: inline-block;
+    padding: 9px 18px;
+    background: var(--accent); color: var(--bg);
+    font-weight: 500; font-size: 14px;
+    border-radius: 6px;
+    text-decoration: none; border: none;
+    transition: background 0.15s ease;
+  }
+  .lab-card-link:hover { background: #92400E; border-bottom: none; }
+  .lab-card-link.placeholder {
+    background: var(--bg-elev); color: var(--text-muted);
+    border: 1px dashed var(--border-strong); cursor: not-allowed;
+    pointer-events: none; font-style: italic;
+  }
+  /* Note callout (distinct from blockquote) */
+  .note {
+    margin: 22px 0;
+    padding: 14px 18px 14px 18px;
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 15px;
+  }
+  .note-label {
+    display: inline-block;
+    font-family: 'Fraunces', Georgia, serif; font-style: italic;
+    color: var(--accent); margin-right: 6px;
+    font-size: 14px;
+  }
+  /* Checklist (visual only) */
+  .checklist { list-style: none; padding-left: 0; margin: 14px 0 22px; }
+  .checklist li {
+    padding-left: 28px; position: relative; margin-bottom: 8px;
+  }
+  .checklist li::before {
+    content: ""; position: absolute; left: 0; top: 0.45em;
+    width: 14px; height: 14px;
+    border: 1.5px solid var(--border-strong); border-radius: 3px;
+    background: var(--bg);
+  }
+  /* TOC at top of module pages (within-page only — no cross-page links) */
+  .toc {
+    margin: 28px 0 40px;
+    padding: 18px 22px;
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+  }
+  .toc-title {
+    font-family: 'Fraunces', Georgia, serif; font-style: italic;
+    color: var(--accent); font-size: 14px; margin-bottom: 10px;
+  }
+  .toc ol { padding-left: 22px; margin: 0; font-size: 14px; }
+  .toc ol li { margin-bottom: 4px; }
+  .toc a { border-bottom: none; color: var(--text-muted); }
+  .toc a:hover { color: var(--accent); border-bottom: 1px solid var(--accent-line); }
+  /* Diagram (ASCII flow) */
+  .diagram {
+    margin: 24px 0;
+    padding: 22px;
+    background: var(--code-bg); color: var(--code-text);
+    border-radius: 8px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 13px; line-height: 1.5;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  /* Responsive */
+  @media (max-width: 600px) {
+    main { padding: 40px 20px 80px; }
+    .hero h1 { font-size: 32px; }
+    .hero-lede { font-size: 17px; }
+    article h2 { font-size: 24px; margin-top: 44px; }
+    article h3 { font-size: 18px; }
+    .meta { flex-direction: column; gap: 12px; padding: 14px 18px; }
+    .meta-item { border-right: none; padding-right: 0; margin-right: 0;
+      border-bottom: 1px solid var(--border-strong); padding-bottom: 12px;
+      margin-bottom: 0; }
+    .meta-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .module-row { grid-template-columns: 36px 1fr; gap: 14px; padding: 14px 18px; }
+    .module-format, .module-time { grid-column: 2; font-size: 12px; }
+    .quiz-header { flex-direction: column; align-items: flex-start; gap: 4px; }
+    .lab-card { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+<style>
+  /* Course navigation bar (shared) */
+  .course-nav {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(250, 249, 245, 0.85);
+    -webkit-backdrop-filter: saturate(180%) blur(12px);
+    backdrop-filter: saturate(180%) blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .course-nav-inner {
+    max-width: 820px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; padding: 11px 28px;
+  }
+  .course-nav-brand {
+    display: flex; align-items: baseline; gap: 10px;
+    text-decoration: none; border-bottom: none; white-space: nowrap;
+  }
+  .course-nav-brand-mark {
+    font-family: 'Fraunces', Georgia, serif; font-style: italic;
+    font-weight: 500; font-size: 18px; color: var(--accent);
+  }
+  .course-nav-brand-text {
+    font-size: 13px; color: var(--text-muted); font-weight: 500; letter-spacing: 0.01em;
+  }
+  .course-nav-brand:hover .course-nav-brand-text { color: var(--accent); }
+  .course-nav-brand.is-active .course-nav-brand-text { color: var(--text); }
+  .course-nav-modules {
+    display: flex; align-items: center; gap: 6px;
+    overflow-x: auto; scrollbar-width: none;
+  }
+  .course-nav-modules::-webkit-scrollbar { display: none; }
+  .course-nav-modules a {
+    flex-shrink: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 30px; height: 30px; padding: 0 9px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 13px; font-weight: 600;
+    color: var(--text-muted); text-decoration: none;
+    border: 1px solid var(--border); border-radius: 6px;
+    background: var(--bg);
+    transition: all 0.15s ease;
+  }
+  .course-nav-modules a:hover {
+    border-color: var(--accent-line); color: var(--accent); background: var(--accent-soft);
+  }
+  .course-nav-modules a.is-active {
+    background: var(--accent); color: var(--bg); border-color: var(--accent);
+  }
+  .course-nav-home {
+    font-family: 'Mona Sans', sans-serif; font-weight: 600;
+    padding: 0 13px; margin-right: 8px;
+  }
+  /* Module footer navigation (prev / next) */
+  .module-footer-nav {
+    margin-top: 56px; padding-top: 28px;
+    border-top: 1px solid var(--border);
+    display: flex; align-items: stretch; justify-content: space-between;
+    gap: 16px; flex-wrap: wrap;
+  }
+  .mod-nav-prev, .mod-nav-next {
+    display: inline-flex; flex-direction: column; gap: 3px;
+    text-decoration: none; border-bottom: none; border-radius: 8px;
+    transition: all 0.15s ease;
+  }
+  .mod-nav-label {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 500;
+  }
+  .mod-nav-prev {
+    align-items: flex-start; padding: 10px 4px; color: var(--text-muted);
+  }
+  .mod-nav-prev .mod-nav-label { color: var(--text-subtle); }
+  .mod-nav-prev .mod-nav-title { font-weight: 500; font-size: 15px; color: var(--text); }
+  .mod-nav-prev:hover .mod-nav-title { color: var(--accent); }
+  .mod-nav-next {
+    margin-left: auto; align-items: flex-end; text-align: right;
+    padding: 12px 20px; background: var(--accent); color: var(--bg);
+  }
+  .mod-nav-next .mod-nav-label { color: var(--bg); opacity: 0.82; }
+  .mod-nav-next .mod-nav-title { font-weight: 600; font-size: 15px; color: var(--bg); }
+  .mod-nav-next:hover { background: #92400E; }
+  @media (max-width: 600px) {
+    .course-nav-inner { padding: 10px 16px; }
+    .course-nav-brand-text { display: none; }
+    .module-footer-nav { gap: 12px; }
+    .mod-nav-next { padding: 10px 16px; }
+  }
+</style>
+<nav class="course-nav">
+  <div class="course-nav-inner">
+    <a class="course-nav-brand" href="index.html">
+      <span class="course-nav-brand-mark">SDD</span>
+      <span class="course-nav-brand-text">Course handbook</span>
+    </a>
+    <div class="course-nav-modules">
+      <a href="index.html" class="course-nav-home" title="Course handbook">Home</a>
+      <a href="module-1.html" title="Module 1 — SDD Foundations">1</a>
+      <a href="module-2.html" title="Module 2 — Anatomy of a Good Spec">2</a>
+      <a href="module-3.html" title="Module 3 — Greenfield Lab — Spec Kit from Scratch">3</a>
+      <a href="module-4.html" title="Module 4 — Brownfield Lab — Add “Due Date” ★" class="is-active">4</a>
+      <a href="module-5.html" title="Module 5 — Best Practices &amp; Pitfalls">5</a>
+      <a href="module-6.html" title="Module 6 — Quality, Testing &amp; Team Collaboration">6</a>
+      <a href="module-7.html" title="Module 7 — Measurement &amp; Adoption Roadmap">7</a>
+    </div>
+  </div>
+</nav>
+<main>
+  <header class="hero">
+    <div class="hero-eyebrow">Module 4 &middot; the centerpiece</div>
+    <h1>Brownfield Lab &mdash; Add &ldquo;Due Date&rdquo; to the To-Do App</h1>
+    <p class="hero-lede">Apply Spec Kit to an existing codebase using the incremental-spec pattern. Author a Constitution by reading code, distinguish convention from cruft, and spec only the area of change &mdash; never the whole system.</p>
+    <div class="meta">
+      <div class="meta-item">
+        <span class="meta-label">Time</span>
+        <span class="meta-value">2&ndash;3 hours</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Format</span>
+        <span class="meta-value">Hands-on lab</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Prerequisites</span>
+        <span class="meta-value">Modules 1&ndash;3; Spec Kit installed</span>
+      </div>
+    </div>
+  </header>
+
+  <article>
+
+    <div class="lab-card">
+  <div class="lab-card-icon">&#9733;</div>
+  <div class="lab-card-body">
+    <div class="lab-card-title">Lab codebase &mdash; <code>lab-codebase.zip</code></div>
+    <div class="lab-card-meta">A minimal but fully-working Next.js + TypeScript + Tailwind to-do app with no specs and no due-date feature. About 200 lines across five files.</div>
+  </div>
+  <a class="lab-card-link" href="lab-codebase.zip" download>Download</a>
+</div>
+    <h3>Learning objectives</h3>
+    <p>By the end of this module, you will be able to:</p>
+    <ol>
+      <li>Apply the brownfield SDD pattern (incremental specification at the area of change) to a real codebase.</li>
+      <li>Author a Spec Kit Constitution by <em>reading</em> existing code, not by writing it from scratch.</li>
+      <li>Distinguish <em>conventions</em> (patterns to preserve) from <em>cruft</em> (rough edges that aren't deliberate).</li>
+      <li>Write a focused spec for a small feature without trying to spec the entire system.</li>
+      <li>Recognize and handle the friction Spec Kit has on brownfield work, including the issue #1191 limitation.</li>
+      <li>Decide, during validation, whether to fix the code or fix the spec.</li>
+    </ol>
+
+    <h3>Why this lab is the centerpiece</h3>
+    <p>Greenfield SDD is the easy case. Tutorials and demo videos almost always show greenfield. Most real engineering work is brownfield &mdash; you have a codebase, it has conventions (some good, some weird), and you need to add a feature without breaking the rest of it.</p>
+    <p>The brownfield case is where most teams either give up on SDD because the tools &ldquo;don't fit,&rdquo; or generate giant codebase-summary specs that nobody reviews. There's a third path, which this lab teaches: <strong>spec only the area of change.</strong></p>
+    <p>If you only do one lab in this course, do this one.</p>
+
+    <h2><span class="h2-num">1.</span>Run the starter app (15 min)</h2>
+
+    <h3>1.1 Get the lab codebase</h3>
+    <p>Download <code>lab-codebase.zip</code> using the link above (or ask the course owner for it). Unzip somewhere you can work in:</p>
+<pre><code>unzip lab-codebase.zip -d ~/sdd-brownfield-lab
+cd ~/sdd-brownfield-lab/lab-codebase</code></pre>
+
+    <h3>1.2 Install dependencies and run</h3>
+    <p>You need <strong>Node.js 18 or newer</strong>.</p>
+<pre><code>npm install
+npm run dev</code></pre>
+    <p>Open <a href="http://localhost:3000">http://localhost:3000</a>. You should see &ldquo;My To-Dos&rdquo; &mdash; an input box, an &ldquo;Add&rdquo; button, and (after you add some) a list of tasks. Try it out:</p>
+    <ol>
+      <li>Add a few tasks.</li>
+      <li>Mark some done. Notice the strikethrough.</li>
+      <li>Refresh the page. Tasks should persist.</li>
+      <li>Delete a task.</li>
+    </ol>
+    <p>When you're satisfied it works, stop the dev server with <code>Ctrl+C</code>.</p>
+
+    <h3>1.3 Read the code</h3>
+    <p>Spend 10 minutes reading the source. <strong>Don't skim.</strong> The whole codebase is about 200 lines across:</p>
+    <ul>
+      <li><code>lib/storage.ts</code> &mdash; <code>Todo</code> type and localStorage helpers</li>
+      <li><code>app/page.tsx</code> &mdash; the main page; owns the state and effects</li>
+      <li><code>app/components/TodoForm.tsx</code> &mdash; input + Add button</li>
+      <li><code>app/components/TodoList.tsx</code> &mdash; list rendering and empty state</li>
+      <li><code>app/components/TodoItem.tsx</code> &mdash; single task row</li>
+    </ul>
+    <p>While you read, keep a small note open and write down what you see. Specifically:</p>
+    <ul>
+      <li><strong>Things that look like <em>conventions</em></strong> &mdash; consistent patterns, deliberately chosen, you'd want to preserve.</li>
+      <li><strong>Things that look like <em>cruft</em></strong> &mdash; rough edges, probably not deliberate, you'd fix in passing.</li>
+    </ul>
+    <p>This list is the heart of the brownfield work. Your Constitution will encode the conventions. The cruft you'll either tolerate (out of scope), fix during the work (in scope), or note for later (a follow-up spec). But you have to <em>decide</em>, which means you have to name them first.</p>
+    <blockquote><strong>A hint, not a spoiler.</strong> The codebase is small but it does have at least three pieces of intentional cruft. If you find none, you're skimming. If you &ldquo;find&rdquo; ten, you may be classifying conventions as cruft. The right number is small.</blockquote>
+
+    <h2><span class="h2-num">2.</span>Initialize Spec Kit on the brownfield repo (10 min)</h2>
+    <p>Now the brownfield friction starts. Spec Kit was designed greenfield-first, so initializing it on an existing repo requires care.</p>
+
+    <h3>2.1 Initialize</h3>
+<pre><code>specify init --here</code></pre>
+    <p>When prompted for an AI agent, pick the same one you used in Module 3.</p>
+    <p>Spec Kit creates <code>.specify/</code>, <code>memory/constitution.md</code>, and the agent config directory. Verify your existing files (<code>app/</code>, <code>lib/</code>, <code>package.json</code>, etc.) are untouched.</p>
+
+    <h3>2.2 The known limitation</h3>
+    <p>A heads-up that's worth internalizing now rather than discovering at a bad moment:</p>
+    <blockquote>
+      <p><strong>Spec Kit issue #1191:</strong> Spec Kit is optimized for net-new feature creation. Updating an existing spec &mdash; for instance, when reviewing a feature in production and wanting to amend the spec to reflect a small change &mdash; is awkward, and the workflow assumes &ldquo;feature = new spec folder.&rdquo;</p>
+      <p style="font-size: 13px; color: var(--text-muted);">Source: github.com/github/spec-kit/issues/1191 (referenced in Augment's SDD guide).</p>
+    </blockquote>
+    <p>For this lab, we sidestep the issue by treating the due-date addition as a <em>new</em> feature spec rather than an amendment to a (non-existent) original to-do spec. That's the right call here. In your own brownfield work, plan around this &mdash; each meaningful change becomes its own small spec.</p>
+
+    <h2><span class="h2-num">3.</span>Author the Constitution from existing code (25 min)</h2>
+    <p>In a greenfield project, you write the Constitution before the code. In a brownfield project, the code exists first &mdash; so you read it and <em>extract</em> the Constitution from observed patterns. This is the most distinctive brownfield activity, and the one most likely to go wrong if rushed.</p>
+
+    <h3>3.1 Use your AI agent to help, but don't blindly trust it</h3>
+    <p>Open <code>memory/constitution.md</code>. It's a starter template; you'll replace it.</p>
+    <p>The temptation is to ask your agent: &ldquo;Read this codebase and generate a Constitution.&rdquo; Don't do that, or at least don't <em>only</em> do that. Two reasons:</p>
+    <ol>
+      <li><strong>The agent will pick up cruft as convention.</strong> It can't tell which patterns are deliberate and which are accidental.</li>
+      <li><strong>The Constitution it produces will be too long.</strong> Agents over-include &ldquo;just in case.&rdquo; A bloated Constitution is the markdown-monster failure mode from Module 1.</li>
+    </ol>
+    <p>The right approach: have the agent draft, you edit ruthlessly. Or write it yourself referencing the code. Either way, the human makes the calls.</p>
+
+    <h3>3.2 Draft</h3>
+    <p>Try this prompt with your agent:</p>
+<pre><code>Read the existing codebase (app/page.tsx, app/components/*, lib/storage.ts).
+Identify patterns that are repeated and look deliberate &mdash; file layout,
+component conventions, styling choices, data shapes, dependency choices.
+Draft a brief Constitution capturing only those patterns. Skip anything
+that appears in only one place. Aim for under 30 lines.</code></pre>
+    <p>The agent will produce something. Read it carefully. Now edit.</p>
+
+    <h3>3.3 What to keep, what to cut</h3>
+    <p>Try writing your own version first, before peeking. Then compare.</p>
+
+    <div class="reveal">
+      <button class="reveal-trigger">
+        <span><span class="reveal-trigger-label">Sample Constitution</span> Reveal a reasonable Constitution for this codebase</span>
+        <span class="reveal-trigger-icon">+</span>
+      </button>
+      <div class="reveal-content">
+<pre><code># Todo app &mdash; Constitution
+
+## Stack
+- Next.js 14 (App Router) with TypeScript
+- React 18
+- Tailwind CSS for styling
+- localStorage for persistence &mdash; no backend, no API routes
+
+## Code organisation
+- Page lives in `app/page.tsx`; it owns state and passes handlers down
+- Reusable components live in `app/components/`
+- Types and storage helpers live in `lib/storage.ts`
+- Components using browser APIs declare `"use client"` at the top
+
+## Styling conventions
+- Tailwind utility classes only &mdash; no separate CSS files for layout
+- `app/globals.css` is just the three Tailwind directives
+- Default Tailwind palette; no custom theme extension yet
+
+## Data conventions
+- Todos shape: { id: string, text: string, completed: boolean, createdAt: string }
+- `createdAt` is an ISO 8601 string
+- Newest tasks render at the top of the list
+- Completed tasks remain in the list with strikethrough; they are not removed
+- Empty input is rejected silently (no error message); no toasts
+
+## State conventions
+- Page owns state; components are presentational and receive callbacks as props
+- localStorage is read once on mount inside a `useEffect`; written on every change
+  inside a separate `useEffect`. This is required to avoid hydration mismatch.
+
+## Known cruft (NOT conventions &mdash; fix when convenient)
+- Magic string "todos" repeated in `lib/storage.ts` &mdash; extract a constant
+- Leftover `console.log` in the page's mount effect &mdash; remove
+- IDs generated with `Date.now().toString()` &mdash; switch to `crypto.randomUUID()`
+  (collision-safe; available in all modern browsers)</code></pre>
+        <p>Notice what's happening in that last section. The Constitution explicitly <em>names</em> the cruft as cruft, separate from conventions. This serves two purposes:</p>
+        <ol>
+          <li><strong>It prevents the agent from preserving cruft as if it were intentional.</strong> Without this section, an agent reading &ldquo;the code uses <code>Date.now()</code> for IDs&rdquo; would happily continue using <code>Date.now()</code> for new IDs in the due-date feature.</li>
+          <li><strong>It creates a known list of follow-up work.</strong> The bonus exercise at the end of this module addresses one of these. The rest are stand-alone cleanup specs you (or your team) can pick up later.</li>
+        </ol>
+        <p>This is more honest than the typical &ldquo;ignore the cruft and hope&rdquo; approach. Cruft you've named is cruft you can decide what to do with.</p>
+      </div>
+    </div>
+
+    <h3>3.4 What if you found different cruft than the sample?</h3>
+    <p>Good. If you found patterns you suspect are cruft but you're not sure, ask yourself:</p>
+    <ul>
+      <li><strong>Is this pattern repeated, or is it in one place?</strong> Repeated patterns are more likely conventions; one-off oddities are more likely cruft.</li>
+      <li><strong>Is there an obvious cleaner alternative?</strong> If yes, it's probably cruft. If no, it might be a deliberate trade-off you don't yet understand.</li>
+      <li><strong>Would a careful code reviewer catch this?</strong> If yes, cruft. If it would slip past, more likely a convention you just haven't internalized.</li>
+    </ul>
+    <p>You don't have to be right. The point is to <em>decide</em>, then revise as you learn more. A Constitution is a living document.</p>
+
+    <h2><span class="h2-num">4.</span><code>/specify</code> &mdash; but only for the area of change (30 min)</h2>
+    <p>This is where brownfield SDD diverges most from greenfield. <strong>You are not specifying the whole to-do app.</strong> You are specifying <em>the due-date addition</em>. The existing app is context, not subject.</p>
+
+    <h3>4.1 Run /specify</h3>
+<pre><code>/specify
+
+Add a "due date" field to to-do items. The field is required when
+creating a task: the user picks a date that must be in the future
+(today is not allowed; tomorrow or later only). The due date displays
+on each task in the list. If a task's due date is in the past and the
+task is not yet completed, the due date displays in red. Existing
+behaviour (add, mark done, delete, persistence) is preserved.
+Build on the existing patterns documented in the Constitution.</code></pre>
+    <p>The agent will produce a draft spec. <strong>The most common failure mode</strong> is that the agent over-scopes &mdash; it'll add things you didn't ask for, like sorting by due date, filtering by date range, recurring todos, reminder notifications, or &ldquo;due soon&rdquo; warning colours. Push back hard on each one.</p>
+
+    <h3>4.2 Review the draft</h3>
+    <p>Open the generated spec (<code>specs/&lt;NNN&gt;-due-date/spec.md</code> or similar) and apply the six-element checklist from Module 2. Some specific things to look for in <em>this</em> spec:</p>
+    <p><strong>Outcomes &mdash; must be observable.</strong> Not &ldquo;users can set due dates.&rdquo; Closer to: &ldquo;When creating a task, the user must pick a due date in the future. The due date is visible on each task in the list. Tasks whose due date has passed and that are not yet completed display the due date in red.&rdquo;</p>
+    <p><strong>In-scope &mdash; minimal, surgical.</strong> This feature adds a date field, validation that it's in the future, display of the date, and a red treatment when overdue. That's it.</p>
+    <p><strong>Out-of-scope &mdash; write at least 5.</strong> This is the section that prevents an afternoon's feature from becoming a week. Suggested entries:</p>
+    <ul>
+      <li>Editing the due date after creation</li>
+      <li>Sorting or filtering by due date</li>
+      <li>Recurring or repeating tasks</li>
+      <li>Notifications, reminders, or emails</li>
+      <li>Time-of-day component (date only, no time)</li>
+      <li>Time zones (local time only; cross-timezone is out)</li>
+      <li>&ldquo;Due soon&rdquo; warnings (orange, yellow, etc.) &mdash; only past-due is red</li>
+      <li>Optional due dates (the field is required for new tasks)</li>
+    </ul>
+    <p><strong>Constraints &mdash; reuse the Constitution, don't repeat it.</strong> Things like &ldquo;Next.js + Tailwind + localStorage&rdquo; are in the Constitution; the spec doesn't restate them. Spec-level constraints are things specific to <em>this</em> feature: e.g. &ldquo;Due date is a date-only string in <code>YYYY-MM-DD</code> format&rdquo; or &ldquo;The date input uses <code>&lt;input type='date'&gt;</code> for browser-native date picking.&rdquo;</p>
+    <p><strong>Decisions already made.</strong> This is where you cut off rabbit holes. Examples:</p>
+    <ul>
+      <li>Date format: ISO 8601 date-only (<code>YYYY-MM-DD</code>), no time component.</li>
+      <li>&ldquo;In the future&rdquo; is defined as: the picked date is strictly greater than today's date in the user's local timezone.</li>
+      <li>&ldquo;Past due&rdquo; is defined as: the due date is strictly less than today's local date AND the task is not completed.</li>
+      <li>Validation runs on submit; if invalid, the task is not added and a visible inline error appears next to the date input.</li>
+      <li>The red treatment is Tailwind's <code>text-red-600</code>. No icon, no badge, no animation.</li>
+    </ul>
+    <p><strong>Verification criteria.</strong> Write at least 6, with at least 2 edge cases.</p>
+
+    <div class="reveal">
+      <button class="reveal-trigger">
+        <span><span class="reveal-trigger-label">Sample verification list</span> Reveal a strong verification section for this spec</span>
+        <span class="reveal-trigger-icon">+</span>
+      </button>
+      <div class="reveal-content">
+        <ul>
+          <li>Submitting a task with a due date of tomorrow succeeds and the task appears in the list with that date.</li>
+          <li>Submitting a task with today's date is rejected with an inline error; no task is added.</li>
+          <li>Submitting a task with a date in the past is rejected with an inline error; no task is added.</li>
+          <li>Submitting a task with no date set is rejected with an inline error; no task is added.</li>
+          <li>A task with a due date in the past and <code>completed: false</code> displays the due date in red.</li>
+          <li>A task with a due date in the past and <code>completed: true</code> does <em>not</em> display in red.</li>
+          <li><strong>Edge:</strong> a task created today with tomorrow's due date displays in normal colour today, and would display in red two days from now (verify by adjusting system clock or using a far-past test date).</li>
+          <li><strong>Edge:</strong> refreshing the browser preserves all due dates; existing tasks (created before this change, with no <code>dueDate</code> field) load without errors.</li>
+        </ul>
+        <p>The pattern: each line is a single, runnable check. None of them say &ldquo;works correctly&rdquo; or &ldquo;handles errors gracefully.&rdquo; Each one would either pass or fail when you walk through it in the browser, with no interpretation needed.</p>
+      </div>
+    </div>
+
+    <h3>4.3 The spec smell to watch for</h3>
+    <p>If your spec mentions specific component file names, function signatures, or Tailwind class strings, you've drifted into the plan. Pull those out. The spec describes behavior; the plan describes implementation. The Module 2 worked example shows the difference if you need a refresher.</p>
+
+    <h2><span class="h2-num">5.</span><code>/plan</code> (20 min)</h2>
+<pre><code>/plan</code></pre>
+    <p>Now you make implementation decisions, anchored to the existing codebase.</p>
+
+    <h3>5.1 What the plan should describe</h3>
+    <ul>
+      <li><strong>Type change:</strong> extend <code>Todo</code> in <code>lib/storage.ts</code> to include <code>dueDate: string</code> (the ISO <code>YYYY-MM-DD</code> string).</li>
+      <li><strong>Backward compatibility on load:</strong> existing tasks in localStorage have no <code>dueDate</code> field. The load path should either coerce them to a sentinel value or filter them out &mdash; pick one and decide deliberately. <em>Recommendation:</em> load them as-is with <code>dueDate: undefined</code> typed as optional, and treat <code>undefined</code> as &ldquo;no due date, never overdue&rdquo; &mdash; but mark <em>that</em> migration step out of scope or note it as cruft for later.</li>
+      <li><strong><code>TodoForm</code> changes:</strong> add an <code>&lt;input type="date"&gt;</code> next to the text input. Add local state for the picked date. Add validation logic that runs on submit. If invalid, set an error message in local state and render it; do not call the parent's <code>onAdd</code>.</li>
+      <li><strong>Validation logic:</strong> &ldquo;in the future&rdquo; check using the <code>YYYY-MM-DD</code> string from the input compared against today's local date in the same format. Pure string comparison works correctly for ISO dates (lexicographic order = chronological order).</li>
+      <li><strong><code>page.tsx</code> changes:</strong> the <code>addTodo</code> function now accepts a <code>dueDate</code> parameter and stores it on the new todo. No other state changes.</li>
+      <li><strong><code>TodoItem</code> changes:</strong> display the due date next to the text. Compute &ldquo;is overdue&rdquo; using the same string-comparison technique. Apply <code>text-red-600</code> to the date span when overdue and not completed.</li>
+      <li><strong>No new dependencies.</strong> Native <code>&lt;input type="date"&gt;</code> and date-string comparison are sufficient.</li>
+    </ul>
+
+    <h3>5.2 Review the agent's plan</h3>
+    <p>The agent will draft a plan that's roughly along these lines but probably with some divergence. Things to watch for:</p>
+    <ul>
+      <li><strong><code>Date</code> object trap.</strong> If the agent writes validation as <code>new Date(input) &gt; new Date()</code>, you have a hidden timezone bug &mdash; the input string parses as midnight UTC, and the comparison fails near midnight in some timezones. Push back: &ldquo;Compare ISO date strings lexicographically using <code>today.toISOString().split('T')[0]</code> for the right-hand side.&rdquo;</li>
+      <li><strong>Wrong storage key.</strong> If the plan introduces a new localStorage key for due dates (&ldquo;efficiency&rdquo;), reject it. The Constitution implies one storage location for todos; a new key is scope creep.</li>
+      <li><strong>Migration overreach.</strong> If the plan proposes rewriting all existing todos in localStorage to add a default <code>dueDate</code> value, push back. That's not necessary and it touches data the user didn't explicitly ask to modify. The simpler path: handle missing <code>dueDate</code> at the type level and at the render level.</li>
+      <li><strong>Custom date pickers or libraries.</strong> Anything that introduces a new dependency (<code>react-datepicker</code>, <code>date-fns</code>, etc.) is overkill. Native <code>&lt;input type="date"&gt;</code> and string math are enough.</li>
+    </ul>
+
+    <h2><span class="h2-num">6.</span><code>/tasks</code> (10 min)</h2>
+<pre><code>/tasks</code></pre>
+    <p>The agent breaks the plan into discrete tasks. A reasonable task list might look like:</p>
+    <ol>
+      <li>Extend the <code>Todo</code> type in <code>lib/storage.ts</code> to include an optional <code>dueDate</code> field.</li>
+      <li>Update <code>app/page.tsx</code>'s <code>addTodo</code> to accept and persist <code>dueDate</code>.</li>
+      <li>Add a date input and local error state to <code>TodoForm</code>.</li>
+      <li>Implement future-date validation in <code>TodoForm</code>'s submit handler.</li>
+      <li>Update <code>TodoForm</code>'s <code>onAdd</code> callback signature to pass <code>dueDate</code>.</li>
+      <li>Display the due date in <code>TodoItem</code> next to the text.</li>
+      <li>Implement the &ldquo;overdue&rdquo; string comparison and apply <code>text-red-600</code> when overdue and not completed.</li>
+      <li>Manual verification against spec criteria.</li>
+    </ol>
+    <p>That's about 8 tasks for an afternoon's work. If your agent produces 4 mega-tasks or 25 micro-tasks, ask it to re-decompose.</p>
+
+    <h2><span class="h2-num">7.</span><code>/implement</code> (45&ndash;60 min)</h2>
+<pre><code>/implement</code></pre>
+    <p>The longest phase. The agent works through tasks, generating code. Watch for the same pitfalls as in Module 3, plus brownfield-specific ones.</p>
+
+    <h3>7.1 Brownfield-specific things to watch for</h3>
+    <ul>
+      <li><strong>The agent ignores existing patterns.</strong> If the agent introduces a state-management library (Redux, Zustand) when the existing code uses plain <code>useState</code>, that's a regression. Stop it. State at the page level was a deliberate convention.</li>
+      <li><strong>The agent rewrites things you didn't ask it to.</strong> Some agents will helpfully &ldquo;fix&rdquo; the cruft you named in the Constitution &mdash; replacing <code>Date.now()</code> IDs with <code>crypto.randomUUID()</code>, extracting the storage-key constant, removing the <code>console.log</code>. That's actually <em>fine if you want it</em>, but it's a scope decision: are you fixing cruft as part of this feature, or saving it for a follow-up? Decide deliberately. Mixing cruft cleanup into feature work makes PR review harder.</li>
+      <li><strong>The agent adds new files when existing ones would do.</strong> A new <code>dateUtils.ts</code> module for one helper function is over-engineered. The function probably belongs in <code>lib/storage.ts</code> or inline in the component.</li>
+      <li><strong><code>Date</code> math gone wrong.</strong> Comparing <code>new Date('2026-04-30') &lt; new Date()</code> in JavaScript has timezone subtleties. The agent will sometimes produce code that looks right but is off-by-one near midnight. The reliable pattern (worth pushing for explicitly): compare <code>YYYY-MM-DD</code> strings directly. Lexicographic comparison works correctly for ISO dates.</li>
+      <li><strong>Hydration warnings.</strong> If the &ldquo;today&rdquo; date is computed during render rather than inside an effect or event handler, server and client may compute different values, triggering a React hydration warning. The cleanest pattern: compute &ldquo;today&rdquo; only inside the validation handler (event-time) and inside the <code>TodoItem</code>'s <code>useMemo</code> or directly during client-side render after hydration is complete.</li>
+    </ul>
+
+    <h3>7.2 Run after meaningful tasks</h3>
+    <p>Don't wait until the end. After tasks 1&ndash;5 (form + validation), restart the dev server and try:</p>
+    <ul>
+      <li>Add a task with a date in the future. Should appear in the list with the date shown.</li>
+      <li>Try to add with today's date selected. Should show an inline error and not add.</li>
+      <li>Try to add with no date selected. Should show an inline error and not add.</li>
+      <li>Try to add with a past date. Should show an inline error.</li>
+    </ul>
+    <p>After tasks 6&ndash;7 (display + red), pick a task you already have and manually edit its <code>dueDate</code> in the localStorage entry to a past date (browser devtools &rarr; Application &rarr; Local Storage &rarr; edit the JSON), then refresh. The date should now display in red. Mark the task done &mdash; the red should disappear.</p>
+
+    <h3>7.3 If something doesn't work</h3>
+    <p>You have two questions to ask, in order:</p>
+    <ol>
+      <li><strong>Does the spec describe what you actually want?</strong> If you're surprised by the behavior, often the spec was vague. Update the spec, then re-implement just the affected task.</li>
+      <li><strong>Does the code implement the spec?</strong> If the spec is right but the code is wrong, fix the code (or have the agent fix it).</li>
+    </ol>
+    <p>Don't fix code without checking the spec first. That's how spec-anchored repos drift back into being code-as-truth repos.</p>
+
+    <h2><span class="h2-num">8.</span>Validate against the spec (20 min)</h2>
+    <p>This is the part most teams skip. Don't.</p>
+
+    <h3>8.1 Walk through the verification criteria</h3>
+    <p>Open your spec's verification section. Go through each criterion and verify it holds. For UI criteria, walk through them in the browser. For edge cases, set up the precondition deliberately (edit localStorage, change system clock if you can, add tasks at the right times).</p>
+
+    <h3>8.2 Spec-vs-implementation checklist</h3>
+    <ul class="checklist">
+      <li>Existing tasks (created before this change, with no <code>dueDate</code>) still load without errors.</li>
+      <li>Adding a task with tomorrow's date succeeds.</li>
+      <li>Adding a task with today's date is rejected with a visible inline error.</li>
+      <li>Adding a task with a past date is rejected with a visible inline error.</li>
+      <li>Adding a task with no date is rejected with a visible inline error.</li>
+      <li>The due date appears on every task in the list.</li>
+      <li>An overdue, uncompleted task displays its due date in red.</li>
+      <li>Marking the overdue task complete removes the red treatment.</li>
+      <li>Refreshing the browser preserves due dates.</li>
+      <li>No regressions: add (with valid date), mark done, delete still all work.</li>
+    </ul>
+
+    <h3>8.3 What if there's a gap?</h3>
+    <p>If you find a behavior not covered by your verification criteria, <strong>add the criterion to the spec</strong>, then verify. The spec is a living artifact. If you found something the spec missed, future you (or a teammate) would have missed it too. Strengthening the spec strengthens the harness.</p>
+    <p>If you find a bug, classify it (this is the SpecOps loop from Module 1):</p>
+    <ul>
+      <li><strong>Spec-to-implementation gap</strong> &mdash; spec was clear, code diverged. Fix the code, and consider whether your validation gates should have caught it earlier.</li>
+      <li><strong>Intent-to-spec gap</strong> &mdash; spec was incomplete. Fix the spec first, then the code.</li>
+    </ul>
+    <p>Each classification points to a different improvement. Spec-to-implementation gaps mean your testing/validation is too loose. Intent-to-spec gaps mean your spec-writing process is missing something. Both are useful signals.</p>
+
+    <h2><span class="h2-num">9.</span>Reflection (15 min)</h2>
+    <p>Same format as Module 3 &mdash; write <code>REFLECTION.md</code> answers honestly, don't share unless you want to.</p>
+    <ol>
+      <li>The Constitution-from-existing-code activity &mdash; was it harder or easier than you expected? What did you almost include that you decided to leave out?</li>
+      <li>The cruft list &mdash; did you find the three pieces planted in the codebase? Did you find others that turned out to be conventions on closer inspection?</li>
+      <li>How tempted were you to spec the <em>entire</em> app? How did you push back against that temptation?</li>
+      <li>The agent's first-draft spec &mdash; what did it over-include? What did it miss?</li>
+      <li>The first time during <code>/implement</code> that you had to choose between &ldquo;fix the code&rdquo; and &ldquo;fix the spec&rdquo; &mdash; what was the situation, and which did you pick? Why?</li>
+      <li>What would have happened to this feature if you'd skipped the spec entirely and just told the agent &ldquo;add a due date field&rdquo;? What problems would you have caught at code review instead of spec review?</li>
+      <li>What's the smallest change to your team's current workflow that would let you do this kind of brownfield SDD on a real Jira ticket next week?</li>
+    </ol>
+    <p>The last one is the most important. SDD is only worth learning if it changes what you do at work. Question 7 is what we'll come back to in Module 7.</p>
+
+    <h2><span class="h2-num">10.</span>Bonus exercise (optional, 30 min)</h2>
+    <p>If you finished early and want to push deeper:</p>
+    <p><strong>Pick one piece of cruft from the codebase</strong> (the magic <code>"todos"</code> string, the leftover <code>console.log</code>, or the <code>Date.now()</code> ID generation) and write a <em>small</em> spec to fix it. Use the same workflow. The point: cruft fixes are usually pure scope-creep candidates during feature work, but they become tractable when you spec them as their own focused changes.</p>
+    <p>Recommendation: start with <code>Date.now()</code> &rarr; <code>crypto.randomUUID()</code>. It has the most concrete benefit (collision safety) and forces you to think about whether existing IDs in localStorage need migration. (Spoiler: they don't, because IDs are opaque strings &mdash; you just want new IDs to use the new generator.)</p>
+    <p>This is the brownfield convergence pattern from Module 1: each change adds a small spec, frequently-touched areas accumulate spec coverage, and over time the codebase starts behaving more like a greenfield project. Not because you specced the whole thing &mdash; because you specced each change.</p>
+
+    <hr>
+
+    <h3>What you should now know</h3>
+    <ul>
+      <li>Brownfield SDD is incremental, not comprehensive. You spec the change, not the system.</li>
+      <li>The Constitution is <em>extracted</em> from existing code, not <em>imposed</em> on it. Distinguishing convention from cruft is the actual skill.</li>
+      <li>Naming cruft explicitly in the Constitution (separately from conventions) prevents agents from preserving it as if it were intentional.</li>
+      <li>Spec Kit's greenfield bias creates real friction on existing repos (issue #1191 is one example). The workaround is to treat each change as a new feature spec and not try to maintain a single evolving &ldquo;main spec.&rdquo;</li>
+      <li>The validation phase is non-optional. Skipping it turns SDD back into vibe coding with extra ceremony.</li>
+      <li>Bug classification (spec-to-impl gap vs. intent-to-spec gap) drives different improvements &mdash; to validation gates versus to elicitation patterns. Use both.</li>
+    </ul>
+
+    <h3>What's next</h3>
+    <p>In <strong>Module 5</strong> we step out of the agent and look at the practice itself: best practices that consistently improve outcomes, pitfalls that consistently sabotage them, and a critique exercise where you read deliberately broken specs and explain what's wrong with each. Most of the patterns you noticed during Modules 3 and 4 will get names and contexts in Module 5.</p>
+
+    <div class="module-footer-nav">
+      <a class="mod-nav-prev" href="module-3.html">
+        <span class="mod-nav-label">← Previous · Module 3</span>
+        <span class="mod-nav-title">Greenfield Lab</span>
+      </a>
+      <a class="mod-nav-next" href="module-5.html">
+        <span class="mod-nav-label">Next · Module 5 →</span>
+        <span class="mod-nav-title">Best Practices &amp; Pitfalls</span>
+      </a>
+    </div>
+  </article>
+</main>
+<script>
+  // Auto-attach copy buttons to all <pre> blocks
+  document.querySelectorAll('pre').forEach((pre) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'code-block';
+    pre.parentNode.insertBefore(wrap, pre);
+    wrap.appendChild(pre);
+    const btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.type = 'button';
+    btn.textContent = 'Copy';
+    btn.addEventListener('click', async () => {
+      const text = pre.innerText;
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch (e) {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      }
+      btn.textContent = 'Copied';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'Copy';
+        btn.classList.remove('copied');
+      }, 1400);
+    });
+    wrap.appendChild(btn);
+  });
+
+  // Reveal-on-click blocks
+  document.querySelectorAll('.reveal-trigger').forEach((trigger) => {
+    trigger.addEventListener('click', () => {
+      trigger.parentElement.classList.toggle('open');
+    });
+  });
+
+  // Quiz logic — multiple choice
+  document.querySelectorAll('.quiz-question[data-type="mc"]').forEach((q) => {
+    const correct = q.dataset.correct;
+    const opts = q.querySelectorAll('.quiz-opt');
+    const feedback = q.querySelector('.quiz-feedback');
+    opts.forEach((opt) => {
+      opt.addEventListener('click', () => {
+        const choice = opt.dataset.choice;
+        opts.forEach((o) => {
+          o.disabled = true;
+          if (o.dataset.choice === correct) {
+            o.classList.add('correct');
+          } else if (o === opt) {
+            o.classList.add('incorrect');
+          } else {
+            o.classList.add('dim');
+          }
+        });
+        if (feedback) {
+          feedback.classList.add('show');
+          feedback.classList.add(choice === correct ? 'correct' : 'incorrect');
+        }
+      });
+    });
+  });
+
+  // Quiz logic — open-ended (just reveal)
+  document.querySelectorAll('.quiz-open-toggle').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const ans = btn.nextElementSibling;
+      if (ans && ans.classList.contains('quiz-open-answer')) {
+        ans.classList.toggle('show');
+        btn.textContent = ans.classList.contains('show') ? 'Hide answer' : 'Reveal answer';
+      }
+    });
+  });
+</script>
+</body>
+</html>

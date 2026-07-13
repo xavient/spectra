@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 7 &mdash; Measurement &amp; Adoption Roadmap</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,400;1,9..144,500&family=JetBrains+Mono:wght@400;500;600&family=Mona+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FAF9F5;
+    --bg-elev: #F4F1E8;
+    --text: #1A1614;
+    --text-muted: #6B6357;
+    --text-subtle: #94897A;
+    --accent: #B45309;
+    --accent-soft: rgba(180, 83, 9, 0.09);
+    --accent-line: rgba(180, 83, 9, 0.25);
+    --border: #E8E2D4;
+    --border-strong: #D4CCB8;
+    --code-bg: #1A1614;
+    --code-text: #F0EAD8;
+    --code-comment: #94897A;
+    --code-accent: #F0B070;
+    --success: #166534;
+    --success-soft: rgba(22, 101, 52, 0.08);
+    --error: #991B1B;
+    --error-soft: rgba(153, 27, 27, 0.06);
+    --shadow-sm: 0 1px 2px rgba(26, 22, 20, 0.04);
+    --shadow-md: 0 4px 12px rgba(26, 22, 20, 0.06);
+    --max-w: 720px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Mona Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    font-weight: 400;
+    font-size: 17px;
+    line-height: 1.7;
+    color: var(--text);
+    background: var(--bg);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  main {
+    max-width: var(--max-w);
+    margin: 0 auto;
+    padding: 64px 28px 120px;
+  }
+  /* Hero */
+  .hero { margin-bottom: 56px; padding-bottom: 40px; border-bottom: 1px solid var(--border); }
+  .hero-eyebrow {
+    font-family: 'Fraunces', Georgia, serif;
+    font-style: italic; font-weight: 400;
+    font-size: 17px; color: var(--accent); letter-spacing: 0.01em;
+    margin-bottom: 18px;
+  }
+  .hero h1 {
+    font-family: 'Mona Sans', sans-serif;
+    font-weight: 600; font-size: 44px; line-height: 1.1;
+    letter-spacing: -0.025em; margin-bottom: 22px; color: var(--text);
+  }
+  .hero-lede {
+    font-size: 19px; line-height: 1.55; color: var(--text-muted); max-width: 600px;
+  }
+  /* Meta block */
+  .meta {
+    display: flex; flex-wrap: wrap;
+    margin-top: 32px; padding: 18px 22px;
+    background: var(--bg-elev); border: 1px solid var(--border);
+    border-radius: 6px; font-size: 14px;
+  }
+  .meta-item {
+    display: flex; flex-direction: column; gap: 2px;
+    padding-right: 32px; margin-right: 32px;
+    border-right: 1px solid var(--border-strong);
+  }
+  .meta-item:last-child { border-right: none; padding-right: 0; margin-right: 0; }
+  .meta-label {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--text-subtle); font-weight: 500;
+  }
+  .meta-value { color: var(--text); font-weight: 500; }
+  /* Article typography */
+  article h2 {
+    font-family: 'Mona Sans', sans-serif;
+    font-weight: 600; font-size: 28px; line-height: 1.25;
+    letter-spacing: -0.018em; margin-top: 56px; margin-bottom: 18px; color: var(--text);
+  }
+  article h2 .h2-num {
+    font-family: 'Fraunces', Georgia, serif; font-style: italic;
+    font-weight: 400; color: var(--accent); margin-right: 14px;
+  }
+  article h3 {
+    font-weight: 600; font-size: 20px; line-height: 1.3;
+    letter-spacing: -0.012em; margin-top: 36px; margin-bottom: 12px; color: var(--text);
+  }
+  article h4 {
+    font-weight: 600; font-size: 16px;
+    margin-top: 28px; margin-bottom: 8px; color: var(--text);
+  }
+  article p { margin-bottom: 18px; }
+  article ul, article ol { margin: 0 0 22px 0; padding-left: 22px; }
+  article li { margin-bottom: 8px; padding-left: 4px; }
+  article li::marker { color: var(--text-subtle); }
+  article ul ul, article ol ol, article ul ol, article ol ul { margin: 8px 0 4px 0; }
+  article a {
+    color: var(--accent); text-decoration: none;
+    border-bottom: 1px solid var(--accent-line);
+    transition: border-color 0.15s ease;
+  }
+  article a:hover { border-bottom-color: var(--accent); }
+  article strong { font-weight: 600; color: var(--text); }
+  article em { font-style: italic; }
+  /* Inline code */
+  article code {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 0.86em; background: var(--bg-elev);
+    border: 1px solid var(--border); padding: 1px 6px;
+    border-radius: 4px; color: var(--text); font-weight: 500;
+  }
+  /* Code blocks */
+  .code-block { position: relative; margin: 22px 0 26px; }
+  pre {
+    background: var(--code-bg); color: var(--code-text);
+    padding: 18px 20px; border-radius: 8px; overflow-x: auto;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 14px; line-height: 1.6; box-shadow: var(--shadow-sm);
+  }
+  pre code {
+    background: none; border: none; padding: 0;
+    color: inherit; font-size: inherit; font-weight: 400;
+  }
+  .copy-btn {
+    position: absolute; top: 10px; right: 10px;
+    background: rgba(240, 234, 216, 0.08);
+    border: 1px solid rgba(240, 234, 216, 0.18);
+    color: var(--code-text); font-family: 'Mona Sans', sans-serif;
+    font-size: 11px; font-weight: 500; letter-spacing: 0.04em;
+    text-transform: uppercase; padding: 5px 10px;
+    border-radius: 4px; cursor: pointer; opacity: 0;
+    transition: all 0.15s ease;
+  }
+  .code-block:hover .copy-btn { opacity: 1; }
+  .copy-btn:hover { background: rgba(240, 234, 216, 0.18); }
+  .copy-btn.copied { background: rgba(34, 197, 94, 0.2); border-color: rgba(34, 197, 94, 0.4); }
+  /* Blockquotes & callouts */
+  blockquote {
+    margin: 24px 0; padding: 16px 22px;
+    background: var(--accent-soft); border-left: 3px solid var(--accent);
+    border-radius: 0 6px 6px 0; color: var(--text); font-size: 16px;
+  }
+  blockquote p { margin-bottom: 12px; }
+  blockquote p:last-child { margin-bottom: 0; }
+  blockquote strong { color: var(--text); }
+  /* Tables */
+  .table-wrap {
+    overflow-x: auto; margin: 22px 0 26px;
+    border: 1px solid var(--border); border-radius: 6px;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 15px; }
+  th, td {
+    text-align: left; padding: 12px 16px;
+    border-bottom: 1px solid var(--border); vertical-align: top;
+  }
+  th {
+    background: var(--bg-elev); font-weight: 600;
+    font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em;
+    color: var(--text-muted);
+  }
+  tr:last-child td { border-bottom: none; }
+  td code, th code { font-size: 13px; }
+  /* HR */
+  hr { border: none; border-top: 1px solid var(--border); margin: 56px 0; }
+  /* Module list (README) */
+  .module-list {
+    display: flex; flex-direction: column; gap: 0;
+    margin: 28px 0 32px;
+    border: 1px solid var(--border); border-radius: 8px;
+    overflow: hidden; background: var(--bg-elev);
+  }
+  .module-row {
+    display: grid; grid-template-columns: 48px 1fr auto auto;
+    gap: 18px; align-items: center;
+    padding: 16px 22px; border-bottom: 1px solid var(--border);
+    background: var(--bg);
+  }
+  .module-row:last-child { border-bottom: none; }
+  .module-row.featured {
+    background: linear-gradient(to right, var(--accent-soft), transparent 60%);
+  }
+  .module-num {
+    font-family: 'Fraunces', Georgia, serif; font-style: italic;
+    font-size: 22px; font-weight: 500; color: var(--accent);
+  }
+  .module-title { font-weight: 600; font-size: 16px; color: var(--text); line-height: 1.35; }
+  .module-title-sub { font-size: 13px; color: var(--text-muted); margin-top: 2px; font-weight: 400; }
+  .module-format { font-size: 13px; color: var(--text-subtle); font-style: italic; }
+  .module-time { font-size: 13px; color: var(--text-muted); font-weight: 500;
+    font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .star { color: var(--accent); margin-left: 4px; }
+  .path-grid { display: grid; grid-template-columns: 1fr; gap: 14px; margin: 22px 0 28px; }
+  .path-card { padding: 18px 22px; background: var(--bg-elev);
+    border: 1px solid var(--border); border-radius: 6px; }
+  .path-card-title { font-weight: 600; font-size: 15px; margin-bottom: 4px; color: var(--text); }
+  .path-card-body { font-size: 14px; color: var(--text-muted); line-height: 1.55; }
+  .footer-note {
+    margin-top: 80px; padding-top: 32px;
+    border-top: 1px solid var(--border);
+    font-size: 14px; color: var(--text-subtle); text-align: center;
+  }
+  /* Quiz (Module 1) */
+  .quiz {
+    margin: 28px 0 32px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg-elev);
+    overflow: hidden;
+  }
+  .quiz-header {
+    padding: 16px 22px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .quiz-title {
+    font-family: 'Fraunces', Georgia, serif; font-style: italic;
+    font-size: 14px; color: var(--accent); letter-spacing: 0.02em;
+  }
+  .quiz-progress { font-size: 13px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+  .quiz-question { padding: 20px 22px; border-bottom: 1px solid var(--border); }
+  .quiz-question:last-child { border-bottom: none; }
+  .quiz-q-prompt { font-weight: 600; margin-bottom: 14px; font-size: 16px; }
+  .quiz-options { display: flex; flex-direction: column; gap: 8px; }
+  .quiz-opt {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 11px 14px;
+    border: 1px solid var(--border); border-radius: 6px;
+    background: var(--bg); cursor: pointer;
+    font-size: 15px; line-height: 1.45;
+    transition: all 0.15s ease;
+    text-align: left;
+    width: 100%;
+    color: var(--text);
+    font-family: inherit;
+  }
+  .quiz-opt:hover:not(:disabled) { border-color: var(--accent-line); background: var(--accent-soft); }
+  .quiz-opt:disabled { cursor: default; }
+  .quiz-opt-letter {
+    flex-shrink: 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px; font-weight: 600;
+    color: var(--text-muted);
+    width: 18px;
+  }
+  .quiz-opt.correct {
+    background: var(--success-soft);
+    border-color: var(--success);
+  }
+  .quiz-opt.correct .quiz-opt-letter { color: var(--success); }
+  .quiz-opt.incorrect {
+    background: var(--error-soft);
+    border-color: var(--error);
+  }
+  .quiz-opt.incorrect .quiz-opt-letter { color: var(--error); }
+  .quiz-opt.dim { opacity: 0.55; }
+  .quiz-feedback {
+    margin-top: 14px;
+    padding: 14px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    line-height: 1.55;
+    display: none;
+  }
+  .quiz-feedback.show { display: block; }
+  .quiz-feedback.correct { background: var(--success-soft); border: 1px solid rgba(22, 101, 52, 0.25); }
+  .quiz-feedback.incorrect { background: var(--error-soft); border: 1px solid rgba(153, 27, 27, 0.18); }
+  .quiz-feedback-title { font-weight: 600; margin-bottom: 4px; }
+  .quiz-feedback.correct .quiz-feedback-title { color: var(--success); }
+  .quiz-feedback.incorrect .quiz-feedback-title { color: var(--error); }
+  /* Open-ended quiz answer (no options) */
+  .quiz-open-toggle {
+    margin-top: 8px;
+    padding: 9px 16px;
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 6px; cursor: pointer;
+    font-family: inherit; font-size: 14px; font-weight: 500;
+    color: var(--text-muted);
+    transition: all 0.15s ease;
+  }
+  .quiz-open-toggle:hover { background: var(--accent-soft); color: var(--accent); border-color: var(--accent-line); }
+  .quiz-open-answer {
+    margin-top: 12px; padding: 14px 16px;
+    background: var(--accent-soft); border: 1px solid var(--accent-line);
+    border-radius: 6px; font-size: 14px; line-height: 1.6;
+    display: none;
+  }
+  .quiz-open-answer.show { display: block; }
+  /* Reveal block (sample solutions) */
+  .reveal {
+    margin: 24px 0 28px;
+    border: 1px dashed var(--border-strong);
+    border-radius: 8px;
+    background: var(--bg-elev);
+    overflow: hidden;
+  }
+  .reveal-trigger {
+    width: 100%;
+    padding: 16px 22px;
+    background: none; border: none;
+    cursor: pointer;
+    font-family: inherit; font-size: 15px; font-weight: 500;
+    color: var(--text); text-align: left;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px;
+    transition: background 0.15s ease;
+  }
+  .reveal-trigger:hover { background: var(--accent-soft); }
+  .reveal-trigger-label {
+    font-family: 'Fraunces', Georgia, serif; font-style: italic;
+    color: var(--accent); font-size: 14px; margin-right: 8px;
+  }
+  .reveal-trigger-icon {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-muted); font-size: 14px;
+    transition: transform 0.2s ease;
+  }
+  .reveal.open .reveal-trigger-icon { transform: rotate(45deg); }
+  .reveal-content {
+    display: none;
+    padding: 4px 22px 22px;
+    border-top: 1px solid var(--border);
+    background: var(--bg);
+  }
+  .reveal.open .reveal-content { display: block; }
+  .reveal-content > *:first-child { margin-top: 18px; }
+  /* Lab placeholder card (Module 4) */
+  .lab-card {
+    margin: 28px 0;
+    padding: 22px 24px;
+    background: linear-gradient(135deg, var(--accent-soft), transparent 80%);
+    border: 1px solid var(--accent-line);
+    border-radius: 10px;
+    display: flex; align-items: center; gap: 18px;
+    flex-wrap: wrap;
+  }
+  .lab-card-icon {
+    font-family: 'Fraunces', Georgia, serif; font-style: italic;
+    font-size: 36px; color: var(--accent); line-height: 1;
+  }
+  .lab-card-body { flex: 1; min-width: 240px; }
+  .lab-card-title { font-weight: 600; font-size: 16px; margin-bottom: 4px; }
+  .lab-card-meta { font-size: 13px; color: var(--text-muted); }
+  .lab-card-link {
+    display: inline-block;
+    padding: 9px 18px;
+    background: var(--accent); color: var(--bg);
+    font-weight: 500; font-size: 14px;
+    border-radius: 6px;
+    text-decoration: none; border: none;
+    transition: background 0.15s ease;
+  }
+  .lab-card-link:hover { background: #92400E; border-bottom: none; }
+  .lab-card-link.placeholder {
+    background: var(--bg-elev); color: var(--text-muted);
+    border: 1px dashed var(--border-strong); cursor: not-allowed;
+    pointer-events: none; font-style: italic;
+  }
+  /* Note callout (distinct from blockquote) */
+  .note {
+    margin: 22px 0;
+    padding: 14px 18px 14px 18px;
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 15px;
+  }
+  .note-label {
+    display: inline-block;
+    font-family: 'Fraunces', Georgia, serif; font-style: italic;
+    color: var(--accent); margin-right: 6px;
+    font-size: 14px;
+  }
+  /* Checklist (visual only) */
+  .checklist { list-style: none; padding-left: 0; margin: 14px 0 22px; }
+  .checklist li {
+    padding-left: 28px; position: relative; margin-bottom: 8px;
+  }
+  .checklist li::before {
+    content: ""; position: absolute; left: 0; top: 0.45em;
+    width: 14px; height: 14px;
+    border: 1.5px solid var(--border-strong); border-radius: 3px;
+    background: var(--bg);
+  }
+  /* TOC at top of module pages (within-page only — no cross-page links) */
+  .toc {
+    margin: 28px 0 40px;
+    padding: 18px 22px;
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+  }
+  .toc-title {
+    font-family: 'Fraunces', Georgia, serif; font-style: italic;
+    color: var(--accent); font-size: 14px; margin-bottom: 10px;
+  }
+  .toc ol { padding-left: 22px; margin: 0; font-size: 14px; }
+  .toc ol li { margin-bottom: 4px; }
+  .toc a { border-bottom: none; color: var(--text-muted); }
+  .toc a:hover { color: var(--accent); border-bottom: 1px solid var(--accent-line); }
+  /* Diagram (ASCII flow) */
+  .diagram {
+    margin: 24px 0;
+    padding: 22px;
+    background: var(--code-bg); color: var(--code-text);
+    border-radius: 8px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 13px; line-height: 1.5;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  /* Responsive */
+  @media (max-width: 600px) {
+    main { padding: 40px 20px 80px; }
+    .hero h1 { font-size: 32px; }
+    .hero-lede { font-size: 17px; }
+    article h2 { font-size: 24px; margin-top: 44px; }
+    article h3 { font-size: 18px; }
+    .meta { flex-direction: column; gap: 12px; padding: 14px 18px; }
+    .meta-item { border-right: none; padding-right: 0; margin-right: 0;
+      border-bottom: 1px solid var(--border-strong); padding-bottom: 12px;
+      margin-bottom: 0; }
+    .meta-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .module-row { grid-template-columns: 36px 1fr; gap: 14px; padding: 14px 18px; }
+    .module-format, .module-time { grid-column: 2; font-size: 12px; }
+    .quiz-header { flex-direction: column; align-items: flex-start; gap: 4px; }
+    .lab-card { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+<style>
+  /* Course navigation bar (shared) */
+  .course-nav {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(250, 249, 245, 0.85);
+    -webkit-backdrop-filter: saturate(180%) blur(12px);
+    backdrop-filter: saturate(180%) blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .course-nav-inner {
+    max-width: 820px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; padding: 11px 28px;
+  }
+  .course-nav-brand {
+    display: flex; align-items: baseline; gap: 10px;
+    text-decoration: none; border-bottom: none; white-space: nowrap;
+  }
+  .course-nav-brand-mark {
+    font-family: 'Fraunces', Georgia, serif; font-style: italic;
+    font-weight: 500; font-size: 18px; color: var(--accent);
+  }
+  .course-nav-brand-text {
+    font-size: 13px; color: var(--text-muted); font-weight: 500; letter-spacing: 0.01em;
+  }
+  .course-nav-brand:hover .course-nav-brand-text { color: var(--accent); }
+  .course-nav-brand.is-active .course-nav-brand-text { color: var(--text); }
+  .course-nav-modules {
+    display: flex; align-items: center; gap: 6px;
+    overflow-x: auto; scrollbar-width: none;
+  }
+  .course-nav-modules::-webkit-scrollbar { display: none; }
+  .course-nav-modules a {
+    flex-shrink: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 30px; height: 30px; padding: 0 9px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 13px; font-weight: 600;
+    color: var(--text-muted); text-decoration: none;
+    border: 1px solid var(--border); border-radius: 6px;
+    background: var(--bg);
+    transition: all 0.15s ease;
+  }
+  .course-nav-modules a:hover {
+    border-color: var(--accent-line); color: var(--accent); background: var(--accent-soft);
+  }
+  .course-nav-modules a.is-active {
+    background: var(--accent); color: var(--bg); border-color: var(--accent);
+  }
+  .course-nav-home {
+    font-family: 'Mona Sans', sans-serif; font-weight: 600;
+    padding: 0 13px; margin-right: 8px;
+  }
+  /* Module footer navigation (prev / next) */
+  .module-footer-nav {
+    margin-top: 56px; padding-top: 28px;
+    border-top: 1px solid var(--border);
+    display: flex; align-items: stretch; justify-content: space-between;
+    gap: 16px; flex-wrap: wrap;
+  }
+  .mod-nav-prev, .mod-nav-next {
+    display: inline-flex; flex-direction: column; gap: 3px;
+    text-decoration: none; border-bottom: none; border-radius: 8px;
+    transition: all 0.15s ease;
+  }
+  .mod-nav-label {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 500;
+  }
+  .mod-nav-prev {
+    align-items: flex-start; padding: 10px 4px; color: var(--text-muted);
+  }
+  .mod-nav-prev .mod-nav-label { color: var(--text-subtle); }
+  .mod-nav-prev .mod-nav-title { font-weight: 500; font-size: 15px; color: var(--text); }
+  .mod-nav-prev:hover .mod-nav-title { color: var(--accent); }
+  .mod-nav-next {
+    margin-left: auto; align-items: flex-end; text-align: right;
+    padding: 12px 20px; background: var(--accent); color: var(--bg);
+  }
+  .mod-nav-next .mod-nav-label { color: var(--bg); opacity: 0.82; }
+  .mod-nav-next .mod-nav-title { font-weight: 600; font-size: 15px; color: var(--bg); }
+  .mod-nav-next:hover { background: #92400E; }
+  @media (max-width: 600px) {
+    .course-nav-inner { padding: 10px 16px; }
+    .course-nav-brand-text { display: none; }
+    .module-footer-nav { gap: 12px; }
+    .mod-nav-next { padding: 10px 16px; }
+  }
+</style>
+<nav class="course-nav">
+  <div class="course-nav-inner">
+    <a class="course-nav-brand" href="index.html">
+      <span class="course-nav-brand-mark">SDD</span>
+      <span class="course-nav-brand-text">Course handbook</span>
+    </a>
+    <div class="course-nav-modules">
+      <a href="index.html" class="course-nav-home" title="Course handbook">Home</a>
+      <a href="module-1.html" title="Module 1 — SDD Foundations">1</a>
+      <a href="module-2.html" title="Module 2 — Anatomy of a Good Spec">2</a>
+      <a href="module-3.html" title="Module 3 — Greenfield Lab — Spec Kit from Scratch">3</a>
+      <a href="module-4.html" title="Module 4 — Brownfield Lab — Add “Due Date” ★">4</a>
+      <a href="module-5.html" title="Module 5 — Best Practices &amp; Pitfalls">5</a>
+      <a href="module-6.html" title="Module 6 — Quality, Testing &amp; Team Collaboration">6</a>
+      <a href="module-7.html" title="Module 7 — Measurement &amp; Adoption Roadmap" class="is-active">7</a>
+    </div>
+  </div>
+</nav>
+<main>
+  <header class="hero">
+    <div class="hero-eyebrow">Module 7 &middot; final module</div>
+    <h1>Measurement &amp; Adoption Roadmap</h1>
+    <p class="hero-lede">A five-bucket metric framework, the four anti-metrics that distort behavior, a phased rollout pattern with realistic timelines, and a planning template you can adapt for your team.</p>
+    <div class="meta">
+      <div class="meta-item">
+        <span class="meta-label">Time</span>
+        <span class="meta-value">45 min</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Format</span>
+        <span class="meta-value">Reading + planning template</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Prerequisites</span>
+        <span class="meta-value">Modules 1&ndash;6</span>
+      </div>
+    </div>
+  </header>
+
+  <article>
+
+    <h3>Learning objectives</h3>
+    <p>By the end of this module, you will be able to:</p>
+    <ol>
+      <li>Track SDD adoption across five metric categories (productivity, quality, adoption, ROI, harness quality) without falling for vanity numbers.</li>
+      <li>Recognize and avoid the four anti-metrics that distort SDD behavior.</li>
+      <li>Design a phased rollout from pilot to org-wide using the 4 / 8 / 12+ week pattern.</li>
+      <li>Set realistic ROI expectations across the first 12 months and beyond.</li>
+      <li>Fill in a concrete adoption plan for your team.</li>
+    </ol>
+
+    <h2><span class="h2-num">1.</span>The five-bucket metric framework</h2>
+    <p>If you measure only velocity, you optimize for velocity at the expense of everything else. If you measure only quality, you optimize for safety at the expense of throughput. SDD adoption needs to be tracked across multiple dimensions because the practice affects all of them, often in trade-off relationships.</p>
+    <p>Five categories that span the relevant dimensions:</p>
+
+    <h3>Bucket 1 &mdash; Productivity</h3>
+    <p>These measure throughput and where engineering time is being spent.</p>
+    <ul>
+      <li><strong>Cycle time:</strong> feature request to production. The headline number. SDD should reduce this on well-specified work, but expect it to <em>increase</em> in the first few months as the team learns.</li>
+      <li><strong>Story points per sprint:</strong> velocity in your existing measurement system. Useful for comparing pre- and post-adoption, with the caveat that point estimation often re-baselines after methodology changes.</li>
+      <li><strong>Time allocation breakdown:</strong> how much engineering time is spent writing specs vs. writing code vs. debugging vs. reviewing. The expected SDD shift: more time on specs, less on debugging, similar or less on coding.</li>
+      <li><strong>Iterations per spec:</strong> how many times a spec gets revised before producing acceptable output. Lower is better but never zero. A team trending from 5 iterations to 2 over six months is on the right path.</li>
+    </ul>
+
+    <h3>Bucket 2 &mdash; Quality</h3>
+    <p>These measure whether the code SDD produces is actually better.</p>
+    <ul>
+      <li><strong>Defect density (bugs per KLOC):</strong> compare AI-generated to human-generated code in your codebase. Track the gap closing or widening.</li>
+      <li><strong>Production incidents linked to AI-generated code:</strong> the bottom-line quality metric. Should trend down as harnesses mature.</li>
+      <li><strong>Security findings per PR:</strong> SAST hits, dependency vulnerabilities, secrets detected. Should trend down as the Constitution and validation gates absorb security learnings.</li>
+      <li><strong>Architectural violations:</strong> the metric specific to SDD. Track where they're caught &mdash; at spec gate (cheap), at PR review (medium), or in production (expensive). The shift over time should be from production toward spec gate.</li>
+    </ul>
+
+    <h3>Bucket 3 &mdash; Adoption</h3>
+    <p>These measure whether the practice is being used, not just installed.</p>
+    <ul>
+      <li><strong>Percentage of new features using SDD workflow:</strong> the headline adoption number. Mature SDD: ~80% of new feature work, with the remaining 20% being legitimately &ldquo;skip the spec&rdquo; cases.</li>
+      <li><strong>Percentage of bug fixes flowing through specs:</strong> mature SDD teams tend toward 100% on bug fixes, because the spec for a bug is often shorter than the code change and forces clarity about root cause.</li>
+      <li><strong>Specification template reuse rate:</strong> how often new specs adapt existing templates. High reuse signals a healthy harness; low reuse signals every author is starting from scratch.</li>
+      <li><strong>Developer satisfaction:</strong> qualitative survey, every 4&ndash;6 weeks. SDD adoption that's making developers miserable will fail eventually regardless of what other metrics say.</li>
+    </ul>
+
+    <h3>Bucket 4 &mdash; ROI</h3>
+    <p>These measure whether the practice is paying for itself.</p>
+    <ul>
+      <li><strong>Spec-writing time vs. implementation time saved:</strong> target 20&ndash;40% spec overhead for 50&ndash;80% implementation savings on well-specified features. If you're writing specs that take 60% of feature time and getting 30% implementation savings, your spec process needs work.</li>
+      <li><strong>Tool licensing + training + validation infrastructure costs:</strong> the visible cost of adoption. Include AI model spend.</li>
+      <li><strong>Break-even point:</strong> when monthly savings exceed monthly costs. Realistic: 3&ndash;6 months for small teams, up to 6 months for enterprise. If you're not at break-even by month 9, something is wrong with your adoption &mdash; escalate, don't continue silently.</li>
+    </ul>
+
+    <h3>Bucket 5 &mdash; Harness quality</h3>
+    <p>The most distinctive SDD-specific bucket. Tracks whether the supporting infrastructure (Constitution, templates, validation gates, agent configurations) is improving over time.</p>
+    <ul>
+      <li><strong>Spec-to-implementation gap rate:</strong> bugs where the code diverged from a clear spec. High rate means validation is too loose; tighten the gates.</li>
+      <li><strong>Intent-to-spec gap rate:</strong> bugs where the spec itself was incomplete. High rate means the spec-writing process is missing something; improve elicitation patterns and review checklists.</li>
+      <li><strong>CI gate pass rate on first attempt:</strong> how often code generated from a spec passes all gates without intervention. Should trend up as harnesses mature.</li>
+      <li><strong>Harness improvements per quarter:</strong> count of meaningful Constitution / template / validation-gate updates. Steady improvement is the leading indicator that the team is treating the harness as a real artifact, not a one-time install.</li>
+    </ul>
+
+    <h2><span class="h2-num">2.</span>Anti-metrics &mdash; do not use these</h2>
+    <p>Some metrics actively distort behavior in the wrong direction. The four most common:</p>
+
+    <h3>Lines of code generated</h3>
+    <p>Rewards bloat. A team writing 10,000 lines of generated code per sprint is not necessarily doing better work than a team writing 2,000 lines &mdash; it's plausibly doing much worse. Generated code that does the job in fewer lines is generally higher quality, not lower.</p>
+    <p>If your organization tracks LoC for any reason, separate AI-generated from human-written and don't celebrate the AI-generated number going up.</p>
+
+    <h3>AI suggestion acceptance rate (in isolation)</h3>
+    <p>GitHub publishes data on Copilot acceptance rates around 30%. People sometimes take this as a benchmark to beat &mdash; &ldquo;our team only accepts 25%, we need to push acceptance up.&rdquo;</p>
+    <p>Don't. Acceptance rate without quality control rewards accepting noise. A team that carefully accepts the 30% of suggestions that are correct, rejecting the 70% that aren't, is doing better than a team that accepts 80% indiscriminately and patches the failures downstream.</p>
+    <p>If you track acceptance rate, pair it with downstream quality metrics. Acceptance rate alone is meaningless.</p>
+
+    <h3>Speed-to-first-PR without quality controls</h3>
+    <p>SDD can reduce time to first PR. It can also produce PRs faster than they can be properly reviewed, leading to the Agoda outcome from Module 6. Measuring speed-to-PR without measuring downstream quality, review time, and rework volume gives a falsely positive picture.</p>
+    <p>If you measure this, also measure cycle time to <em>production</em> and rework rate. Those tell the real story.</p>
+
+    <h3>Spec word count</h3>
+    <p>Tempting to measure because it's easy to count. Disastrous to optimize because it incentivizes the exact failure mode (spec bloat, markdown monsters) that Module 5 warned about.</p>
+    <p>If anything, measure the opposite: <em>concision under quality threshold</em>. A team writing shorter specs that still produce correct outputs is doing better than a team writing long ones. But &ldquo;shorter is better&rdquo; is also wrong as an isolated metric &mdash; really short specs produce wrong outputs. The honest answer is that spec length isn't a useful signal in either direction. Measure the outcomes, not the artifact size.</p>
+
+    <h2><span class="h2-num">3.</span>Phased rollout pattern</h2>
+    <p>The pattern that recurs across sources: pilot, then team expansion, then org-wide. Three to six months total, not two weeks.</p>
+
+    <h3>Phase 1 &mdash; Pilot (4 weeks)</h3>
+    <ul>
+      <li><strong>Scope:</strong> 1&ndash;2 developers, working on non-critical greenfield or small brownfield features.</li>
+      <li><strong>Tool:</strong> one chosen tool (Spec Kit for this course), low-friction install.</li>
+      <li><strong>Goal:</strong> the pilot pair becomes fluent, drafts initial spec templates, identifies the first 3&ndash;5 anti-patterns to avoid.</li>
+      <li><strong>Output:</strong> a &ldquo;lessons learned&rdquo; document and a refined Constitution template that the rest of the team can use.</li>
+      <li><strong>Success criteria:</strong> the pair can confidently produce a specced feature in roughly the same time as their previous baseline (not faster yet &mdash; that's a Phase 3 goal).</li>
+    </ul>
+    <p>The key constraint: don't pick a feature where failure has high cost. The pilot will produce some misfires. That's the point &mdash; better to misfire on internal tooling than on a customer-facing payment flow.</p>
+
+    <h3>Phase 2 &mdash; Team expansion (8 weeks)</h3>
+    <ul>
+      <li><strong>Scope:</strong> the full team, mix of greenfield and brownfield features.</li>
+      <li><strong>Workshops:</strong> formal spec-writing workshops based on Modules 2 and 5. The pilot pair leads.</li>
+      <li><strong>Goal:</strong> every team member writes at least one spec per week. About half the team's new feature work goes through SDD.</li>
+      <li><strong>Output:</strong> stable Constitution, several reusable spec templates, established CI validation gates.</li>
+      <li><strong>Success criteria:</strong> team retro indicates positive sentiment (not unanimous; &ldquo;cautiously hopeful&rdquo; is a win); cycle time on specced features is at parity with non-specced work.</li>
+    </ul>
+    <p>This phase is where most adoptions stall. The friction is real &mdash; engineers get faster at the typing part of coding before they get faster at the spec part. Cycle times for specced work might be temporarily worse than non-specced. The pilot pair's role is to keep the team from concluding &ldquo;SDD doesn't work&rdquo; prematurely.</p>
+    <p>A red flag during Phase 2: if specs are being written but ignored during implementation, you're heading toward spec rot before adoption is even complete. Address it directly. Specs that don't constrain implementation are pure overhead.</p>
+
+    <h3>Phase 3 &mdash; Org-wide (12+ weeks)</h3>
+    <ul>
+      <li><strong>Scope:</strong> all teams.</li>
+      <li><strong>Governance:</strong> policies on which features require specs, which can skip them, how Constitutions are reviewed, who owns harness improvements.</li>
+      <li><strong>Goal:</strong> 80%+ of new feature work uses SDD; quality and ROI metrics are net positive.</li>
+      <li><strong>Output:</strong> functional SDD practice with measurable improvement on most metrics.</li>
+      <li><strong>Success criteria:</strong> the ROI metrics from Bucket 4 are net positive; harness improvements (Bucket 5) are happening regularly; developer satisfaction is at or above pre-adoption baseline.</li>
+    </ul>
+    <p>Org-wide rollout is also when multi-team coordination problems emerge (Module 6, Section 5). Plan for them: which Constitutions are shared, which are per-team, how cross-team specs get reviewed.</p>
+
+    <h3>Microsoft research timeline</h3>
+    <p>Microsoft's research on AI coding tools, cited in the SoftwareSeni guide, suggests <strong>about 11 weeks for productivity gains to fully realize</strong>. That's consistent with the 4 + 8 = 12 week structure above. Set expectations accordingly with leadership: don't promise quarterly results in the first quarter.</p>
+
+    <h2><span class="h2-num">4.</span>ROI timeline &mdash; realistic expectations</h2>
+    <p>The honest version of what to tell your VP of engineering, your CTO, or your finance partner.</p>
+
+    <h3>Months 1&ndash;3: net negative ROI</h3>
+    <p>Training, tooling setup, process change. Engineers are simultaneously doing their normal work and learning a new methodology. Cycle times may go up, not down. Some bugs ship that wouldn't have under the old process because the team is still calibrating.</p>
+    <p>This phase has happened to every team that adopts SDD. It's not a sign of failure; it's the expected cost of methodology change. Budget for it explicitly.</p>
+
+    <h3>Months 4&ndash;6: break-even</h3>
+    <p>Initial productivity costs are recouped. The first features specced under SDD are showing measurable quality benefits (fewer architectural violations caught at PR review, faster integration testing, better cross-team API stability if you have multiple repos).</p>
+    <p>Not yet net positive &mdash; but positive trajectory.</p>
+
+    <h3>Months 7&ndash;12: net positive</h3>
+    <p>The harness has accumulated improvements. Spec templates are reused. Validation gates catch what they're meant to catch. Engineers write specs in their natural workflow without it feeling like overhead. The team's overall throughput exceeds pre-adoption levels and quality is measurably better.</p>
+    <p>This is where the adoption either succeeds or quietly collapses. Teams that haven't seen net-positive results by month 9&ndash;12 typically give up. Teams that have, continue.</p>
+
+    <h3>Year 2 and beyond: significant positive ROI</h3>
+    <p>Conditional on harness and team-practice maturity. Compounded benefits emerge:</p>
+    <ul>
+      <li>New engineers onboard faster (specs and Constitutions are excellent learning material).</li>
+      <li>Cross-team integrations are smoother (shared spec format, shared validation expectations).</li>
+      <li>Architectural drift slows (Constitution + CI gates catch what would have been silent erosion).</li>
+      <li>Bug-classification habits (SpecOps loop) feed back into harness improvements that prevent whole classes of recurring issues.</li>
+    </ul>
+    <p>The compounding is the actual ROI. Year 1 is the investment. Year 2 onward is the return.</p>
+    <p>If you're being asked for a 12-month business case, be honest: the case is for getting through year 1 in net-positive territory. The bigger payoff is in year 2.</p>
+
+    <h2><span class="h2-num">5.</span>Adoption plan template</h2>
+    <p>Spend the next 15 minutes filling this in for your team. Don't aim for a polished document; aim for a draft that captures the team's current judgment. A bad draft today is better than a great draft in three weeks. <strong>Use the Copy button to grab the template &mdash; then paste into your team's planning doc and fill it in.</strong></p>
+
+<pre><code># SDD Adoption Plan &mdash; [Team / Org Name]
+
+## Why SDD now
+What problem are we trying to solve? Be specific. ("AI agents are
+generating code our reviewers can't keep up with" is a real reason.
+"It's the modern way" is not.)
+
+[answer]
+
+## Phase 1 &mdash; Pilot
+
+- Pilot pair: [names]
+- Pilot duration: 4 weeks, starting [date]
+- Pilot feature: [a specific upcoming piece of work &mdash; be concrete]
+- Tool: GitHub Spec Kit + [chosen AI agent]
+- Success criteria:
+  - [ ] Pair completes the feature using full SDD workflow
+  - [ ] Constitution v1 written and committed
+  - [ ] At least 1 spec template captured for reuse
+  - [ ] "Lessons learned" doc written for the rest of the team
+
+## Phase 2 &mdash; Team expansion
+
+- Start: [4 weeks after pilot start]
+- Duration: 8 weeks
+- Workshops scheduled: [dates, owners]
+- Success criteria:
+  - [ ] Every team member writes &gt;=1 spec per week
+  - [ ] ~50% of new feature work uses SDD
+  - [ ] Team retro indicates net-positive sentiment
+  - [ ] Cycle time on specced features &lt;= baseline cycle time
+
+## Phase 3 &mdash; Org-wide (or full team if small org)
+
+- Start: [12 weeks after pilot start]
+- Goal adoption rate: 80% of new feature work
+- Governance owner: [name]
+- Harness owner: [name]
+
+## Metrics we'll track from day 1
+
+Productivity:
+- [ ] Cycle time
+- [ ] Time allocation breakdown (spec vs code vs debug vs review)
+
+Quality:
+- [ ] Defect density (AI-generated vs human-written)
+- [ ] Production incidents linked to AI-generated code
+
+Adoption:
+- [ ] % of new features using SDD
+- [ ] Developer satisfaction (survey every 4 weeks)
+
+ROI:
+- [ ] Spec-writing time vs implementation time saved
+- [ ] Total tool/training cost vs. estimated savings
+
+Harness quality:
+- [ ] Spec-to-implementation gap count (per month)
+- [ ] Intent-to-spec gap count (per month)
+
+## Anti-metrics we will NOT track
+
+- Lines of code generated
+- AI suggestion acceptance rate in isolation
+- Speed-to-first-PR without quality follow-through
+- Spec word count
+
+## Risks and mitigations
+
+| Risk                                    | Likelihood | Mitigation |
+|-----------------------------------------|------------|------------|
+| Spec rot in a year                      | [H/M/L]    | [plan]     |
+| Specification theater                   | [H/M/L]    | [plan]     |
+| Review bottleneck not addressed         | [H/M/L]    | [plan]     |
+| Pilot pair leaves before Phase 3        | [H/M/L]    | [plan]     |
+| Tooling friction worse than expected    | [H/M/L]    | [plan]     |
+| Leadership impatient before ROI lands   | [H/M/L]    | [plan]     |
+
+## Decision points
+
+- Month 3: Phase 1 retrospective. Continue, adjust, or stop.
+- Month 6: Phase 2 retrospective. Are we on the trajectory we expected?
+- Month 9: ROI checkpoint. Are quality / cycle time / cost metrics
+  net positive? If not, what specifically is failing?
+- Month 12: Year-1 review. Adoption rate, harness maturity, team sentiment.</code></pre>
+    <p>The template is deliberately blunt. SDD adoptions that succeed have someone willing to make these decisions explicitly, not someone hoping things will work out.</p>
+
+    <h2><span class="h2-num">6.</span>The honest summary</h2>
+    <p>You've now been through the practice (Modules 3 and 4), the patterns (Module 5), the team aspects (Module 6), and the measurement (this module). A short summary of what's worth holding onto:</p>
+    <p><strong>SDD is most valuable</strong> when stakes are high, when AI agents are doing meaningful generation work, and when the team is willing to change collaboration patterns. It's less valuable for solo work on throwaway code or for teams where AI adoption is purely individual.</p>
+    <p><strong>The methodology isn't new</strong>, but the combination of AI-as-spec-consumer, mature CI/CD, and modern tooling makes spec-first practice more powerful and more enforceable than it has been before. Bryan Finster is half right when he calls it &ldquo;BDD with branding&rdquo; &mdash; the underlying idea is BDD, but the leverage is genuinely greater than BDD alone gave you in 2015.</p>
+    <p><strong>The hardest problems are organizational, not technical.</strong> Spec Kit installs in five minutes. Restructuring how PM, architecture, engineering, and quality collaborate takes a year. The technical part is the easy part.</p>
+    <p><strong>The biggest single risk</strong> is the markdown-monster failure mode &mdash; generating elaborate specs that nobody reviews. The biggest single defense is the human-reviewability test: if a spec is too long to read carefully, slice it.</p>
+    <p><strong>The biggest single opportunity</strong> is the SpecOps feedback loop. Bug classification (intent-to-spec vs. spec-to-implementation) drives different harness improvements. Teams that build this habit see compounding quality gains. Teams that don't plateau after the initial productivity bump.</p>
+    <p><strong>The honest ROI</strong> is year-2-positive, not year-1-positive. Sell it to leadership accordingly.</p>
+
+    <h2><span class="h2-num">7.</span>Where to go from here</h2>
+    <p>This is the end of the formal course. From here, the most useful next steps are:</p>
+    <ol>
+      <li><strong>Use what's in your adoption plan template above.</strong> A plan that gets executed is worth more than a plan that gets polished.</li>
+      <li><strong>Pick a real upcoming piece of work</strong> and apply the brownfield pattern from Module 4 to it. Real work teaches faster than labs.</li>
+      <li><strong>Run the discussion prompts from Module 6 with your team.</strong> The answers your team gives matter more than what this course says.</li>
+      <li><strong>Re-read Module 5's pitfalls list quarterly.</strong> Most teams hit at least three of them in the first year. Catching them early is cheaper than fixing them late.</li>
+      <li><strong>Update the Constitution often.</strong> A Constitution that hasn't changed in three months is either perfect or stale, and it's almost always stale.</li>
+    </ol>
+    <p>Good luck.</p>
+
+    <div class="module-footer-nav">
+      <a class="mod-nav-prev" href="module-6.html">
+        <span class="mod-nav-label">← Previous · Module 6</span>
+        <span class="mod-nav-title">Quality, Testing &amp; Team Collaboration</span>
+      </a>
+      <a class="mod-nav-next" href="index.html">
+        <span class="mod-nav-label">Course complete →</span>
+        <span class="mod-nav-title">Back to handbook</span>
+      </a>
+    </div>
+  </article>
+</main>
+<script>
+  // Auto-attach copy buttons to all <pre> blocks
+  document.querySelectorAll('pre').forEach((pre) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'code-block';
+    pre.parentNode.insertBefore(wrap, pre);
+    wrap.appendChild(pre);
+    const btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.type = 'button';
+    btn.textContent = 'Copy';
+    btn.addEventListener('click', async () => {
+      const text = pre.innerText;
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch (e) {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      }
+      btn.textContent = 'Copied';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'Copy';
+        btn.classList.remove('copied');
+      }, 1400);
+    });
+    wrap.appendChild(btn);
+  });
+
+  // Reveal-on-click blocks
+  document.querySelectorAll('.reveal-trigger').forEach((trigger) => {
+    trigger.addEventListener('click', () => {
+      trigger.parentElement.classList.toggle('open');
+    });
+  });
+
+  // Quiz logic — multiple choice
+  document.querySelectorAll('.quiz-question[data-type="mc"]').forEach((q) => {
+    const correct = q.dataset.correct;
+    const opts = q.querySelectorAll('.quiz-opt');
+    const feedback = q.querySelector('.quiz-feedback');
+    opts.forEach((opt) => {
+      opt.addEventListener('click', () => {
+        const choice = opt.dataset.choice;
+        opts.forEach((o) => {
+          o.disabled = true;
+          if (o.dataset.choice === correct) {
+            o.classList.add('correct');
+          } else if (o === opt) {
+            o.classList.add('incorrect');
+          } else {
+            o.classList.add('dim');
+          }
+        });
+        if (feedback) {
+          feedback.classList.add('show');
+          feedback.classList.add(choice === correct ? 'correct' : 'incorrect');
+        }
+      });
+    });
+  });
+
+  // Quiz logic — open-ended (just reveal)
+  document.querySelectorAll('.quiz-open-toggle').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const ans = btn.nextElementSibling;
+      if (ans && ans.classList.contains('quiz-open-answer')) {
+        ans.classList.toggle('show');
+        btn.textContent = ans.classList.contains('show') ? 'Hide answer' : 'Reveal answer';
+      }
+    });
+  });
+</script>
+</body>
+</html>

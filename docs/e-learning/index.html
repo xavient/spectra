@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spec-Driven Development &mdash; Engineering Team E-Learning</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,400;1,9..144,500&family=JetBrains+Mono:wght@400;500;600&family=Mona+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FAF9F5;
+    --bg-elev: #F4F1E8;
+    --text: #1A1614;
+    --text-muted: #6B6357;
+    --text-subtle: #94897A;
+    --accent: #B45309;
+    --accent-soft: rgba(180, 83, 9, 0.09);
+    --accent-line: rgba(180, 83, 9, 0.25);
+    --border: #E8E2D4;
+    --border-strong: #D4CCB8;
+    --code-bg: #1A1614;
+    --code-text: #F0EAD8;
+    --code-comment: #94897A;
+    --code-accent: #F0B070;
+    --success: #166534;
+    --success-soft: rgba(22, 101, 52, 0.08);
+    --error: #991B1B;
+    --error-soft: rgba(153, 27, 27, 0.06);
+    --shadow-sm: 0 1px 2px rgba(26, 22, 20, 0.04);
+    --shadow-md: 0 4px 12px rgba(26, 22, 20, 0.06);
+    --max-w: 720px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Mona Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    font-weight: 400;
+    font-size: 17px;
+    line-height: 1.7;
+    color: var(--text);
+    background: var(--bg);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  main {
+    max-width: var(--max-w);
+    margin: 0 auto;
+    padding: 64px 28px 120px;
+  }
+  /* Hero */
+  .hero { margin-bottom: 56px; padding-bottom: 40px; border-bottom: 1px solid var(--border); }
+  .hero-eyebrow {
+    font-family: 'Fraunces', Georgia, serif;
+    font-style: italic; font-weight: 400;
+    font-size: 17px; color: var(--accent); letter-spacing: 0.01em;
+    margin-bottom: 18px;
+  }
+  .hero h1 {
+    font-family: 'Mona Sans', sans-serif;
+    font-weight: 600; font-size: 44px; line-height: 1.1;
+    letter-spacing: -0.025em; margin-bottom: 22px; color: var(--text);
+  }
+  .hero-lede {
+    font-size: 19px; line-height: 1.55; color: var(--text-muted); max-width: 600px;
+  }
+  /* Meta block */
+  .meta {
+    display: flex; flex-wrap: wrap;
+    margin-top: 32px; padding: 18px 22px;
+    background: var(--bg-elev); border: 1px solid var(--border);
+    border-radius: 6px; font-size: 14px;
+  }
+  .meta-item {
+    display: flex; flex-direction: column; gap: 2px;
+    padding-right: 32px; margin-right: 32px;
+    border-right: 1px solid var(--border-strong);
+  }
+  .meta-item:last-child { border-right: none; padding-right: 0; margin-right: 0; }
+  .meta-label {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--text-subtle); font-weight: 500;
+  }
+  .meta-value { color: var(--text); font-weight: 500; }
+  /* Article typography */
+  article h2 {
+    font-family: 'Mona Sans', sans-serif;
+    font-weight: 600; font-size: 28px; line-height: 1.25;
+    letter-spacing: -0.018em; margin-top: 56px; margin-bottom: 18px; color: var(--text);
+  }
+  article h2 .h2-num {
+    font-family: 'Fraunces', Georgia, serif; font-style: italic;
+    font-weight: 400; color: var(--accent); margin-right: 14px;
+  }
+  article h3 {
+    font-weight: 600; font-size: 20px; line-height: 1.3;
+    letter-spacing: -0.012em; margin-top: 36px; margin-bottom: 12px; color: var(--text);
+  }
+  article h4 {
+    font-weight: 600; font-size: 16px;
+    margin-top: 28px; margin-bottom: 8px; color: var(--text);
+  }
+  article p { margin-bottom: 18px; }
+  article ul, article ol { margin: 0 0 22px 0; padding-left: 22px; }
+  article li { margin-bottom: 8px; padding-left: 4px; }
+  article li::marker { color: var(--text-subtle); }
+  article ul ul, article ol ol, article ul ol, article ol ul { margin: 8px 0 4px 0; }
+  article a {
+    color: var(--accent); text-decoration: none;
+    border-bottom: 1px solid var(--accent-line);
+    transition: border-color 0.15s ease;
+  }
+  article a:hover { border-bottom-color: var(--accent); }
+  article strong { font-weight: 600; color: var(--text); }
+  article em { font-style: italic; }
+  /* Inline code */
+  article code {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 0.86em; background: var(--bg-elev);
+    border: 1px solid var(--border); padding: 1px 6px;
+    border-radius: 4px; color: var(--text); font-weight: 500;
+  }
+  /* Code blocks */
+  .code-block { position: relative; margin: 22px 0 26px; }
+  pre {
+    background: var(--code-bg); color: var(--code-text);
+    padding: 18px 20px; border-radius: 8px; overflow-x: auto;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 14px; line-height: 1.6; box-shadow: var(--shadow-sm);
+  }
+  pre code {
+    background: none; border: none; padding: 0;
+    color: inherit; font-size: inherit; font-weight: 400;
+  }
+  .copy-btn {
+    position: absolute; top: 10px; right: 10px;
+    background: rgba(240, 234, 216, 0.08);
+    border: 1px solid rgba(240, 234, 216, 0.18);
+    color: var(--code-text); font-family: 'Mona Sans', sans-serif;
+    font-size: 11px; font-weight: 500; letter-spacing: 0.04em;
+    text-transform: uppercase; padding: 5px 10px;
+    border-radius: 4px; cursor: pointer; opacity: 0;
+    transition: all 0.15s ease;
+  }
+  .code-block:hover .copy-btn { opacity: 1; }
+  .copy-btn:hover { background: rgba(240, 234, 216, 0.18); }
+  .copy-btn.copied { background: rgba(34, 197, 94, 0.2); border-color: rgba(34, 197, 94, 0.4); }
+  /* Blockquotes & callouts */
+  blockquote {
+    margin: 24px 0; padding: 16px 22px;
+    background: var(--accent-soft); border-left: 3px solid var(--accent);
+    border-radius: 0 6px 6px 0; color: var(--text); font-size: 16px;
+  }
+  blockquote p { margin-bottom: 12px; }
+  blockquote p:last-child { margin-bottom: 0; }
+  blockquote strong { color: var(--text); }
+  /* Tables */
+  .table-wrap {
+    overflow-x: auto; margin: 22px 0 26px;
+    border: 1px solid var(--border); border-radius: 6px;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 15px; }
+  th, td {
+    text-align: left; padding: 12px 16px;
+    border-bottom: 1px solid var(--border); vertical-align: top;
+  }
+  th {
+    background: var(--bg-elev); font-weight: 600;
+    font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em;
+    color: var(--text-muted);
+  }
+  tr:last-child td { border-bottom: none; }
+  td code, th code { font-size: 13px; }
+  /* HR */
+  hr { border: none; border-top: 1px solid var(--border); margin: 56px 0; }
+  /* Module list (README) */
+  .module-list {
+    display: flex; flex-direction: column; gap: 0;
+    margin: 28px 0 32px;
+    border: 1px solid var(--border); border-radius: 8px;
+    overflow: hidden; background: var(--bg-elev);
+  }
+  .module-row {
+    display: grid; grid-template-columns: 48px 1fr auto auto;
+    gap: 18px; align-items: center;
+    padding: 16px 22px; border-bottom: 1px solid var(--border);
+    background: var(--bg);
+  }
+  .module-row:last-child { border-bottom: none; }
+  .module-row.featured {
+    background: linear-gradient(to right, var(--accent-soft), transparent 60%);
+  }
+  a.module-row { color: inherit; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.15s ease; }
+  a.module-row:last-child { border-bottom: none; }
+  a.module-row:hover { background: var(--accent-soft); }
+  a.module-row.featured:hover { background: linear-gradient(to right, rgba(180, 83, 9, 0.16), transparent 60%); }
+  a.module-row:hover .module-title { color: var(--accent); }
+  .module-num {
+    font-family: 'Fraunces', Georgia, serif; font-style: italic;
+    font-size: 22px; font-weight: 500; color: var(--accent);
+  }
+  .module-title { font-weight: 600; font-size: 16px; color: var(--text); line-height: 1.35; }
+  .module-title-sub { font-size: 13px; color: var(--text-muted); margin-top: 2px; font-weight: 400; }
+  .module-format { font-size: 13px; color: var(--text-subtle); font-style: italic; }
+  .module-time { font-size: 13px; color: var(--text-muted); font-weight: 500;
+    font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .star { color: var(--accent); margin-left: 4px; }
+  .path-grid { display: grid; grid-template-columns: 1fr; gap: 14px; margin: 22px 0 28px; }
+  .path-card { padding: 18px 22px; background: var(--bg-elev);
+    border: 1px solid var(--border); border-radius: 6px; }
+  .path-card-title { font-weight: 600; font-size: 15px; margin-bottom: 4px; color: var(--text); }
+  .path-card-body { font-size: 14px; color: var(--text-muted); line-height: 1.55; }
+  .footer-note {
+    margin-top: 80px; padding-top: 32px;
+    border-top: 1px solid var(--border);
+    font-size: 14px; color: var(--text-subtle); text-align: center;
+  }
+  /* Quiz (Module 1) */
+  .quiz {
+    margin: 28px 0 32px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg-elev);
+    overflow: hidden;
+  }
+  .quiz-header {
+    padding: 16px 22px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .quiz-title {
+    font-family: 'Fraunces', Georgia, serif; font-style: italic;
+    font-size: 14px; color: var(--accent); letter-spacing: 0.02em;
+  }
+  .quiz-progress { font-size: 13px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+  .quiz-question { padding: 20px 22px; border-bottom: 1px solid var(--border); }
+  .quiz-question:last-child { border-bottom: none; }
+  .quiz-q-prompt { font-weight: 600; margin-bottom: 14px; font-size: 16px; }
+  .quiz-options { display: flex; flex-direction: column; gap: 8px; }
+  .quiz-opt {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 11px 14px;
+    border: 1px solid var(--border); border-radius: 6px;
+    background: var(--bg); cursor: pointer;
+    font-size: 15px; line-height: 1.45;
+    transition: all 0.15s ease;
+    text-align: left;
+    width: 100%;
+    color: var(--text);
+    font-family: inherit;
+  }
+  .quiz-opt:hover:not(:disabled) { border-color: var(--accent-line); background: var(--accent-soft); }
+  .quiz-opt:disabled { cursor: default; }
+  .quiz-opt-letter {
+    flex-shrink: 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px; font-weight: 600;
+    color: var(--text-muted);
+    width: 18px;
+  }
+  .quiz-opt.correct {
+    background: var(--success-soft);
+    border-color: var(--success);
+  }
+  .quiz-opt.correct .quiz-opt-letter { color: var(--success); }
+  .quiz-opt.incorrect {
+    background: var(--error-soft);
+    border-color: var(--error);
+  }
+  .quiz-opt.incorrect .quiz-opt-letter { color: var(--error); }
+  .quiz-opt.dim { opacity: 0.55; }
+  .quiz-feedback {
+    margin-top: 14px;
+    padding: 14px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    line-height: 1.55;
+    display: none;
+  }
+  .quiz-feedback.show { display: block; }
+  .quiz-feedback.correct { background: var(--success-soft); border: 1px solid rgba(22, 101, 52, 0.25); }
+  .quiz-feedback.incorrect { background: var(--error-soft); border: 1px solid rgba(153, 27, 27, 0.18); }
+  .quiz-feedback-title { font-weight: 600; margin-bottom: 4px; }
+  .quiz-feedback.correct .quiz-feedback-title { color: var(--success); }
+  .quiz-feedback.incorrect .quiz-feedback-title { color: var(--error); }
+  /* Open-ended quiz answer (no options) */
+  .quiz-open-toggle {
+    margin-top: 8px;
+    padding: 9px 16px;
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 6px; cursor: pointer;
+    font-family: inherit; font-size: 14px; font-weight: 500;
+    color: var(--text-muted);
+    transition: all 0.15s ease;
+  }
+  .quiz-open-toggle:hover { background: var(--accent-soft); color: var(--accent); border-color: var(--accent-line); }
+  .quiz-open-answer {
+    margin-top: 12px; padding: 14px 16px;
+    background: var(--accent-soft); border: 1px solid var(--accent-line);
+    border-radius: 6px; font-size: 14px; line-height: 1.6;
+    display: none;
+  }
+  .quiz-open-answer.show { display: block; }
+  /* Reveal block (sample solutions) */
+  .reveal {
+    margin: 24px 0 28px;
+    border: 1px dashed var(--border-strong);
+    border-radius: 8px;
+    background: var(--bg-elev);
+    overflow: hidden;
+  }
+  .reveal-trigger {
+    width: 100%;
+    padding: 16px 22px;
+    background: none; border: none;
+    cursor: pointer;
+    font-family: inherit; font-size: 15px; font-weight: 500;
+    color: var(--text); text-align: left;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px;
+    transition: background 0.15s ease;
+  }
+  .reveal-trigger:hover { background: var(--accent-soft); }
+  .reveal-trigger-label {
+    font-family: 'Fraunces', Georgia, serif; font-style: italic;
+    color: var(--accent); font-size: 14px; margin-right: 8px;
+  }
+  .reveal-trigger-icon {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-muted); font-size: 14px;
+    transition: transform 0.2s ease;
+  }
+  .reveal.open .reveal-trigger-icon { transform: rotate(45deg); }
+  .reveal-content {
+    display: none;
+    padding: 4px 22px 22px;
+    border-top: 1px solid var(--border);
+    background: var(--bg);
+  }
+  .reveal.open .reveal-content { display: block; }
+  .reveal-content > *:first-child { margin-top: 18px; }
+  /* Lab placeholder card (Module 4) */
+  .lab-card {
+    margin: 28px 0;
+    padding: 22px 24px;
+    background: linear-gradient(135deg, var(--accent-soft), transparent 80%);
+    border: 1px solid var(--accent-line);
+    border-radius: 10px;
+    display: flex; align-items: center; gap: 18px;
+    flex-wrap: wrap;
+  }
+  .lab-card-icon {
+    font-family: 'Fraunces', Georgia, serif; font-style: italic;
+    font-size: 36px; color: var(--accent); line-height: 1;
+  }
+  .lab-card-body { flex: 1; min-width: 240px; }
+  .lab-card-title { font-weight: 600; font-size: 16px; margin-bottom: 4px; }
+  .lab-card-meta { font-size: 13px; color: var(--text-muted); }
+  .lab-card-link {
+    display: inline-block;
+    padding: 9px 18px;
+    background: var(--accent); color: var(--bg);
+    font-weight: 500; font-size: 14px;
+    border-radius: 6px;
+    text-decoration: none; border: none;
+    transition: background 0.15s ease;
+  }
+  .lab-card-link:hover { background: #92400E; border-bottom: none; }
+  .lab-card-link.placeholder {
+    background: var(--bg-elev); color: var(--text-muted);
+    border: 1px dashed var(--border-strong); cursor: not-allowed;
+    pointer-events: none; font-style: italic;
+  }
+  /* Note callout (distinct from blockquote) */
+  .note {
+    margin: 22px 0;
+    padding: 14px 18px 14px 18px;
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 15px;
+  }
+  .note-label {
+    display: inline-block;
+    font-family: 'Fraunces', Georgia, serif; font-style: italic;
+    color: var(--accent); margin-right: 6px;
+    font-size: 14px;
+  }
+  /* Checklist (visual only) */
+  .checklist { list-style: none; padding-left: 0; margin: 14px 0 22px; }
+  .checklist li {
+    padding-left: 28px; position: relative; margin-bottom: 8px;
+  }
+  .checklist li::before {
+    content: ""; position: absolute; left: 0; top: 0.45em;
+    width: 14px; height: 14px;
+    border: 1.5px solid var(--border-strong); border-radius: 3px;
+    background: var(--bg);
+  }
+  /* TOC at top of module pages (within-page only — no cross-page links) */
+  .toc {
+    margin: 28px 0 40px;
+    padding: 18px 22px;
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+  }
+  .toc-title {
+    font-family: 'Fraunces', Georgia, serif; font-style: italic;
+    color: var(--accent); font-size: 14px; margin-bottom: 10px;
+  }
+  .toc ol { padding-left: 22px; margin: 0; font-size: 14px; }
+  .toc ol li { margin-bottom: 4px; }
+  .toc a { border-bottom: none; color: var(--text-muted); }
+  .toc a:hover { color: var(--accent); border-bottom: 1px solid var(--accent-line); }
+  /* Diagram (ASCII flow) */
+  .diagram {
+    margin: 24px 0;
+    padding: 22px;
+    background: var(--code-bg); color: var(--code-text);
+    border-radius: 8px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 13px; line-height: 1.5;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  /* Responsive */
+  @media (max-width: 600px) {
+    main { padding: 40px 20px 80px; }
+    .hero h1 { font-size: 32px; }
+    .hero-lede { font-size: 17px; }
+    article h2 { font-size: 24px; margin-top: 44px; }
+    article h3 { font-size: 18px; }
+    .meta { flex-direction: column; gap: 12px; padding: 14px 18px; }
+    .meta-item { border-right: none; padding-right: 0; margin-right: 0;
+      border-bottom: 1px solid var(--border-strong); padding-bottom: 12px;
+      margin-bottom: 0; }
+    .meta-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .module-row { grid-template-columns: 36px 1fr; gap: 14px; padding: 14px 18px; }
+    .module-format, .module-time { grid-column: 2; font-size: 12px; }
+    .quiz-header { flex-direction: column; align-items: flex-start; gap: 4px; }
+    .lab-card { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+<style>
+  /* Course navigation bar (shared) */
+  .course-nav {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(250, 249, 245, 0.85);
+    -webkit-backdrop-filter: saturate(180%) blur(12px);
+    backdrop-filter: saturate(180%) blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .course-nav-inner {
+    max-width: 820px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; padding: 11px 28px;
+  }
+  .course-nav-brand {
+    display: flex; align-items: baseline; gap: 10px;
+    text-decoration: none; border-bottom: none; white-space: nowrap;
+  }
+  .course-nav-brand-mark {
+    font-family: 'Fraunces', Georgia, serif; font-style: italic;
+    font-weight: 500; font-size: 18px; color: var(--accent);
+  }
+  .course-nav-brand-text {
+    font-size: 13px; color: var(--text-muted); font-weight: 500; letter-spacing: 0.01em;
+  }
+  .course-nav-brand:hover .course-nav-brand-text { color: var(--accent); }
+  .course-nav-brand.is-active .course-nav-brand-text { color: var(--text); }
+  .course-nav-modules {
+    display: flex; align-items: center; gap: 6px;
+    overflow-x: auto; scrollbar-width: none;
+  }
+  .course-nav-modules::-webkit-scrollbar { display: none; }
+  .course-nav-modules a {
+    flex-shrink: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 30px; height: 30px; padding: 0 9px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 13px; font-weight: 600;
+    color: var(--text-muted); text-decoration: none;
+    border: 1px solid var(--border); border-radius: 6px;
+    background: var(--bg);
+    transition: all 0.15s ease;
+  }
+  .course-nav-modules a:hover {
+    border-color: var(--accent-line); color: var(--accent); background: var(--accent-soft);
+  }
+  .course-nav-modules a.is-active {
+    background: var(--accent); color: var(--bg); border-color: var(--accent);
+  }
+  .course-nav-home {
+    font-family: 'Mona Sans', sans-serif; font-weight: 600;
+    padding: 0 13px; margin-right: 8px;
+  }
+  /* Module footer navigation (prev / next) */
+  .module-footer-nav {
+    margin-top: 56px; padding-top: 28px;
+    border-top: 1px solid var(--border);
+    display: flex; align-items: stretch; justify-content: space-between;
+    gap: 16px; flex-wrap: wrap;
+  }
+  .mod-nav-prev, .mod-nav-next {
+    display: inline-flex; flex-direction: column; gap: 3px;
+    text-decoration: none; border-bottom: none; border-radius: 8px;
+    transition: all 0.15s ease;
+  }
+  .mod-nav-label {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 500;
+  }
+  .mod-nav-prev {
+    align-items: flex-start; padding: 10px 4px; color: var(--text-muted);
+  }
+  .mod-nav-prev .mod-nav-label { color: var(--text-subtle); }
+  .mod-nav-prev .mod-nav-title { font-weight: 500; font-size: 15px; color: var(--text); }
+  .mod-nav-prev:hover .mod-nav-title { color: var(--accent); }
+  .mod-nav-next {
+    margin-left: auto; align-items: flex-end; text-align: right;
+    padding: 12px 20px; background: var(--accent); color: var(--bg);
+  }
+  .mod-nav-next .mod-nav-label { color: var(--bg); opacity: 0.82; }
+  .mod-nav-next .mod-nav-title { font-weight: 600; font-size: 15px; color: var(--bg); }
+  .mod-nav-next:hover { background: #92400E; }
+  @media (max-width: 600px) {
+    .course-nav-inner { padding: 10px 16px; }
+    .course-nav-brand-text { display: none; }
+    .module-footer-nav { gap: 12px; }
+    .mod-nav-next { padding: 10px 16px; }
+  }
+</style>
+<nav class="course-nav">
+  <div class="course-nav-inner">
+    <a class="course-nav-brand is-active" href="index.html">
+      <span class="course-nav-brand-mark">SDD</span>
+      <span class="course-nav-brand-text">Course handbook</span>
+    </a>
+    <div class="course-nav-modules">
+      <a href="index.html" class="course-nav-home is-active" title="Course handbook">Home</a>
+      <a href="module-1.html" title="Module 1 — SDD Foundations">1</a>
+      <a href="module-2.html" title="Module 2 — Anatomy of a Good Spec">2</a>
+      <a href="module-3.html" title="Module 3 — Greenfield Lab — Spec Kit from Scratch">3</a>
+      <a href="module-4.html" title="Module 4 — Brownfield Lab — Add “Due Date” ★">4</a>
+      <a href="module-5.html" title="Module 5 — Best Practices &amp; Pitfalls">5</a>
+      <a href="module-6.html" title="Module 6 — Quality, Testing &amp; Team Collaboration">6</a>
+      <a href="module-7.html" title="Module 7 — Measurement &amp; Adoption Roadmap">7</a>
+    </div>
+  </div>
+</nav>
+<main>
+  <header class="hero">
+    <div class="hero-eyebrow">Course handbook</div>
+    <h1>Spec-Driven Development</h1>
+    <p class="hero-lede">A tool-neutral methodology for keeping AI-generated code aligned with intent, anchored to GitHub Spec Kit for the hands-on labs. Designed for engineers who already write code daily and have at least passing exposure to AI coding agents.</p>
+    <div class="meta">
+      <div class="meta-item">
+        <span class="meta-label">Total time</span>
+        <span class="meta-value">8&ndash;9 hours</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Pace</span>
+        <span class="meta-value">Self-paced or 2-day workshop</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Format</span>
+        <span class="meta-value">7 modules + 2 labs</span>
+      </div>
+    </div>
+  </header>
+
+  <article>
+    <h2>Course structure</h2>
+    <div class="module-list">
+      <a class="module-row" href="module-1.html">
+        <div class="module-num">1</div>
+        <div>
+          <div class="module-title">SDD Foundations</div>
+          <div class="module-title-sub">Definitions, the three levels, the four-phase workflow, when not to use SDD</div>
+        </div>
+        <div class="module-format">Reading + knowledge check</div>
+        <div class="module-time">45 min</div>
+      </a>
+      <a class="module-row" href="module-2.html">
+        <div class="module-num">2</div>
+        <div>
+          <div class="module-title">Anatomy of a Good Spec</div>
+          <div class="module-title-sub">The six-element framework, decomposition, Constitution vs spec, common failures</div>
+        </div>
+        <div class="module-format">Reading + writing exercise</div>
+        <div class="module-time">60 min</div>
+      </a>
+      <a class="module-row" href="module-3.html">
+        <div class="module-num">3</div>
+        <div>
+          <div class="module-title">Greenfield Lab &mdash; Spec Kit from scratch</div>
+          <div class="module-title-sub">Install Spec Kit, run the four-phase workflow on a small to-do app</div>
+        </div>
+        <div class="module-format">Hands-on lab</div>
+        <div class="module-time">90 min</div>
+      </a>
+      <a class="module-row featured" href="module-4.html">
+        <div class="module-num">4</div>
+        <div>
+          <div class="module-title">Brownfield Lab &mdash; Add &ldquo;due date&rdquo; to the to-do app<span class="star">&#9733;</span></div>
+          <div class="module-title-sub">The centerpiece. Apply SDD to an existing codebase using the incremental-spec pattern.</div>
+        </div>
+        <div class="module-format">Hands-on lab</div>
+        <div class="module-time">2&ndash;3 hrs</div>
+      </a>
+      <a class="module-row" href="module-5.html">
+        <div class="module-num">5</div>
+        <div>
+          <div class="module-title">Best Practices &amp; Pitfalls</div>
+          <div class="module-title-sub">What works consistently, what sabotages adoption, three deliberately broken specs to critique</div>
+        </div>
+        <div class="module-format">Reading + critique exercise</div>
+        <div class="module-time">60 min</div>
+      </a>
+      <a class="module-row" href="module-6.html">
+        <div class="module-num">6</div>
+        <div>
+          <div class="module-title">Quality, Testing &amp; Team Collaboration</div>
+          <div class="module-title-sub">Why specs catch what unit tests miss, the role split, the review-bottleneck risk</div>
+        </div>
+        <div class="module-format">Reading + discussion</div>
+        <div class="module-time">60 min</div>
+      </a>
+      <a class="module-row" href="module-7.html">
+        <div class="module-num">7</div>
+        <div>
+          <div class="module-title">Measurement &amp; Adoption Roadmap</div>
+          <div class="module-title-sub">Five-bucket metric framework, anti-metrics, phased rollout, ROI timeline, planning template</div>
+        </div>
+        <div class="module-format">Reading + planning template</div>
+        <div class="module-time">45 min</div>
+      </a>
+    </div>
+    <p style="font-size: 14px; color: var(--text-muted);"><span class="star" style="margin-left:0;">&#9733;</span> Module 4 is the centerpiece. If you only do one lab, do this one.</p>
+
+    <h2>Suggested learning paths</h2>
+    <div class="path-grid">
+      <div class="path-card">
+        <div class="path-card-title">Self-paced (recommended)</div>
+        <div class="path-card-body">One or two modules per week over 4&ndash;5 weeks. Gives time for the labs to settle and for discussion prompts to land in real team contexts.</div>
+      </div>
+      <div class="path-card">
+        <div class="path-card-title">Two-day workshop</div>
+        <div class="path-card-body">Day 1 covers Modules 1&ndash;3 (foundations + greenfield lab); day 2 covers Modules 4&ndash;7 (brownfield lab + practice + team aspects).</div>
+      </div>
+      <div class="path-card">
+        <div class="path-card-title">Engineering-leadership track</div>
+        <div class="path-card-body">Modules 1, 5, 6, 7 only. Skips the labs but covers everything needed to sponsor adoption.</div>
+      </div>
+      <div class="path-card">
+        <div class="path-card-title">Hands-on track</div>
+        <div class="path-card-body">Modules 2, 3, 4 only. For engineers who want to feel the practice before reading about it.</div>
+      </div>
+    </div>
+
+    <h2>Lab codebase</h2>
+    <p>Both labs use the same stack &mdash; <strong>Next.js 14 + React 18 + TypeScript + Tailwind CSS + localStorage</strong> &mdash; so what you learn in Module 3 transfers directly to Module 4.</p>
+    <ul>
+      <li><strong>Module 3 (greenfield)</strong> scaffolds a fresh Next.js project with <code>create-next-app</code> and uses Spec Kit to build a small to-do app from scratch. No Git, everything local.</li>
+      <li><strong>Module 4 (brownfield)</strong> uses a starter codebase shipped with the course &mdash; a minimal but fully working to-do app. It supports add, mark-done, and delete, but has no specs and no due-date feature, mirroring the kind of codebase teams typically inherit. Module 4 walks through using Spec Kit's brownfield workflow to add a &ldquo;due date&rdquo; feature on top of it. The codebase ships without that feature on purpose.</li>
+    </ul>
+    <p>The lab codebase ships as <code>lab-codebase.zip</code>. The download link is on the Module 4 page. Unzip it once and run <code>npm install &amp;&amp; npm run dev</code> to get started.</p>
+
+    <h2>Prerequisites</h2>
+    <ul>
+      <li>Working knowledge of JavaScript / TypeScript and React</li>
+      <li>Familiarity with the command line</li>
+      <li>Access to an AI coding agent &mdash; Claude Code (recommended), GitHub Copilot, Cursor, or similar</li>
+      <li><strong>Node.js 18+</strong> for running both labs</li>
+      <li><strong>Python 3.11+</strong> for installing GitHub Spec Kit itself (Spec Kit is a Python CLI; you don't write Python in either lab)</li>
+    </ul>
+
+  </article>
+
+  <div class="footer-note">Use the course navigation to begin with Module 1 &mdash; SDD Foundations.</div>
+</main>
+<script>
+  // Auto-attach copy buttons to all <pre> blocks
+  document.querySelectorAll('pre').forEach((pre) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'code-block';
+    pre.parentNode.insertBefore(wrap, pre);
+    wrap.appendChild(pre);
+    const btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.type = 'button';
+    btn.textContent = 'Copy';
+    btn.addEventListener('click', async () => {
+      const text = pre.innerText;
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch (e) {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      }
+      btn.textContent = 'Copied';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'Copy';
+        btn.classList.remove('copied');
+      }, 1400);
+    });
+    wrap.appendChild(btn);
+  });
+
+  // Reveal-on-click blocks
+  document.querySelectorAll('.reveal-trigger').forEach((trigger) => {
+    trigger.addEventListener('click', () => {
+      trigger.parentElement.classList.toggle('open');
+    });
+  });
+
+  // Quiz logic — multiple choice
+  document.querySelectorAll('.quiz-question[data-type="mc"]').forEach((q) => {
+    const correct = q.dataset.correct;
+    const opts = q.querySelectorAll('.quiz-opt');
+    const feedback = q.querySelector('.quiz-feedback');
+    opts.forEach((opt) => {
+      opt.addEventListener('click', () => {
+        const choice = opt.dataset.choice;
+        opts.forEach((o) => {
+          o.disabled = true;
+          if (o.dataset.choice === correct) {
+            o.classList.add('correct');
+          } else if (o === opt) {
+            o.classList.add('incorrect');
+          } else {
+            o.classList.add('dim');
+          }
+        });
+        if (feedback) {
+          feedback.classList.add('show');
+          feedback.classList.add(choice === correct ? 'correct' : 'incorrect');
+        }
+      });
+    });
+  });
+
+  // Quiz logic — open-ended (just reveal)
+  document.querySelectorAll('.quiz-open-toggle').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const ans = btn.nextElementSibling;
+      if (ans && ans.classList.contains('quiz-open-answer')) {
+        ans.classList.toggle('show');
+        btn.textContent = ans.classList.contains('show') ? 'Hide answer' : 'Reveal answer';
+      }
+    });
+  });
+</script>
+</body>
+</html>

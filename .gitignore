@@ -1,0 +1,15 @@
+# macOS
+.DS_Store
+
+# Editor / IDE
+.idea/
+.vscode/
+*.swp
+
+# Python
+__pycache__/
+*.pyc
+
+# Stray zips (local scratch, CI release artifacts) -- but DO track the published Pages site
+*.zip
+!docs/packages/*.zip
