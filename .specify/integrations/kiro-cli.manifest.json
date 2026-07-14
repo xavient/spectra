@@ -1,11 +1,11 @@
 {
   "integration": "kiro-cli",
-  "version": "0.12.11",
-  "installed_at": "2026-07-11T15:33:07.107230+00:00",
+  "version": "0.12.14",
+  "installed_at": "2026-07-14T00:45:39.659464+00:00",
   "files": {
     ".kiro/prompts/speckit.analyze.md": "8b2e31164aec18574c207f227c166322ec04d6f7335f2a993948587957a2ccea",
     ".kiro/prompts/speckit.clarify.md": "1d52a718054927f97276b38e743d3f2d4d2b5bd2bcc58e358eb82c168a1edfc0",
-    ".kiro/prompts/speckit.constitution.md": "b6f6d3b597bf2262fee58cf575849cefcd3e67312cb7bbf4e0d279c68282813d",
+    ".kiro/prompts/speckit.constitution.md": "a26e029a114808ef04cc6d874a1f85992ad9cea5efb1a5156ed7a2a741a8d9cb",
     ".kiro/prompts/speckit.implement.md": "429ec938c0bf01b18c38d53e8391828a9c72786b907a15588bc14ff346b2eb1d",
     ".kiro/prompts/speckit.converge.md": "4c12cfadcfd21f9b5847d8a781594ebfb55102fa11911b28bfb0da2325a6668a",
     ".kiro/prompts/speckit.plan.md": "efb186493575e4a4a29d4d0d34d1a480399ad84250b4f3fe0166990d22db9498",
