@@ -20,7 +20,7 @@ manifest name (`speckit.spectra.<command>`) is the same everywhere.
 
 ## Shipped Spectra agents
 
-These three ship in the `spectra` extension today. Install them all at once with
+These four ship in the `spectra` extension today. Install them all at once with
 `specify extension add spectra`, then restart your AI agent so it picks up the commands.
 
 ### `adr` — Architecture Decision Records ✅
@@ -74,6 +74,26 @@ you don't have to invoke it by hand.
   /speckit-spectra-create-pr
   /speckit-spectra-create-pr --draft
   /speckit-spectra-create-pr --base develop
+  ```
+
+### `brd` — BRD Generator ✅
+
+**`speckit.spectra.brd`** — Turn a raw business requirement into a structured, **specify-ready** BRD. It
+accepts the requirement as inline text or a document (`.docx`, `.pdf`, `.md`, `.txt`), reads project
+context (the shipped template, constitution, existing `/brds`, prior specs) to ground it, asks up to
+five clarifying questions only when the requirement has material gaps, and writes one `NNN-<title>.md`
+under `/brds` — never inventing requirements (genuine unknowns become Open Questions). It then tells you
+to run the specify command with the BRD; its only write is the BRD file.
+
+- **Arguments** — the business requirement as text, or a path to a requirement document. When both are
+  given, the document is primary and the text is guidance. With no input, it asks for a requirement or
+  a path.
+- **Use it when** — you have a rough business need (in your head or in a `.docx`/`.pdf`) and want a
+  structured, reviewable BRD to feed into `specify`, instead of pasting a loose paragraph straight in.
+- **Examples (Claude)** —
+  ```
+  /speckit-spectra-brd Support agents need to merge duplicate customer tickets while preserving history
+  /speckit-spectra-brd reqs/ticket-merge-brief.docx
   ```
 
 ---

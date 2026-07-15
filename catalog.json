@@ -1,16 +1,16 @@
 {
   "schema_version": "1.0",
-  "updated_at": "2026-07-12T00:00:00Z",
+  "updated_at": "2026-07-14T00:00:00Z",
   "catalog_url": "https://raw.githubusercontent.com/xavient/spectra/main/catalog.json",
   "extensions": {
     "spectra": {
       "name": "Spectra",
       "id": "spectra",
-      "description": "Spectra's agentic SDLC commands for Spec Kit, bundled as a single extension: context-aware Architecture Decision Records, business-domain guardrail analysis, and correctly-targeted GitHub PR delivery.",
+      "description": "Spectra's agentic SDLC commands for Spec Kit, bundled as a single extension: structured BRD authoring, context-aware Architecture Decision Records, business-domain guardrail analysis, and correctly-targeted GitHub PR delivery.",
       "category": "workflow",
       "effect": "read-write",
       "author": "TELUS Digital",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "repository": "https://github.com/xavient/spectra",
       "homepage": "https://github.com/xavient/spectra/tree/main/spectra",
       "documentation": "https://github.com/xavient/spectra/blob/main/spectra/README.md",
@@ -20,7 +20,7 @@
         "speckit_version": ">=0.11.0"
       },
       "provides": {
-        "commands": 3
+        "commands": 4
       },
       "tags": [
         "documentation",
@@ -33,13 +33,15 @@
         "delivery",
         "pull-request",
         "github",
+        "brd",
+        "requirements",
         "workflow"
       ],
       "verified": false,
       "downloads": 0,
       "stars": 0,
       "created_at": "2026-07-09T00:00:00Z",
-      "updated_at": "2026-07-12T00:00:00Z",
+      "updated_at": "2026-07-14T00:00:00Z",
       "download_url": "https://raw.githubusercontent.com/xavient/spectra/main/docs/packages/spectra.zip"
     }
   }
