@@ -61,7 +61,7 @@ On success, report:
 
 1. The output file path (e.g. `/brds/003-brd-generator.md`).
 2. A one-line summary of the BRD's title/intent.
-3. The next step, verbatim intent: *You can now run `/speckit-specify` with this BRD to create the spec.*
+3. The next step, agent-neutral intent: *You can now run the Spec Kit **specify** command with this BRD to create the spec* (trigger varies per agent — e.g. `/speckit-specify` on Claude).
 
 ## Errors & graceful degradation
 

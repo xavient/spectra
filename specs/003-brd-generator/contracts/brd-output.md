@@ -44,7 +44,7 @@ Sections that genuinely do not apply are removed entirely (not left as "N/A").
 |-------|------|
 | BRD ID | `BRD-NNN` (same number as filename) |
 | Title | derived from the requirement |
-| Author | derived from context; sensible default |
+| Author | project/team from context (constitution author / Git config / repo metadata); `[team]` placeholder fallback |
 | Status | `Draft` |
 | Version | `0.1.0` |
 | Created / Last updated | today (`YYYY-MM-DD`) |

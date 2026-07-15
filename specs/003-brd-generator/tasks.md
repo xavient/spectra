@@ -47,7 +47,7 @@ be installed with `specify extension add --dev ./spectra` and validated.
 - [ ] T005 Add the "Gather project context" step to `spectra/commands/brd.md`: read the constitution (`.specify/memory/constitution.md`), existing BRDs under `/brds`, and prior `specs/`; load the shipped template from `.specify/extensions/spectra/templates/brd-template.md` with an inline section-skeleton fallback (FR-017, research.md D1/D4).
 - [ ] T006 Add the BRD numbering/location logic to `spectra/commands/brd.md`: create `/brds` if absent, scan for the highest `NNN`, compute the next zero-padded 3-digit number, build `NNN-<kebab-title>.md`, and never overwrite an existing file (FR-008, FR-009, clarification Q1, research.md D2).
 - [ ] T007 Add the "write the BRD" step to `spectra/commands/brd.md`: reproduce the template's 14 sections in order, auto-populate Document Control (BRD-NNN, Title, Author, Status Draft, Version 0.1.0, dates), remove all guidance comments and `[PLACEHOLDER]` tokens, and drop non-applicable sections; guard that the ONLY write is the BRD file under `/brds` (FR-010, FR-011, FR-013, [contracts/brd-output.md](./contracts/brd-output.md)).
-- [ ] T008 Add the "report & handoff" step to `spectra/commands/brd.md`: print the output path, a one-line title summary, and instruct the user to run `/speckit-specify` with the BRD — explicitly NOT invoking `specify` (FR-012).
+- [ ] T008 Add the "report & handoff" step to `spectra/commands/brd.md`: print the output path, a one-line title summary, and instruct the user (in agent-neutral wording — the specify trigger varies per agent, e.g. `/speckit-specify` on Claude) to run the Spec Kit specify command with the BRD — explicitly NOT invoking `specify` (FR-012).
 
 **Checkpoint**: The command can read a requirement, ground it in context, and write a correctly-named BRD.
 
@@ -100,7 +100,7 @@ resulting spec's prioritized user stories map one-to-one to the BRD's journeys.
 
 *(Task T015 edits `spectra/commands/brd.md`; sequential.)*
 
-- [ ] T015 [US3] Finalize the handoff in `spectra/commands/brd.md`: ensure the report's next-step wording tells the user to run `/speckit-specify` with the BRD, confirm the command never auto-invokes it, and verify the written BRD satisfies the specify-ready handoff contract in [contracts/brd-output.md](./contracts/brd-output.md) (FR-007, FR-012).
+- [ ] T015 [US3] Finalize the handoff in `spectra/commands/brd.md`: ensure the report's next-step wording tells the user to run the Spec Kit specify command with the BRD in agent-neutral phrasing (trigger varies per agent, e.g. `/speckit-specify` on Claude), confirm the command never auto-invokes it, and verify the written BRD satisfies the specify-ready handoff contract in [contracts/brd-output.md](./contracts/brd-output.md) (FR-007, FR-012).
 - [ ] T016 [US3] Validate User Story 3 via [quickstart.md](./quickstart.md) Scenarios 7 (handoff) and 8 (context-aware grounding/deconfliction).
 
 **Checkpoint**: End-to-end loop raw requirement → BRD → spec is demonstrable.

@@ -50,7 +50,7 @@ A structured Markdown document, one file per requirement, written under `/brds`.
 |-------|--------------|
 | BRD ID | `BRD-NNN` (same `NNN` as the filename) |
 | Title | Human-readable feature/product name derived from the requirement |
-| Author | Derived from context (e.g. project/team); defaults sensibly |
+| Author | Project/team name inferred from context (constitution author, Git config, or repo metadata); falls back to a `[team]` placeholder if none found |
 | Status | `Draft` |
 | Version | `0.1.0` |
 | Created | Today's date (`YYYY-MM-DD`) |
