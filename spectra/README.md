@@ -11,6 +11,7 @@ extension that bundles Spectra's agentic SDLC commands. Every command lives unde
 | `speckit.spectra.adr` | Capture a context-aware Architecture Decision Record grounded in your codebase, prior ADRs, and constitution. | read-write |
 | `speckit.spectra.domain-analyzer` | Infer the project's business domain and propose opt-in, evidence-backed guardrails for the constitution. | read-write |
 | `speckit.spectra.create-pr` | Open a correctly-targeted GitHub PR for the current spec branch after `implement`. | read-write |
+| `speckit.spectra.brd` | Turn a raw business requirement (text or a `.docx`/`.pdf`/`.md`/`.txt` document) into a structured, specify-ready BRD under `/brds`. | read-write |
 
 ## Install
 
@@ -133,6 +134,41 @@ Optional arguments:
 **GitHub only** in this version (via the `gh` CLI). When `gh`, a GitHub remote, or network access is
 unavailable, the command explains the situation and prints the manual `git push` + `gh pr create`
 commands (including the base branch it would have used).
+
+---
+
+## `speckit.spectra.brd` — BRD Generator
+
+A Requirements & Discovery-phase command at the front of the workflow: it turns a raw business
+requirement into a structured, **specify-ready** BRD. It:
+
+1. Reads the requirement — inline text, or a `.docx`/`.pdf`/`.md`/`.txt` document whose text it
+   extracts (when both are supplied, the document is primary and the text is guidance). Unreadable or
+   image-only files are reported, not fabricated.
+2. Reads project context — the shipped BRD template, the constitution, existing BRDs under `/brds`, and
+   prior specs — to ground and deconflict, without adding scope the requirement didn't state.
+3. Asks up to **5** clarifying questions, but only when the requirement has material gaps.
+4. Writes one BRD to `/brds/NNN-<title>.md` (folder created automatically, numbered zero-padded to
+   three digits, never overwriting), following the canonical template — genuine unknowns become Open
+   Questions and adopted defaults become Assumptions.
+5. Reports the path and tells you to run the Spec Kit **specify** command with the BRD.
+
+Its only write is the BRD file; it never edits your spec, constitution, or source, and never invokes
+`specify` itself.
+
+Usage (Claude):
+
+```
+/speckit-spectra-brd Support agents need to merge duplicate customer tickets while preserving history
+```
+
+Or point it at a document:
+
+```
+/speckit-spectra-brd reqs/ticket-merge-brief.docx
+```
+
+With no input it asks for a requirement or a file path.
 
 ## License
 

@@ -124,11 +124,12 @@ footer{margin-top:48px;color:var(--muted);font-size:.82rem;border-top:1px solid 
 /speckit-spectra-domain-analyzer this is a banking system</pre></span></li>
         <li><code>speckit.spectra.create-pr</code><span class="cdesc">Open a correctly-targeted GitHub PR for the current spec branch, deriving the base from your promotion strategy and returning the PR URL. Confirms before any push, and is also offered automatically after <code>implement</code>.</span><span class="args"><strong>Arguments:</strong> none opens a <strong>ready-for-review</strong> PR (default); <code>--draft</code> opens a draft; <code>--base &lt;branch&gt;</code> overrides the derived base branch (confirmed first).</span><span class="ex"><span class="lbl">Example (Claude)</span><pre>/speckit-spectra-create-pr
 /speckit-spectra-create-pr --draft</pre></span></li>
+        <li><code>speckit.spectra.brd</code><span class="cdesc">Turn a raw business requirement &mdash; typed text or a <code>.docx</code>/<code>.pdf</code>/<code>.md</code>/<code>.txt</code> document &mdash; into a structured, specify-ready BRD written under <code>/brds</code>. Reads project context, asks a few clarifying questions only when the requirement has gaps, and never invents requirements &mdash; then hand the result to the specify command.</span><span class="args"><strong>Arguments:</strong> the requirement as text, or a path to a requirement document. With no input it asks for one.</span><span class="ex"><span class="lbl">Example (Claude)</span><pre>/speckit-spectra-brd Support agents need to merge duplicate customer tickets while preserving history</pre></span></li>
       </ul>
     </article>
   </section>
 
-  <footer>SPECTRA &middot; a single Spec Kit extension &middot; 3 commands &middot; by TELUS Digital</footer>
+  <footer>SPECTRA &middot; a single Spec Kit extension &middot; 4 commands &middot; by TELUS Digital</footer>
 </main>
 <script>
 document.querySelectorAll('button.copy').forEach(function (btn) {

@@ -3,6 +3,18 @@
 All notable changes to the `spectra` extension are documented here. This project follows
 [Semantic Versioning](https://semver.org/).
 
+## [1.2.0] - 2026-07-14
+
+### Added
+- **`speckit.spectra.brd`** — a Requirements & Discovery-phase command that transforms a raw business
+  requirement (inline text or a `.docx`/`.pdf`/`.md`/`.txt` document) into a structured,
+  specify-ready BRD written under `/brds`. It reads project context to ground the document, asks up to
+  five clarifying questions only when the requirement has material gaps, never invents requirements
+  (genuine unknowns become Open Questions), and hands off to the Spec Kit **specify** command. Its only
+  write is the BRD file.
+- Bundled the canonical BRD template as `templates/brd-template.md` so the command produces the same
+  structure in any installed project.
+
 ## [1.1.0] - 2026-07-09
 
 ### Changed

@@ -3,8 +3,8 @@ schema_version: "1.0"
 extension:
   id: "spectra"
   name: "Spectra"
-  version: "1.1.0"
-  description: "Spectra's agentic SDLC commands for Spec Kit, bundled as a single extension: context-aware Architecture Decision Records, business-domain guardrail analysis, and correctly-targeted GitHub PR delivery."
+  version: "1.2.0"
+  description: "Spectra's agentic SDLC commands for Spec Kit, bundled as a single extension: structured BRD authoring, context-aware Architecture Decision Records, business-domain guardrail analysis, and correctly-targeted GitHub PR delivery."
   category: "workflow"
   effect: "read-write"
   author: "TELUS Digital"
@@ -33,6 +33,9 @@ provides:
     - name: "speckit.spectra.create-pr"
       file: "commands/create-pr.md"
       description: "Offer to open a correctly-targeted GitHub PR for the current spec branch after implementation, deriving the base from the promotion strategy and returning the PR URL."
+    - name: "speckit.spectra.brd"
+      file: "commands/brd.md"
+      description: "Transform a raw business requirement (inline text or a .docx/.pdf/.md/.txt document) into a structured, specify-ready BRD under /brds, asking clarifying questions when needed, then hand off to the specify command."
 
 hooks:
   after_implement:
@@ -52,4 +55,6 @@ tags:
   - "delivery"
   - "pull-request"
   - "github"
+  - "brd"
+  - "requirements"
   - "workflow"

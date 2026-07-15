@@ -89,6 +89,7 @@ phases below, each also mapped onto the [**AI-DLC**](#ai-dlc) phases (Inception 
 | FDA 21 CFR Part 11 & IEC 62304 | Foundation | Inception | Add-on | 🚧 under dev |
 | ISO 27001 / 27701 | Foundation | Inception | Add-on | 🚧 under dev |
 | Requirements Analyst | Requirements & Discovery | Inception | Core | ✅ available |
+| BRD Generator | Requirements & Discovery | Inception | Add-on | ✅ available |
 | Clarifier | Requirements & Discovery | Inception | Add-on | ✅ available |
 | Requirements Quality | Requirements & Discovery | Inception | Add-on | ✅ available |
 | GDPR Compliance | Requirements & Discovery | Inception | Add-on | 🚧 under dev |
@@ -215,8 +216,8 @@ specify extension remove spectra  # uninstall (configs are backed up by default)
 ```
 
 Spectra ships as a **single extension** — `specify extension add spectra` registers all of its
-commands (`speckit.spectra.adr`, `speckit.spectra.domain-analyzer`, `speckit.spectra.create-pr`) at
-once. After installing, **restart your AI agent** so it picks up the new commands, then run one. On
+commands (`speckit.spectra.adr`, `speckit.spectra.domain-analyzer`, `speckit.spectra.create-pr`,
+`speckit.spectra.brd`) at once. After installing, **restart your AI agent** so it picks up the new commands, then run one. On
 Claude:
 
 ```
