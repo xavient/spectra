@@ -12,12 +12,14 @@ background:radial-gradient(1100px 520px at 12% -8%,#241b46 0%,rgba(36,27,70,0) 5
 background-attachment:fixed;min-height:100vh;
 font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
 main{max-width:860px;margin:0 auto;padding:40px 24px 90px}
-.hero{padding:6px 0 8px}
-.logo{height:30px;width:auto;display:block;margin:0 0 44px}
+.hero{padding:20px 0 10px;text-align:center}
+.logo{height:30px;width:auto;display:block;margin:0 auto 26px}
+.pill{display:inline-flex;align-items:center;gap:9px;background:var(--card);border:1px solid var(--border);border-radius:999px;padding:7px 15px;margin:0 0 26px;font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.14em;color:var(--muted)}
+.pill .dot{width:8px;height:8px;border-radius:50%;background:#34d399;box-shadow:0 0 10px rgba(52,211,153,.75)}
 .wordmark{font-size:clamp(3.5rem,12vw,6.5rem);line-height:.95;margin:0;font-weight:800;
 letter-spacing:-.02em;color:var(--accent)}
 .tagline{font-size:clamp(1.2rem,3.2vw,1.7rem);color:#d4d2e4;font-weight:500;margin:.45em 0 0}
-.lead{color:var(--muted);font-size:1.05rem;margin:1.2em 0 0;max-width:62ch}
+.lead{color:var(--muted);font-size:1.05rem;margin:1.2em auto 0;max-width:62ch}
 .lead a{color:var(--accent)}
 .prereq{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 22px;margin:44px 0 8px}
 .prereq h2{font-size:.78rem;margin:0 0 .5em;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
@@ -34,6 +36,11 @@ letter-spacing:-.02em;color:var(--accent)}
 label{display:block;font-size:.82rem;color:var(--muted);margin:16px 0 6px}
 .btn{display:inline-flex;align-items:center;gap:9px;background:linear-gradient(135deg,#7c5cde,#a78bfa);color:#fff;text-decoration:none;font-weight:600;font-size:.98rem;padding:13px 24px;border-radius:11px;border:1px solid rgba(167,139,250,.5);box-shadow:0 8px 26px rgba(167,139,250,.22);transition:transform .15s ease,filter .15s ease}
 .btn:hover{transform:translateY(-1px);filter:brightness(1.07)}
+.btn .sub{font-weight:500;opacity:.85;font-size:.9rem}
+.cta{display:flex;gap:14px;justify-content:center;align-items:center;flex-wrap:wrap;margin:34px 0 0}
+.btn-ghost{display:inline-flex;align-items:center;gap:9px;background:#1b1730;color:var(--fg);text-decoration:none;font-weight:600;font-size:.98rem;padding:13px 24px;border-radius:11px;border:1px solid var(--border);transition:transform .15s ease,border-color .15s ease,background .15s ease}
+.btn-ghost:hover{transform:translateY(-1px);border-color:var(--accent);background:#211c38}
+.caption{color:var(--muted);font-size:.85rem;margin:22px 0 0}
 .cmd{display:flex;gap:8px;align-items:stretch}
 .cmd pre{flex:1;margin:0;background:var(--codebg);color:var(--codefg);border:1px solid var(--border);
 border-radius:9px;padding:12px 14px;overflow-x:auto;font-size:.88rem}
@@ -60,10 +67,16 @@ footer{margin-top:48px;color:var(--muted);font-size:.82rem;border-top:1px solid 
 <main>
   <header class="hero">
     <img class="logo" src="https://raw.githubusercontent.com/xavient/spectra/main/assets/TELUS_Digital_logo.png" alt="TELUS Digital">
+    <span class="pill"><span class="dot"></span> TELUS Digital &middot; Agentic SDLC</span>
     <h1 class="wordmark">SPECTRA</h1>
     <p class="tagline">Agentic software engineering across the entire SDLC</p>
     <p class="lead">A catalog of <a href="https://github.com/github/spec-kit">Spec Kit</a> extensions for
     full agentic development across the SDLC, by TELUS Digital.</p>
+    <div class="cta">
+      <a class="btn" href="https://github.com/xavient/spectra/releases/latest/download/spectra-setup.py">&#8681;&nbsp; <strong>Download</strong> <span class="sub">the installer</span></a>
+      <a class="btn-ghost" href="https://github.com/xavient/spectra/">View on GitHub</a>
+    </div>
+    <p class="caption">Installs into a Spec Kit project &middot; works with Claude, kiro-cli &amp; more &middot; public catalog, no token needed</p>
   </header>
 
   <section class="prereq">
