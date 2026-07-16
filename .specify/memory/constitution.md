@@ -1,11 +1,14 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version: 1.0.0 (initial ratification)
-Rationale: First constitution for the public Spectra repository. Establishes the principles that
-  govern how Spectra is built and how every command in the single `spectra/` extension is authored,
-  published, and maintained. Spectra is distributed from a public catalog, installable with no
-  authentication.
+Version: 1.0.0 → 1.1.0
+Bump type: MINOR — new principle added (VI. Two Independently-Versioned Release Channels) plus
+  materially expanded versioning guidance in Publishing & Distribution Standards.
+Rationale: Records the standing reality that Spectra ships through two independent distribution
+  channels — the extension catalog (raw `catalog.json` / package links) and the `spectra-setup.py`
+  installer (a GitHub Release asset) — each versioned with SemVer on its own cadence and NOT 1:1 with
+  the other. Adding an agent/command bumps the catalog/extension version without necessarily bumping
+  the installer, and vice versa. Already documented in CONTRIBUTING.md; now governed by the constitution.
 
 Principles:
   I.   Spec-Driven Development (We Dogfood Spec Kit)
@@ -13,17 +16,23 @@ Principles:
   III. Agent-Agnostic Commands
   IV.  Context-Aware by Default
   V.   The Catalog and Package Are Maintained in Sync
+  VI.  Two Independently-Versioned Release Channels   (NEW)
 
 Sections: Publishing & Distribution Standards · Development Workflow ·
   Version Control & Branching Strategy · Governance
+
+Modified principles: V — adds a cross-reference to new Principle VI (installer is a separate channel)
+Added sections: Core Principle VI (Two Independently-Versioned Release Channels)
+Removed sections: (none)
 
 Templates & docs in sync:
   - .specify/templates/plan-template.md ✅ (Constitution Check gate is generic)
   - .specify/templates/spec-template.md ✅
   - .specify/templates/tasks-template.md ✅
-  - README.md ✅ — install flow and Agents table aligned
-  - CONTRIBUTING.md ✅ — repository layout, workflow, and publishing steps aligned
-  - catalog.json / spectra/extension.yml / docs/index.html ✅ — metadata and URLs aligned
+  - README.md ✅ — Installation already describes the versioned installer release asset
+  - CONTRIBUTING.md ✅ — "Release the installer" section + "the two channels version independently"
+  - catalog.json / spectra/extension.yml (extension/catalog version) ✅
+  - spectra-setup.py `__version__` (installer version) ✅
 
 Follow-up TODOs: (none)
 -->
@@ -116,16 +125,49 @@ or releasing the extension MUST include, in the same change:
 `catalog.json`, `docs/index.html`, `README.md`, and the published `docs/packages/spectra.zip` MUST
 never drift from the `spectra/` folder.
 
-Rationale: The repo is Spectra's only distribution channel — users discover and install entirely
-from it, against the raw `catalog.json`. A stale catalog or a missing zip ships a broken install.
-Keeping a single catalog entry and rebuilding the zip as part of finishing a command keeps the landing
-page, catalog, and download link consistent by construction.
+This sync obligation governs the **catalog channel only** (the extension, its package, and the pages
+that link to them). The `spectra-setup.py` installer is a *separate* distribution channel with its own
+version and is NOT expected to move in lockstep with the catalog — it is governed by Principle VI.
+
+Rationale: The repo is the catalog channel's only distribution point — users discover and install the
+extension entirely from it, against the raw `catalog.json`. A stale catalog or a missing zip ships a
+broken install. Keeping a single catalog entry and rebuilding the zip as part of finishing a command
+keeps the landing page, catalog, and download link consistent by construction.
+
+### VI. Two Independently-Versioned Release Channels
+
+Spectra ships through **two** distribution channels, and each carries its **own** version number on its
+**own** cadence. They are NOT 1:1 and MUST be versioned independently:
+
+- **Catalog channel** — the `spectra` extension, distributed over the raw `catalog.json` and
+  `docs/packages/spectra.zip` links. Its version is authoritative in `spectra/extension.yml` (mirrored
+  into the `spectra` entry of `catalog.json`) and MUST bump — per SemVer — whenever a command (agent) is
+  added, changed, or removed.
+- **Installer channel** — `spectra-setup.py`, distributed as a versioned GitHub Release asset. Its
+  version is authoritative in the script's `__version__` (mirrored by the release tag `vX.Y.Z`) and MUST
+  bump — per SemVer — only when the installer script itself changes in a way consumers should pick up.
+
+The two version numbers MUST NOT be coupled: adding or changing a command (an agent/extension) bumps the
+catalog/extension version **without necessarily** touching the installer, and changing `spectra-setup.py`
+bumps the installer version **without necessarily** touching the extension or catalog. A change to one
+channel MUST NOT force a version bump of the other, and the two versions are not expected to match at any
+point in time.
+
+Rationale: The catalog and the installer serve different needs and change for different reasons — the
+catalog evolves as we add SDLC agents, while the installer changes only when the onboarding flow does.
+Forcing a shared version number would either inflate the installer on every agent addition or block agent
+releases on unrelated installer work. Independent SemVer per channel keeps each artifact's version honest
+about what actually changed in it.
 
 ## Publishing & Distribution Standards
 
-- **Semantic Versioning.** The extension follows [SemVer](https://semver.org/). Each release MUST
-  bump `extension.version` and add a matching `CHANGELOG.md` entry under that version heading.
-  Renaming or removing a command is a breaking (MAJOR) change.
+- **Semantic Versioning (per channel).** Both release channels follow [SemVer](https://semver.org/) on
+  independent cadences (Principle VI). Each **extension (catalog) release** MUST bump `extension.version`
+  in `spectra/extension.yml` and the matching `version` in the `catalog.json` entry, and add a matching
+  `spectra/CHANGELOG.md` entry under that version heading; renaming or removing a command is a breaking
+  (MAJOR) change. Each **installer release** MUST bump `__version__` in `spectra-setup.py` and be
+  published under a matching Git tag `vX.Y.Z`; a breaking change to the install flow or prerequisites is
+  MAJOR. A bump to one channel MUST NOT be mirrored onto the other unless that channel actually changed.
 - **Compatibility pinning.** `spectra/extension.yml` MUST set `requires.speckit_version` to the Spec
   Kit version range actually tested against. Re-test when Spec Kit is upgraded.
 - **Required manifest fields.** `extension.yml` MUST provide `schema_version`, `id`, `name`,
@@ -207,4 +249,4 @@ and why, and MUST update this file together with any dependent templates and doc
 binding. Complexity that violates a principle MUST be justified or removed; unjustified violations
 block merge.
 
-**Version**: 1.0.0 | **Ratified**: 2026-07-12 | **Last Amended**: 2026-07-12
+**Version**: 1.1.0 | **Ratified**: 2026-07-12 | **Last Amended**: 2026-07-16
