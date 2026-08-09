@@ -65,12 +65,12 @@ readable, with status, type, provider, and command unambiguous per row.
 **Independent Test**: Install the CLI, run `spectra agent-list` from a folder that is not a Spec Kit
 project, and confirm all 44 agents appear correctly grouped with no planned agent showing a command.
 
-- [ ] T015 [US1] Add the roster renderer to `spectra_cli/ui.py`: one block per phase showing the phase title and its AI-DLC phase, then one row per agent with status glyph, title, type, provider, and either its command or "under development" — rendered through the existing `panel()`/palette rather than a second visual language (FR-025)
-- [ ] T016 [US1] Add the `agent-list` subcommand to `spectra_cli/cli.py`: fetch via `roster.fetch()`, apply the schema gate, render, and exit 0. On fetch failure or a newer MAJOR schema, print the reason and exit 3 without printing a partial list. Must not require a Spec Kit project (FR-026, FR-027, FR-041). Depends on T006, T015
-- [ ] T017 [US1] In `spectra_cli/cli.py`, mark which Spectra-provided agents are installed here when `agent-list` runs inside a project, by intersecting `provider == "spectra"` entries with `project.classify()` — the marker is absent entirely when run outside a project (FR-048). Depends on T005, T016
-- [ ] T018 [P] [US1] Create `tests/test_agent_list.py`: grouping order matches roster order, planned entries render no command, the newer-MINOR notice appears with the full listing, newer MAJOR exits 3 with nothing listed, an unreachable base exits 3, and the installed marker appears only inside a project
-- [ ] T019 [P] [US1] Create `tests/test_no_hardcoded_agents.py` asserting no agent title or roster description string appears anywhere under `spectra_cli/` (FR-042, SC-002)
-- [ ] T020 [US1] Run step 5 of `specs/006-agent-roster-cli/quickstart.md` and confirm the output by eye against its stated expectations (SC-001, SC-004)
+- [X] T015 [US1] Add the roster renderer to `spectra_cli/ui.py`: one block per phase showing the phase title and its AI-DLC phase, then one row per agent with status glyph, title, type, provider, and either its command or "under development" — rendered through the existing `panel()`/palette rather than a second visual language (FR-025)
+- [X] T016 [US1] Add the `agent-list` subcommand to `spectra_cli/cli.py`: fetch via `roster.fetch()`, apply the schema gate, render, and exit 0. On fetch failure or a newer MAJOR schema, print the reason and exit 3 without printing a partial list. Must not require a Spec Kit project (FR-026, FR-027, FR-041). Depends on T006, T015
+- [X] T017 [US1] In `spectra_cli/cli.py`, mark which Spectra-provided agents are installed here when `agent-list` runs inside a project, by intersecting `provider == "spectra"` entries with `project.classify()` — the marker is absent entirely when run outside a project (FR-048). Depends on T005, T016
+- [X] T018 [P] [US1] Create `tests/test_agent_list.py`: grouping order matches roster order, planned entries render no command, the newer-MINOR notice appears with the full listing, newer MAJOR exits 3 with nothing listed, an unreachable base exits 3, and the installed marker appears only inside a project
+- [X] T019 [P] [US1] Create `tests/test_no_hardcoded_agents.py` asserting no agent title or roster description string appears anywhere under `spectra_cli/` (FR-042, SC-002)
+- [X] T020 [US1] Run step 5 of `specs/006-agent-roster-cli/quickstart.md` and confirm the output by eye against its stated expectations (SC-001, SC-004)
 
 **Checkpoint**: `spectra agent-list` works standalone. This is the MVP — a user can discover the roster
 from the terminal with nothing installed in the project.
@@ -86,10 +86,10 @@ offers to fix the one it can.
 Spectra, a project with a half-written extension folder, and a project with Spectra installed; confirm
 four different messages and the documented exit codes.
 
-- [ ] T021 [US2] Add the `check` subcommand to `spectra_cli/cli.py`, branching on `project.classify()` with one distinct message and exit code per state exactly as tabulated in `specs/006-agent-roster-cli/contracts/cli-surface.md` — 0 installed, 5 for incomplete and not-a-project (FR-028, FR-044, FR-045). Depends on T005
-- [ ] T022 [US2] In `spectra_cli/cli.py`, wire the not-installed branch to offer installation and call `run_install()` from `spectra_cli/install.py` unchanged, exiting 1 when declined and 4 when the install itself fails; honour `--yes` as accepting the offer (FR-029)
-- [ ] T023 [P] [US2] Create `tests/test_check.py`: four states produce four distinct messages and the documented exit codes, declining exits 1, and running from a nested subdirectory reports on the enclosing project
-- [ ] T024 [US2] Run steps 6 and 7 of `specs/006-agent-roster-cli/quickstart.md`, confirming all four messages are different sentences rather than one sentence with a swapped noun (SC-001, SC-009, SC-012)
+- [X] T021 [US2] Add the `check` subcommand to `spectra_cli/cli.py`, branching on `project.classify()` with one distinct message and exit code per state exactly as tabulated in `specs/006-agent-roster-cli/contracts/cli-surface.md` — 0 installed, 5 for incomplete and not-a-project (FR-028, FR-044, FR-045). Depends on T005
+- [X] T022 [US2] In `spectra_cli/cli.py`, wire the not-installed branch to offer installation and call `run_install()` from `spectra_cli/install.py` unchanged, exiting 1 when declined and 4 when the install itself fails; honour `--yes` as accepting the offer (FR-029)
+- [X] T023 [P] [US2] Create `tests/test_check.py`: four states produce four distinct messages and the documented exit codes, declining exits 1, and running from a nested subdirectory reports on the enclosing project
+- [X] T024 [US2] Run steps 6 and 7 of `specs/006-agent-roster-cli/quickstart.md`, confirming all four messages are different sentences rather than one sentence with a swapped noun (SC-001, SC-009, SC-012)
 
 **Checkpoint**: US1 and US2 both work independently.
 
@@ -102,10 +102,10 @@ four different messages and the documented exit codes.
 **Independent Test**: Hand-edit an installed manifest to an older version, confirm `version` reports both
 and names `spectra update`, run it, and confirm a second `version` reports up to date.
 
-- [ ] T025 [US3] Add the `version` subcommand to `spectra_cli/cli.py`: compare installed against published using the existing `version.compare_versions()`, print one of three verdicts — up to date, out of date naming `spectra update`, or ahead of published with no update offered — and exit 0 for all three; exit 3 when the published version is unreachable and 5 for any bad project state (FR-030, FR-031, FR-032, FR-032a). Depends on T005, T007
-- [ ] T026 [US3] Add the `update` subcommand to `spectra_cli/cli.py`: delegate to `extension.delegate_update()` when behind, report and change nothing when already current or ahead, use the update path as the documented repair for `INCOMPLETE`, and exit 4 when Spec Kit fails or is absent (FR-033, FR-046). Depends on T007
-- [ ] T027 [P] [US3] Create `tests/test_version_update.py`: all three verdicts exit 0, unreachable-published exits 3 without implying currency, not-installed exits 5 with its own message, already-current update makes no subprocess call, and ahead-of-published offers no update
-- [ ] T028 [US3] Run step 8 of `specs/006-agent-roster-cli/quickstart.md`, including timing the offline case to confirm it returns inside ~10 seconds (SC-001, SC-007, SC-013)
+- [X] T025 [US3] Add the `version` subcommand to `spectra_cli/cli.py`: compare installed against published using the existing `version.compare_versions()`, print one of three verdicts — up to date, out of date naming `spectra update`, or ahead of published with no update offered — and exit 0 for all three; exit 3 when the published version is unreachable and 5 for any bad project state (FR-030, FR-031, FR-032, FR-032a). Depends on T005, T007
+- [X] T026 [US3] Add the `update` subcommand to `spectra_cli/cli.py`: delegate to `extension.delegate_update()` when behind, report and change nothing when already current or ahead, use the update path as the documented repair for `INCOMPLETE`, and exit 4 when Spec Kit fails or is absent (FR-033, FR-046). Depends on T007
+- [X] T027 [P] [US3] Create `tests/test_version_update.py`: all three verdicts exit 0, unreachable-published exits 3 without implying currency, not-installed exits 5 with its own message, already-current update makes no subprocess call, and ahead-of-published offers no update
+- [X] T028 [US3] Run step 8 of `specs/006-agent-roster-cli/quickstart.md`, including timing the offline case to confirm it returns inside ~10 seconds (SC-001, SC-007, SC-013)
 
 **Checkpoint**: All three P1 user-facing stories work. Every project-scoped read command is done.
 

@@ -17,7 +17,7 @@ import argparse
 import os
 import sys
 
-from spectra_cli import install, ui, version
+from spectra_cli import extension, install, net, project, roster, ui, version
 
 # The help surface, rendered by `print_help()` into Spectra-purple panels rather than by
 # argparse's plain formatter. Keeping the copy here (not in `add_argument(help=...)`) keeps the
@@ -34,7 +34,23 @@ OPTIONS = [
 COMMANDS = [
     ("install", "Install Spectra into the Spec Kit project in this folder. Installs the "
                 "Spec Kit CLI and initializes the project first if needed."),
+    ("check", "Report whether Spectra is installed in this project, and offer to install it "
+              "when it is not."),
+    ("version", "Compare the agents installed here against the published version."),
+    ("update", "Update the agents installed here to the published version, via Spec Kit."),
+    ("agent-list", "List every agent Spectra offers, grouped by SDLC phase. Reads the published "
+                   "roster, so it works from anywhere."),
 ]
+
+# Exit codes. 0-4 and 130 are already the tool's conventions; 5 is new, and exists so a caller can
+# tell "I could not answer" from "the answer is no".
+EXIT_OK = 0
+EXIT_DECLINED = 1        # the user declined an offered action
+EXIT_USAGE = 2           # bad flag or unknown command (argparse's convention)
+EXIT_UNREACHABLE = 3     # published data could not be retrieved
+EXIT_DELEGATION = 4      # a delegated `specify` or `uv` command failed
+EXIT_PROJECT_STATE = 5   # the project is not in the required state
+EXIT_INTERRUPTED = 130
 
 
 class _Parser(argparse.ArgumentParser):
@@ -119,9 +135,9 @@ def _update_check_disabled(args) -> bool:
 
 
 # --------------------------------------------------------------------------- #
-# --version
+# cli version (the tool's own version)
 # --------------------------------------------------------------------------- #
-def cmd_version(args) -> int:
+def cmd_cli_version(args) -> int:
     installed = version.read_installed_version() or "unknown"
     ui.plain(installed)
     if _update_check_disabled(args):
@@ -134,9 +150,9 @@ def cmd_version(args) -> int:
 
 
 # --------------------------------------------------------------------------- #
-# --update
+# cli update (the tool updates itself)
 # --------------------------------------------------------------------------- #
-def cmd_update() -> int:
+def cmd_cli_update() -> int:
     result = version.check_update()
     installed = result["installed"] or "unknown"
     status = result["status"]
@@ -169,9 +185,9 @@ def cmd_update() -> int:
 
 
 # --------------------------------------------------------------------------- #
-# --uninstall
+# cli uninstall (the tool removes itself)
 # --------------------------------------------------------------------------- #
-def cmd_uninstall(args) -> int:
+def cmd_cli_uninstall(args) -> int:
     """Remove the uv-installed tool.
 
     Exit 0 iff spectra ends up not installed as a uv tool (removed, or already absent);
@@ -258,6 +274,203 @@ def cmd_install(args) -> int:
 
 
 # --------------------------------------------------------------------------- #
+# Project state, reported the same way by every project-scoped command
+# --------------------------------------------------------------------------- #
+def _say_not_a_project() -> int:
+    """Not a Spec Kit project at all — a different problem, with a different remedy, from
+    "a Spec Kit project without Spectra". Conflating the two would send the user to the wrong fix.
+    """
+    ui.fail("This is not a Spec Kit project — no .specify/ directory here or in any parent folder.")
+    ui.plain("  Initialize one:   " + ui.bold("specify init"))
+    ui.plain("  Then add Spectra: " + ui.bold("spectra install"))
+    return EXIT_PROJECT_STATE
+
+
+def _say_not_installed(state) -> int:
+    ui.warn(f"Spectra is not installed in this project ({state.project_root}).")
+    ui.plain("  Install it with: " + ui.bold("spectra install"))
+    return EXIT_PROJECT_STATE
+
+
+def _say_incomplete(state) -> int:
+    """The folder is present but tells us nothing — an interrupted or partially written install."""
+    ui.fail("Spectra's extension folder is here but unusable — this looks like an interrupted "
+            "install.")
+    ui.plain(ui.dim(f"  Folder: {state.extension_dir}"))
+    ui.plain("  Repair it with: " + ui.bold("spectra update"))
+    return EXIT_PROJECT_STATE
+
+
+# --------------------------------------------------------------------------- #
+# check
+# --------------------------------------------------------------------------- #
+def cmd_check(args) -> int:
+    """Answer "is Spectra available here?" definitively, and offer the fix when it is not."""
+    state = project.classify()
+
+    if state.state == project.NOT_A_PROJECT:
+        return _say_not_a_project()
+    if state.state == project.INCOMPLETE:
+        return _say_incomplete(state)
+    if state.state == project.INSTALLED:
+        ui.ok(f"Spectra is installed here (extension {ui.bold(state.installed_version)}).")
+        ui.plain(ui.dim(f"  Project: {state.project_root}"))
+        ui.plain(ui.dim("  Check whether the agents are current with: spectra version"))
+        return EXIT_OK
+
+    # NOT_INSTALLED — the one state this command can fix, so offer rather than just report.
+    ui.warn(f"Spectra is not installed in this project ({state.project_root}).")
+    ui.plain()
+    if not args.yes:
+        if not sys.stdin.isatty():
+            ui.plain("  Install it with: " + ui.bold("spectra install"))
+            ui.plain(ui.dim("  Re-run with --yes to install without being asked."))
+            return EXIT_DECLINED
+        if not ui.confirm("Install Spectra into this project now?"):
+            ui.info("Nothing was changed.")
+            ui.plain("  Install it later with: " + ui.bold("spectra install"))
+            return EXIT_DECLINED
+
+    code = cmd_install(args)
+    return EXIT_OK if code == 0 else EXIT_DELEGATION
+
+
+# --------------------------------------------------------------------------- #
+# version (the agents in this project)
+# --------------------------------------------------------------------------- #
+def cmd_version(args) -> int:
+    """Compare the installed agents against the published ones.
+
+    Every verdict — current, behind, or ahead — exits 0, because the command was asked a question and
+    answered it. Non-zero is reserved for being unable to answer, so this is safe to drop into a
+    shell without `|| true`.
+    """
+    state = project.classify()
+    if state.state == project.NOT_A_PROJECT:
+        return _say_not_a_project()
+    if state.state == project.NOT_INSTALLED:
+        return _say_not_installed(state)
+    if state.state == project.INCOMPLETE:
+        return _say_incomplete(state)
+
+    installed = state.installed_version
+    try:
+        published = extension.published_version()
+    except net.FetchError as e:
+        ui.warn(f"Your agents are at {ui.bold(installed)}, but the published version could not be "
+                "fetched, so there is nothing to compare against.")
+        ui.plain(f"  {e}")
+        return EXIT_UNREACHABLE
+
+    verdict = extension.compare(installed, published)
+    if verdict == extension.UP_TO_DATE:
+        ui.ok(f"Your agents are up to date (extension {ui.bold(installed)}).")
+    elif verdict == extension.OUT_OF_DATE:
+        ui.warn(f"Your agents are out of date: installed {ui.bold(installed)}, "
+                f"published {ui.bold(published)}.")
+        ui.plain("  Update them with: " + ui.bold("spectra update"))
+    else:
+        ui.ok(f"Your agents are ahead of what is published: installed {ui.bold(installed)}, "
+              f"published {ui.bold(published)}.")
+        ui.plain(ui.dim("  Nothing to update — this is what a local or pre-release copy looks like."))
+    ui.plain(ui.dim("  This is the extension version. For the tool's own: spectra cli version"))
+    return EXIT_OK
+
+
+# --------------------------------------------------------------------------- #
+# update (the agents in this project)
+# --------------------------------------------------------------------------- #
+def cmd_update(args) -> int:
+    """Bring the installed agents up to the published version, through Spec Kit."""
+    state = project.classify()
+    if state.state == project.NOT_A_PROJECT:
+        return _say_not_a_project()
+    if state.state == project.NOT_INSTALLED:
+        return _say_not_installed(state)
+
+    # An incomplete install is exactly what this command repairs, so it does not check versions
+    # first — there is no readable version to check.
+    if state.state != project.INCOMPLETE:
+        try:
+            published = extension.published_version()
+        except net.FetchError as e:
+            ui.fail("Could not fetch the published version, so nothing was changed.")
+            ui.plain(f"  {e}")
+            return EXIT_UNREACHABLE
+
+        verdict = extension.compare(state.installed_version, published)
+        if verdict == extension.UP_TO_DATE:
+            ui.ok(f"Your agents are already up to date (extension {ui.bold(published)}).")
+            return EXIT_OK
+        if verdict == extension.AHEAD:
+            ui.ok(f"Installed {ui.bold(state.installed_version)} is ahead of published "
+                  f"{ui.bold(published)}; nothing to do.")
+            return EXIT_OK
+        ui.info(f"Updating agents: {ui.bold(state.installed_version)} {ui.dim('->')} "
+                f"{ui.bold(published)}")
+    else:
+        ui.info("Repairing an incomplete Spectra install …")
+
+    ui.plain()
+    try:
+        code = extension.delegate_update()
+    except extension.DelegationError as e:
+        ui.fail("Could not update the extension.")
+        for line in str(e).splitlines():
+            ui.plain(f"  {line}")
+        return EXIT_DELEGATION
+    if code == EXIT_INTERRUPTED:
+        return EXIT_INTERRUPTED
+    if code != 0:
+        ui.plain()
+        ui.fail(f"Spec Kit's extension update exited with code {code}; your agents are unchanged.")
+        return EXIT_DELEGATION
+
+    ui.plain()
+    now = project.classify()
+    if now.is_installed:
+        ui.ok(f"Agents updated (extension {ui.bold(now.installed_version)}).")
+    else:
+        ui.ok("Agents updated.")
+    ui.plain(ui.dim("  Restart your AI agent so it picks up any new commands."))
+    return EXIT_OK
+
+
+# --------------------------------------------------------------------------- #
+# agent-list
+# --------------------------------------------------------------------------- #
+def cmd_agent_list(args) -> int:
+    """Print the published roster.
+
+    Deliberately works outside a Spec Kit project: discovering what Spectra offers should not
+    require having installed it. Inside one, each shipped agent additionally shows whether it is
+    installed here — the one part of the output that depends on the current folder.
+    """
+    try:
+        published = roster.fetch()
+    except net.FetchError as e:
+        ui.fail("Could not read the published agent roster.")
+        ui.plain(f"  {e}")
+        ui.plain(ui.dim("  Nothing is listed above rather than a stale or partial roster."))
+        return 3
+    except roster.RosterError as e:
+        ui.fail("The published agent roster could not be understood.")
+        for line in str(e).splitlines():
+            ui.plain(f"  {line}")
+        return 3
+
+    state = project.classify()
+    installed = state.is_installed if state.is_project else None
+    ui.agent_list(published, installed=installed)
+
+    if published.newer_minor:
+        ui.info(f"This roster (schema {published.schema_version}) is newer than your Spectra CLI, "
+                "so some details may not be shown.")
+        ui.plain(ui.dim("  Update the command with: " + ui.bold("spectra cli update")))
+    return 0
+
+
+# --------------------------------------------------------------------------- #
 # No command — the overview
 # --------------------------------------------------------------------------- #
 def cmd_overview() -> int:
@@ -286,13 +499,21 @@ def _dispatch(argv) -> int:
         print_help()
         return 0
     if args.version:
-        return cmd_version(args)
+        return cmd_cli_version(args)
     if args.update:
-        return cmd_update()
+        return cmd_cli_update()
     if args.uninstall:
-        return cmd_uninstall(args)
-    if args.command == "install":
-        return cmd_install(args)
+        return cmd_cli_uninstall(args)
+    dispatch = {
+        "install": cmd_install,
+        "check": cmd_check,
+        "version": cmd_version,
+        "update": cmd_update,
+        "agent-list": cmd_agent_list,
+    }
+    handler = dispatch.get(args.command)
+    if handler is not None:
+        return handler(args)
     return cmd_overview()
 
 

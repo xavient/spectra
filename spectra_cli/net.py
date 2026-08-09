@@ -66,6 +66,10 @@ def fetch_text(path: str, timeout: int = TIMEOUT) -> str:
         with urllib.request.urlopen(request, timeout=timeout) as response:
             raw = response.read()
     except urllib.error.HTTPError as exc:  # must precede URLError; HTTPError subclasses it
+        # HTTPError is itself a response object holding an open socket. Closing it here keeps a
+        # failed fetch from leaking a file descriptor — which shows up as a ResourceWarning in any
+        # process that makes several failed requests, such as the test suite.
+        exc.close()
         raise FetchError(f"{url} returned HTTP {exc.code} ({exc.reason}).") from exc
     except urllib.error.URLError as exc:
         if isinstance(exc.reason, (socket.timeout, TimeoutError)):
