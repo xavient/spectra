@@ -237,7 +237,13 @@ def apply_regions(roster, *, write: bool):
         if updated != original:
             stale.append(relative_path)
             if write:
-                path.write_text(updated, encoding="utf-8", newline="\n")
+                # Written as bytes on purpose. `Path.write_text(newline=...)` only exists on Python
+                # 3.10+, and `pyproject.toml` declares a 3.9 floor — but the deeper reason is that
+                # bypassing the text layer entirely is a stronger guarantee than asking it for `\n`:
+                # `read_text` already normalized any CRLF input, so encoding the result cannot
+                # reintroduce a platform-specific ending. That is what keeps a Windows checkout from
+                # looking drifted to CI (FR-050).
+                path.write_bytes(updated.encode("utf-8"))
     return stale
 
 

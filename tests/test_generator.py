@@ -406,5 +406,50 @@ class Renderers(unittest.TestCase):
             self.assertNotIn("\r", gen.render_region(region, self.roster))
 
 
+class WritePath(unittest.TestCase):
+    """The rendered string is not the guarantee — what lands on disk is.
+
+    An earlier version of the writer asked the text layer for `\\n` via
+    `Path.write_text(newline=...)`, which only exists on Python 3.10+ and crashed on the 3.9 floor
+    `pyproject.toml` declares. Rendering was correct; writing was not. So these assert on bytes.
+    """
+
+    def test_a_run_writes_no_carriage_returns(self):
+        with sandbox() as root:
+            edit_roster(root, lambda d: agent_in(d, "gdpr").update(title="Forces A Rewrite"))
+            code, out = run(root)
+            self.assertEqual(code, 0, out)
+            for relative in ("README.md", "AGENTS_LIST.md", "spectra/README.md"):
+                self.assertNotIn(b"\r", (root / relative).read_bytes(), relative)
+
+    def test_crlf_input_is_normalized_rather_than_preserved(self):
+        with sandbox() as root:
+            path = root / "README.md"
+            path.write_bytes(path.read_bytes().replace(b"\n", b"\r\n"))
+            self.assertIn(b"\r\n", path.read_bytes())
+            edit_roster(root, lambda d: agent_in(d, "gdpr").update(title="Forces A Rewrite"))
+            code, out = run(root)
+            self.assertEqual(code, 0, out)
+            self.assertNotIn(b"\r", path.read_bytes(),
+                             "a CRLF checkout must come out normalized, not rewritten as CRLF")
+
+    def test_the_writer_does_not_depend_on_a_python_3_10_only_api(self):
+        """Parsed, not grepped — the source explains this pitfall in prose, and prose is not a call."""
+        import ast
+
+        source = h.repo_file("tools", "generate_agent_docs.py").read_text(encoding="utf-8")
+        offenders = []
+        for node in ast.walk(ast.parse(source)):
+            if not isinstance(node, ast.Call):
+                continue
+            name = getattr(node.func, "attr", None)
+            keywords = {kw.arg for kw in node.keywords if kw.arg}
+            if name == "write_text" and "newline" in keywords:
+                offenders.append(f"line {node.lineno}: write_text(newline=...)")
+        self.assertEqual(offenders, [],
+                         "Path.write_text(newline=...) is 3.10+ and pyproject declares a 3.9 floor; "
+                         "write bytes instead")
+
+
 if __name__ == "__main__":
     unittest.main()
