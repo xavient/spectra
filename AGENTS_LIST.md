@@ -164,8 +164,8 @@ Execute the task list in dependency order, building to spec with tests written a
 
 ### Testing — `speckit.implement` ✅
 
-Generate unit, integration, smoke, and end-to-end tests, each mapped back to an acceptance
-criterion.
+Generate unit, integration, smoke, and end-to-end tests mapped to acceptance criteria — run inside
+the Implementation agent, not as a separate command.
 
 - **Run it (Claude)** — `/speckit-implement`
 <!-- SPECTRA:GENERATED END id=agents-list-speckit-core -->

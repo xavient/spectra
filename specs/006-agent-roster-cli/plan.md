@@ -25,6 +25,12 @@ Three separable pieces of work, in dependency order:
    `--version` / `--update` / `--uninstall` flags. Three new stdlib-only modules (`roster.py`,
    `project.py`, `extension.py`) plus a shared bounded-fetch helper (`net.py`).
 
+Delivered as 64 tasks and 256 tests. Two deviations from this plan are worth knowing: a fourth
+generated region and a `spectra/README.md` retitle were added after cross-artifact analysis found that
+file independently declaring all four shipped agents under a fourth name for one of them; and
+`tools/build_package.py` was added so the package rebuild the constitution requires is reproducible
+rather than manual.
+
 Both release channels bump, for independent reasons: the CLI to `5.0.0` (MAJOR — the flags are removed),
 the extension to `1.3.1` (PATCH — its description changes, no command does). Principle V of the
 constitution is amended in the same change, because it currently asserts there is no build script and
@@ -127,15 +133,24 @@ spectra_cli/                     # the CLI channel (stdlib only)
 ├── ui.py                        # EXTENDED — roster rendering, grouped by phase
 └── version.py                   # UNCHANGED — CLI channel self-management, now behind `cli`
 
-tools/
-└── generate_agent_docs.py       # NEW — generator (default) and verifier (--check); never shipped
+tools/                           # NEW — maintainer only; kept out of the wheel by pyproject
+├── generate_agent_docs.py       #   generator (default) and verifier (--check)
+└── build_package.py             #   deterministic rebuild of docs/packages/spectra.zip
 
 tests/                           # NEW — stdlib unittest, not packaged
-├── test_roster.py               # schema gate, ordering, grouping, malformed input
+├── helpers.py                   # temp projects in all four states, roster fixtures, local HTTP
+├── test_net.py                  # bounded fetch, SPECTRA_RAW_BASE, failure taxonomy
+├── test_roster.py               # schema gate, ordering, grouping, every field rule
+├── test_roster_data.py          # the committed roster against its published contract
 ├── test_project.py              # root discovery from subdirs, state classification
 ├── test_extension.py            # manifest version scan, published-version fetch, delegation
-├── test_generator.py            # determinism, region isolation, all three --check failures
-└── test_cli_surface.py          # dispatch, exit codes, removed-flag messages
+├── test_agent_list.py           # grouping, installed marker, schema tolerance, failures
+├── test_no_hardcoded_agents.py  # the roster is data, not code
+├── test_check.py                # four states, four messages, the install offer
+├── test_version_update.py       # three verdicts, exit-code contract, the update loop
+├── test_uninstall.py            # delegation, idempotence, the tool left untouched
+├── test_generator.py            # determinism, region isolation, every --check failure
+└── test_cli_surface.py          # dispatch, exit codes, removed-flag messages, help panels
 
 spectra/                         # the catalog channel
 ├── extension.yml                # EDITED — description only (1.3.0 → 1.3.1)

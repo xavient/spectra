@@ -276,7 +276,7 @@
     {
       "id": "testing",
       "title": "Testing",
-      "description": "Generate unit, integration, smoke, and end-to-end tests, each mapped back to an acceptance criterion.",
+      "description": "Generate unit, integration, smoke, and end-to-end tests mapped to acceptance criteria — run inside the Implementation agent, not as a separate command.",
       "status": "available",
       "phase": "testing-quality",
       "type": "core",
