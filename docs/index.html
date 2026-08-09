@@ -393,9 +393,9 @@
           <pre><code>uv tool install spectra-cli --from git+https://github.com/xavient/spectra</code></pre>
         </li>
         <li>
-          <b>Run it inside your project.</b> <span class="os"><code>cd</code> into the project you want Spectra in, then:</span>
-          <pre><code>spectra</code></pre>
-          <p class="more">It checks for the Spec Kit CLI (installing it if missing), confirms you're in a Spec Kit project (offering <code>specify init</code> if not), registers the public Spectra catalog, and installs every extension the catalog advertises.</p>
+          <b>Run the install inside your project.</b> <span class="os"><code>cd</code> into the project you want Spectra in, then:</span>
+          <pre><code>spectra install</code></pre>
+          <p class="more">It checks for the Spec Kit CLI (installing it if missing), confirms you're in a Spec Kit project (offering <code>specify init</code> if not), registers the public Spectra catalog, and installs every extension the catalog advertises. Bare <code>spectra</code> just prints the banner and points at <code>--help</code> — <code>install</code> is the verb that changes anything.</p>
           <div class="callout">When it finishes, <b>restart your AI agent</b> so it picks up the new commands. Then see <a href="#agents">Agents</a> below.</div>
         </li>
         <li>

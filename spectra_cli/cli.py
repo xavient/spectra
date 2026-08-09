@@ -1,7 +1,8 @@
 """Command-line entry point for `spectra`.
 
-With no flags it runs the install flow. `--version`, `--update`, and `--uninstall` manage the
-tool itself, delegating to uv (see :mod:`spectra_cli.version`).
+Bare `spectra` is informational — it prints the banner and points at `--help`, the way the
+`specify` CLI does. `spectra install` runs the install flow; `--version`, `--update`, and
+`--uninstall` manage the tool itself, delegating to uv (see :mod:`spectra_cli.version`).
 """
 
 from __future__ import annotations
@@ -12,36 +13,79 @@ import sys
 
 from spectra_cli import install, ui, version
 
-EPILOG = """\
-examples:
-  spectra                 install Spectra into the Spec Kit project in this folder
-  spectra --version       print the installed version, noting if a newer one exists
-  spectra --update        update to the latest release via uv
-  spectra --uninstall     remove the spectra command from this machine
+# The help surface, rendered by `print_help()` into Spectra-purple panels rather than by
+# argparse's plain formatter. Keeping the copy here (not in `add_argument(help=...)`) keeps the
+# rendered table and the parser reading from one list.
+OPTIONS = [
+    ("--version", "-V", "Show the installed version and note if a newer one exists."),
+    ("--update", "", "Update to the latest release via uv."),
+    ("--uninstall", "", "Remove the spectra command from this machine."),
+    ("--yes", "-y", "Skip the confirmation prompt (for --uninstall)."),
+    ("--no-update-check", "", "Skip the check for a newer version."),
+    ("--help", "-h", "Show this message and exit."),
+]
 
-Run `spectra` from inside the project you want Spectra in — a folder containing .specify/.
-Not initialized yet? It offers to run `specify init` for you.
-"""
+COMMANDS = [
+    ("install", "Install Spectra into the Spec Kit project in this folder. Installs the "
+                "Spec Kit CLI and initializes the project first if needed."),
+]
+
+
+class _Parser(argparse.ArgumentParser):
+    """Parser whose argument errors are reported in Spectra's palette, not argparse's.
+
+    On a bad flag or an unknown command, show the error and then the same panels `--help`
+    prints — argparse's terse `usage:` synopsis is less useful here than the full table.
+    Exit code stays 2, argparse's convention, so scripts still read it correctly.
+    """
+
+    def error(self, message):
+        ui.plain()
+        ui.fail(f"{self.prog}: {message}")
+        ui.plain()
+        print_help()
+        raise SystemExit(2)
 
 
 def build_parser() -> argparse.ArgumentParser:
-    ap = argparse.ArgumentParser(
+    ap = _Parser(
         prog="spectra",
         description="Install and manage the Spectra catalog of Spec Kit extensions.",
-        epilog=EPILOG,
-        formatter_class=argparse.RawDescriptionHelpFormatter,
+        add_help=False,  # `--help` is handled in _dispatch so the banner prints above it.
     )
-    ap.add_argument("--version", action="store_true",
-                    help="Print the installed version and note if a newer one exists")
-    ap.add_argument("--update", action="store_true",
-                    help="Update to the latest release via uv")
-    ap.add_argument("--uninstall", action="store_true",
-                    help="Remove the uv-installed spectra command")
-    ap.add_argument("--yes", "-y", dest="yes", action="store_true",
-                    help="Skip the confirmation prompt (for --uninstall)")
-    ap.add_argument("--no-update-check", dest="no_update_check", action="store_true",
-                    help="Skip the start-of-run check for a newer version")
+    ap.add_argument("command", nargs="?", metavar="COMMAND",
+                    choices=[name for name, _ in COMMANDS])
+    ap.add_argument("--version", "-V", action="store_true")
+    ap.add_argument("--update", action="store_true")
+    ap.add_argument("--uninstall", action="store_true")
+    ap.add_argument("--yes", "-y", dest="yes", action="store_true")
+    ap.add_argument("--no-update-check", dest="no_update_check", action="store_true")
+    ap.add_argument("--help", "-h", action="store_true")
     return ap
+
+
+# --------------------------------------------------------------------------- #
+# Help
+# --------------------------------------------------------------------------- #
+def _option_label(long: str, short: str) -> str:
+    """A padded, colored `--long  -s` label, aligned across every option row."""
+    long_w = max(len(lo) for lo, _, _ in OPTIONS)
+    pad = " " * (long_w - len(long))
+    short_cell = f"{ui.GREEN}{short}{ui.RESET}" if short else "  "
+    return f"{ui.PURPLE}{long}{ui.RESET}{pad}  {short_cell}"
+
+
+def print_help() -> None:
+    """Render the help screen: usage line, then Options and Commands panels."""
+    ui.plain(f"{ui.BOLD}Usage:{ui.RESET} {ui.BOLD}spectra{ui.RESET} [OPTIONS] COMMAND [ARGS]...")
+    ui.plain()
+    ui.plain("  Install and manage the Spectra catalog of Spec Kit extensions.")
+    ui.plain()
+    ui.panel("Options", [(_option_label(lo, sh), desc) for lo, sh, desc in OPTIONS])
+    ui.panel("Commands", [(f"{ui.CYAN}{name}{ui.RESET}", desc) for name, desc in COMMANDS])
+    ui.plain()
+    ui.plain(ui.dim("  Run `spectra install` from inside the project you want Spectra in —"))
+    ui.plain(ui.dim("  a folder containing .specify/. Not initialized yet? It offers to set one up."))
 
 
 def _update_check_disabled(args) -> bool:
@@ -193,17 +237,42 @@ def cmd_install(args) -> int:
 
 
 # --------------------------------------------------------------------------- #
+# No command — the overview
+# --------------------------------------------------------------------------- #
+def cmd_overview() -> int:
+    """Bare `spectra`: say what this is and where to go next, and change nothing.
+
+    Running with no arguments is an orientation step, not a request to modify the current
+    folder — so it prints and exits rather than starting the install. `spectra install` is the
+    verb, mirroring how `specify` separates its banner from `specify init`.
+    """
+    ui.splash(version.read_installed_version() or "unknown")
+    ui.intro_note()
+    ui.plain()
+    ui.plain(ui.dim(f"Run '{ui.BOLD}spectra --help{ui.RESET}"
+                    f"{ui.PURPLE_DIM}' for usage information"))
+    ui.plain()
+    return 0
+
+
+# --------------------------------------------------------------------------- #
 # Dispatch
 # --------------------------------------------------------------------------- #
 def _dispatch(argv) -> int:
     args = build_parser().parse_args(argv)
+    if args.help:
+        ui.splash(version.read_installed_version() or "unknown")
+        print_help()
+        return 0
     if args.version:
         return cmd_version(args)
     if args.update:
         return cmd_update()
     if args.uninstall:
         return cmd_uninstall(args)
-    return cmd_install(args)
+    if args.command == "install":
+        return cmd_install(args)
+    return cmd_overview()
 
 
 def main(argv=None) -> int:
