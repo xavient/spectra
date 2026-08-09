@@ -108,6 +108,29 @@ jobs:
             exit 1
           fi
           echo "Extension $EXT_VERSION with $EXT_COMMANDS commands; catalog agrees."
+      - name: Every published copy of the description agrees
+        # FR-051/SC-010: the extension description is published in three places and must read
+        # identically in all of them. The landing page is deliberately absent from this check — it
+        # fetches the value from catalog.json rather than carrying a copy, which is the only way
+        # "every copy agrees" stays true without anyone having to remember it.
+        run: |
+          set -euo pipefail
+          LINE='TELUS Digital - Agentic software engineering across the entire SDLC.'
+          EXT_DESC="$(python3 -c 'import re,sys;t=open("spectra/extension.yml").read();print(re.search(r"^  description: \"(.*)\"$",t,re.M).group(1))')"
+          CAT_DESC="$(python3 -c 'import json;print(json.load(open("catalog.json"))["extensions"]["spectra"]["description"])')"
+          ZIP_DESC="$(unzip -p docs/packages/spectra.zip spectra/extension.yml | python3 -c 'import re,sys;t=sys.stdin.read();print(re.search(r"^  description: \"(.*)\"$",t,re.M).group(1))')"
+          for name in EXT CAT ZIP; do
+            eval "value=\$${name}_DESC"
+            if [ "$value" != "$LINE" ]; then
+              echo "::error::$name description is '$value' but should be '$LINE'." >&2
+              exit 1
+            fi
+          done
+          if grep -qF "$LINE" docs/index.html; then
+            echo "::error::docs/index.html hard-codes the description; it must fetch it from catalog.json." >&2
+            exit 1
+          fi
+          echo "extension.yml, catalog.json and the packaged manifest all carry the agreed line."
       - name: The published zip matches the spectra/ folder
         run: |
           set -euo pipefail

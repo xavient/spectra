@@ -445,7 +445,7 @@
         <h3>Spectra</h3>
         <span class="badges"><code>spectra</code> <span id="ext-version-inline">—</span></span>
       </header>
-      <p class="desc">Spectra's agentic SDLC commands for Spec Kit, bundled as a single extension: structured BRD authoring, context-aware Architecture Decision Records, business-domain guardrail analysis, and correctly-targeted GitHub PR delivery.</p>
+      <p class="desc" id="ext-description">—</p>
       <ul class="cmds">
         <li>
           <span class="name">speckit.spectra.brd</span>
@@ -476,6 +476,15 @@
           <pre><code>/speckit-spectra-create-pr --draft</code></pre>
         </li>
       </ul>
+    </div>
+
+    <div class="panel ext" id="roster-panel" hidden>
+      <header>
+        <h3>The full agent roster</h3>
+        <span class="badges"><code id="roster-count">—</code></span>
+      </header>
+      <p class="desc">Read live from <a href="https://github.com/xavient/spectra/blob/main/agents-list.json"><code>agents-list.json</code></a>, the single source of truth for what Spectra offers — the same file <code>spectra agent-list</code> reads. Nothing on this page is typed by hand, so it cannot drift from the roster.</p>
+      <div id="roster"></div>
     </div>
   </section>
 
@@ -609,6 +618,84 @@
         });
       });
     });
+  })();
+
+  // The extension description and the agent roster are read at page load for the same reason the two
+  // version numbers are (see Principle VI): a value typed into HTML is drift waiting to happen, while
+  // a value fetched from the artifact that defines it cannot drift. The description comes from
+  // catalog.json; the agents come from agents-list.json, the same file `spectra agent-list` reads.
+  (function () {
+    var target = document.getElementById("ext-description");
+    if (!target) return;
+    fetch("https://raw.githubusercontent.com/xavient/spectra/main/catalog.json")
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (data) {
+        var ext = data && data.extensions && data.extensions.spectra;
+        if (ext && ext.description) target.textContent = ext.description;
+      })
+      .catch(function () { /* leave the placeholder */ });
+  })();
+
+  (function () {
+    var panel = document.getElementById("roster-panel");
+    var host = document.getElementById("roster");
+    var count = document.getElementById("roster-count");
+    if (!panel || !host) return;
+
+    var PROVIDERS = { spectra: "Spectra", speckit: "Spec Kit" };
+
+    fetch("https://raw.githubusercontent.com/xavient/spectra/main/agents-list.json")
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (data) {
+        if (!data || !Array.isArray(data.agents) || !Array.isArray(data.phases)) return;
+
+        // Refuse a schema major this page was not written for, rather than rendering it wrongly.
+        var major = parseInt(String(data.schema_version || "0").split(".")[0], 10);
+        if (!(major === 1)) return;
+
+        var available = data.agents.filter(function (a) { return a.status === "available"; }).length;
+        count.textContent = data.agents.length + " agents · " + available + " available";
+
+        data.phases.forEach(function (phase) {
+          var agents = data.agents.filter(function (a) { return a.phase === phase.id; });
+          if (!agents.length) return;
+
+          var heading = document.createElement("h4");
+          heading.textContent = phase.title;
+          var badge = document.createElement("span");
+          badge.className = "muted";
+          badge.textContent = " · " + phase.aidlc;
+          heading.appendChild(badge);
+          host.appendChild(heading);
+
+          var list = document.createElement("ul");
+          list.className = "cmds";
+          agents.forEach(function (agent) {
+            var item = document.createElement("li");
+
+            var name = document.createElement("span");
+            name.className = "name";
+            name.textContent = (agent.status === "available" ? "✅ " : "🚧 ") + agent.title;
+            item.appendChild(name);
+
+            var desc = document.createElement("span");
+            desc.className = "cdesc";
+            desc.textContent = agent.description;
+            item.appendChild(desc);
+
+            var meta = document.createElement("span");
+            meta.className = "args";
+            meta.textContent = agent.type + " · " + (PROVIDERS[agent.provider] || agent.provider)
+              + (agent.command ? " · " + agent.command : " · under development");
+            item.appendChild(meta);
+
+            list.appendChild(item);
+          });
+          host.appendChild(list);
+        });
+        panel.hidden = false;
+      })
+      .catch(function () { /* the panel stays hidden rather than showing a partial roster */ });
   })();
 </script>
 </body>

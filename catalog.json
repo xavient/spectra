@@ -6,11 +6,11 @@
     "spectra": {
       "name": "Spectra",
       "id": "spectra",
-      "description": "Spectra's agentic SDLC commands for Spec Kit, bundled as a single extension: structured BRD authoring, context-aware Architecture Decision Records, business-domain guardrail analysis, and correctly-targeted GitHub PR delivery.",
+      "description": "TELUS Digital - Agentic software engineering across the entire SDLC.",
       "category": "workflow",
       "effect": "read-write",
       "author": "TELUS Digital",
-      "version": "1.3.0",
+      "version": "1.3.1",
       "repository": "https://github.com/xavient/spectra",
       "homepage": "https://github.com/xavient/spectra/tree/main/spectra",
       "documentation": "https://github.com/xavient/spectra/blob/main/spectra/README.md",

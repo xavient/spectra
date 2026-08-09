@@ -184,13 +184,13 @@ fetched rather than typed.
 **Independent Test**: Grep the description across every published copy and confirm they match; load the
 page and confirm a roster edit changes it with no HTML change.
 
-- [ ] T051 [US7] Change `extension.description` in `spectra/extension.yml` to "TELUS Digital - Agentic software engineering across the entire SDLC." and bump `extension.version` from `1.3.0` to `1.3.1` (FR-051)
-- [ ] T052 [US7] Add the `1.3.1` entry to `spectra/CHANGELOG.md` recording the description change and noting that no command changed
-- [ ] T053 [P] [US7] Update the `spectra` entry's `description` and `version` in `catalog.json` to match `spectra/extension.yml` exactly (FR-051)
-- [ ] T054 [US7] Update `docs/index.html`: fetch `agents-list.json` at load and render the Agents section's roster-derived content from it — titles, statuses, phases, one-line descriptions, commands — keeping the hand-written per-command arguments and examples, and read the extension description from the already-fetched `catalog.json` instead of the hard-coded paragraph (FR-051, FR-052)
-- [ ] T055 [US7] Rebuild `docs/packages/spectra.zip` as a single top-level `spectra/` folder and verify with `unzip -p docs/packages/spectra.zip spectra/extension.yml` that the packaged manifest carries the new description and version (constitution Principle V)
-- [ ] T056 [US7] Add a description-parity step to the `catalog` job in `.github/workflows/ci.yml` asserting the agreed line appears identically in `spectra/extension.yml` and `catalog.json` (SC-010)
-- [ ] T057 [US7] Run step 12 of `specs/006-agent-roster-cli/quickstart.md`, including serving `docs/` locally and confirming the description is absent from the HTML source
+- [X] T051 [US7] Change `extension.description` in `spectra/extension.yml` to "TELUS Digital - Agentic software engineering across the entire SDLC." and bump `extension.version` from `1.3.0` to `1.3.1` (FR-051)
+- [X] T052 [US7] Add the `1.3.1` entry to `spectra/CHANGELOG.md` recording the description change and noting that no command changed
+- [X] T053 [P] [US7] Update the `spectra` entry's `description` and `version` in `catalog.json` to match `spectra/extension.yml` exactly (FR-051)
+- [X] T054 [US7] Update `docs/index.html`: fetch `agents-list.json` at load and render the Agents section's roster-derived content from it — titles, statuses, phases, one-line descriptions, commands — keeping the hand-written per-command arguments and examples, and read the extension description from the already-fetched `catalog.json` instead of the hard-coded paragraph (FR-051, FR-052)
+- [X] T055 [US7] Rebuild `docs/packages/spectra.zip` as a single top-level `spectra/` folder and verify with `unzip -p docs/packages/spectra.zip spectra/extension.yml` that the packaged manifest carries the new description and version (constitution Principle V)
+- [X] T056 [US7] Add a description-parity step to the `catalog` job in `.github/workflows/ci.yml` asserting the agreed line appears identically in `spectra/extension.yml` and `catalog.json` (SC-010)
+- [X] T057 [US7] Run step 12 of `specs/006-agent-roster-cli/quickstart.md`, including serving `docs/` locally and confirming the description is absent from the HTML source
 
 **Checkpoint**: All seven user stories are complete.
 
