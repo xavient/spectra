@@ -172,4 +172,8 @@ With no input it asks for a requirement or a file path.
 
 ## License
 
-MIT — see [LICENSE](./LICENSE).
+Apache License 2.0 — see [LICENSE](./LICENSE).
+
+Free to use, modify, and redistribute. Attribution is required: keep the copyright notice, the
+`LICENSE`, and the [`NOTICE`](./NOTICE) file in any redistribution or derivative work, and state
+which files you changed.

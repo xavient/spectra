@@ -31,7 +31,8 @@ spectra/
 │   └── .nojekyll                  #   serve files as-is (no Jekyll processing)
 ├── README.md                      # user-facing: what Spectra is + how to install
 ├── CONTRIBUTING.md                # this file
-├── LICENSE
+├── LICENSE                        # Apache License 2.0
+├── NOTICE                         # required attribution notice (Apache 2.0 §4(d))
 └── spectra/                       # THE extension (folder name == extension id `spectra`)
     ├── extension.yml              #   the extension manifest (registers every command)
     ├── commands/                  #   one Markdown file per command
@@ -40,7 +41,8 @@ spectra/
     │   └── create-pr.md           #     speckit.spectra.create-pr
     ├── README.md                  #   extension docs (ships inside the zip)
     ├── CHANGELOG.md               #   extension changelog
-    └── LICENSE
+    ├── LICENSE                    #   Apache License 2.0
+    └── NOTICE                     #   attribution notice (ships inside the zip)
 ```
 
 The [`spectra/`](spectra/) folder is the extension; new capabilities are added as command files under
@@ -68,7 +70,7 @@ The manifest. Field reference:
 | `extension.effect` | yes | `read-only` or `read-write` — what the commands do to the project. |
 | `extension.author` | yes | `TELUS Digital`. |
 | `extension.repository` | yes | `https://github.com/xavient/spectra`. |
-| `extension.license` | yes | `MIT`. |
+| `extension.license` | yes | `Apache-2.0`. |
 | `extension.homepage` | no | Link to the extension folder. |
 | `requires.speckit_version` | yes | The Spec Kit version range you actually tested against — see [Compatibility](#compatibility). |
 | `provides.commands[]` | yes | List of commands; each has `name`, `file`, `description`. |
@@ -88,7 +90,7 @@ extension:
   effect: "read-write"
   author: "TELUS Digital"
   repository: "https://github.com/xavient/spectra"
-  license: "MIT"
+  license: "Apache-2.0"
   homepage: "https://github.com/xavient/spectra/tree/main/spectra"
 
 requires:
@@ -350,7 +352,8 @@ the tag (`gh release download v1.0.0 -R xavient/spectra ...`). Keep the README's
 - **Command namespace.** Always `speckit.spectra.<command>` — a fixed `spectra` segment followed by
   a clear, descriptive command name (e.g. `adr`, `domain-analyzer`, `create-pr`).
 - **One source file, all agents.** Generic format plus `$ARGUMENTS`. Never hard-code an agent's syntax.
-- **Author / copyright.** `TELUS Digital`, MIT licensed.
+- **Author / copyright.** `TELUS Digital`, Apache-2.0 licensed. Keep `LICENSE` and `NOTICE` shipping
+  with the extension — attribution is a license condition, not a courtesy.
 - **The catalog and `docs/` are published by hand — keep them in sync.** `catalog.json` (repo root) is
   the single catalog (no second copy elsewhere) and `assets/TELUS_Digital_logo.png` is the one logo. When
   you add or release an extension, update the zip, catalog entry, and landing page together, then commit.

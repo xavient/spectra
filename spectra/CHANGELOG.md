@@ -3,6 +3,19 @@
 All notable changes to the `spectra` extension are documented here. This project follows
 [Semantic Versioning](https://semver.org/).
 
+## [1.3.0] - 2026-08-08
+
+### Changed
+- **Relicensed from MIT to the Apache License 2.0.** Spectra stays free to use, modify, and
+  redistribute for any purpose, including commercially. Apache-2.0 adds an explicit patent grant and
+  makes attribution enforceable: redistributions and derivative works must retain the copyright
+  notice, ship the `LICENSE` and `NOTICE` files, and state which files were changed
+  (§4(b)–4(d)).
+
+### Added
+- `NOTICE` — the attribution notice that downstream redistributors are required to carry forward
+  under Apache-2.0 §4(d). It now ships inside the extension package.
+
 ## [1.2.0] - 2026-07-14
 
 ### Added

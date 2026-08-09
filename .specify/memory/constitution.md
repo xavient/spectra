@@ -174,8 +174,10 @@ about what actually changed in it.
   `version`, `description`, `category`, `effect` (`read-only` or `read-write`), `author`,
   `repository`, `license`, `requires.speckit_version`, and `provides.commands[]` (with each command's
   `name`, `file`, and `description`).
-- **Authorship & license.** Author is `TELUS Digital`; the extension is MIT licensed unless explicitly
-  stated otherwise, and carries its own `LICENSE`.
+- **Authorship & license.** Author is `TELUS Digital`; the extension is Apache-2.0 licensed unless
+  explicitly stated otherwise, and carries its own `LICENSE` **and** `NOTICE`. Both MUST ship inside
+  the published package — Apache-2.0 §4(d) makes the `NOTICE` attribution binding on downstream
+  redistributors, so dropping it silently weakens the attribution requirement.
 - **No silent drift.** Before publishing, verify that `catalog.json`, `docs/packages/spectra.zip`, and
   `docs/index.html` all agree with the `spectra/` folder and use the raw
   `raw.githubusercontent.com/xavient/spectra/main/...` URLs; any mismatch MUST be resolved first.
@@ -249,4 +251,4 @@ and why, and MUST update this file together with any dependent templates and doc
 binding. Complexity that violates a principle MUST be justified or removed; unjustified violations
 block merge.
 
-**Version**: 1.1.0 | **Ratified**: 2026-07-12 | **Last Amended**: 2026-07-16
+**Version**: 1.2.0 | **Ratified**: 2026-07-12 | **Last Amended**: 2026-08-08

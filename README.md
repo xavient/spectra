@@ -257,4 +257,10 @@ under it in the `speckit.spectra.*` namespace.
 
 ## License
 
-MIT — see [LICENSE](LICENSE). The `spectra` extension also carries its own license file.
+Apache License 2.0 — see [LICENSE](LICENSE). The `spectra` extension carries its own copy of the
+license too.
+
+Spectra is free to use, modify, and redistribute, commercially or otherwise. Attribution is
+required: if you redistribute Spectra or a derivative work, keep the copyright notice, the `LICENSE`,
+and the [`NOTICE`](NOTICE) file, and state which files you changed. See sections 4(b)–4(d) of the
+license.
