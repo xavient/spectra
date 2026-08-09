@@ -62,6 +62,30 @@ jobs:
           done
           echo "All three removed flags name their replacements."
 
+      - name: Neither tools/ nor tests/ ships in the wheel
+        # FR-023: the generator is maintainer tooling and must never reach a user's machine. Today
+        # that holds because pyproject lists `packages = ["spectra_cli"]` explicitly rather than
+        # auto-discovering — a property a future edit could quietly break, so assert it rather than
+        # trusting it.
+        run: |
+          set -euo pipefail
+          python -m pip wheel . --no-deps -w /tmp/wheel
+          CONTENTS="$(python -c "
+          import pathlib, zipfile
+          wheel = next(pathlib.Path('/tmp/wheel').glob('*.whl'))
+          print('\\n'.join(sorted(zipfile.ZipFile(wheel).namelist())))
+          ")"
+          echo "$CONTENTS"
+          for forbidden in tools/ tests/ agents-list.json; do
+            if echo "$CONTENTS" | grep -q "^$forbidden"; then
+              echo "::error::$forbidden was packaged into the wheel; it is maintainer-only." >&2
+              exit 1
+            fi
+          done
+          echo "$CONTENTS" | grep -q '^spectra_cli/cli.py$' \
+            || { echo "::error::the wheel does not contain spectra_cli." >&2; exit 1; }
+          echo "The wheel ships spectra_cli only."
+
       - name: Bare `spectra` is informational and changes nothing
         # The install flow lives behind `spectra install`. Running bare must stay a no-op that
         # exits 0 — if it ever starts installing again, it would mutate whatever folder a user

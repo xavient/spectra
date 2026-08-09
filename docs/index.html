@@ -399,17 +399,20 @@
           <div class="callout">When it finishes, <b>restart your AI agent</b> so it picks up the new commands. Then see <a href="#agents">Agents</a> below.</div>
         </li>
         <li>
-          <b>Check your version.</b> <span class="os">Prints the installed version and tells you if a newer one exists.</span>
-          <pre><code>spectra --version</code></pre>
+          <b>Work with your agents.</b> <span class="os">Top-level commands act on the project you're standing in.</span>
+          <pre><code>spectra agent-list   # every agent Spectra offers, from anywhere
+spectra check        # is Spectra installed here?
+spectra version      # are my agents current?
+spectra update       # bring them up to the published version
+spectra uninstall    # remove them from this project</code></pre>
+          <p class="more"><code>spectra agent-list</code> reads the published roster at run time, so a newly published agent shows up without you updating anything.</p>
         </li>
         <li>
-          <b>Keep it up to date.</b> <span class="os">Updates the <code>spectra</code> command via uv.</span>
-          <pre><code>spectra --update</code></pre>
-          <p class="more">That updates the tool. The <b>extensions</b> update separately and on their own schedule — from inside your project, run <code>specify extension update spectra</code>. You do not need a new <code>spectra</code> version to get new agents.</p>
-        </li>
-        <li>
-          <b>Uninstall.</b> <span class="os">Removes the command. Extensions already installed into your projects are left untouched.</span>
-          <pre><code>spectra --uninstall</code></pre>
+          <b>Manage the command itself.</b> <span class="os">Tool operations live under <code>spectra cli</code>, so they can never be confused with your agents.</span>
+          <pre><code>spectra cli version     # the command's own version
+spectra cli update      # update the command via uv
+spectra cli uninstall   # remove the command from this machine</code></pre>
+          <p class="more">The <b>command</b> and the <b>extensions</b> update separately and on their own schedule — you do not need a new <code>spectra</code> version to get new agents. <span class="os">Changed in 5.0.0: <code>--version</code>, <code>--update</code> and <code>--uninstall</code> were removed; run one and it names its replacement.</span></p>
         </li>
       </ol>
     </div>

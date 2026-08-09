@@ -201,13 +201,13 @@ page and confirm a roster edit changes it with no HTML change.
 **Purpose**: The documentation and guard-rail work that spans stories. The three doc tasks have exact line
 references from a grep of the current tree.
 
-- [ ] T058 [P] Update `README.md`: replace the removed-flag references on lines 191, 192, 208, 209, and the `spectra --update` cell on line 309 with their `spectra cli …` equivalents, and document the five new project-scoped commands in the Installation section
-- [ ] T059 [P] Update `CONTRIBUTING.md`: replace the removed-flag references on lines 307, 362, 372, and 385, and update the copy of the old extension description so it does not contradict `spectra/extension.yml`
-- [ ] T060 [P] Update `test/README.md`: replace the removed-flag references in the scenario table on lines 67 and 74 with `spectra cli version` and `spectra cli update` / `spectra cli uninstall`, and add rows for the new project-scoped commands
-- [ ] T061 Add a step to `.github/workflows/ci.yml` that builds the wheel and asserts neither `tools/` nor `tests/` appears in it, making FR-023 machine-checked rather than a property of `pyproject.toml` that a future edit could quietly break
-- [ ] T062 Refresh the managed region in `CLAUDE.md` by running `/speckit.agent-context.update` so the two-channel note names `agents-list.json` and the generator, rather than hand-editing inside the `<!-- SPECKIT START -->` markers
-- [ ] T063 Run `python -m unittest discover -s tests` and every step of `specs/006-agent-roster-cli/quickstart.md` in order, then confirm `git status` is clean — a dirty tree after a full run means something is not deterministic
-- [ ] T064 Run steps 5 through 11 of `specs/006-agent-roster-cli/quickstart.md` in PowerShell on Windows, watching specifically that a generator run leaves `git diff --exit-code` clean (line endings written `\n`) and that `spectra check` resolves the project root from a nested path (FR-050)
+- [X] T058 [P] Update `README.md`: replace the removed-flag references on lines 191, 192, 208, 209, and the `spectra --update` cell on line 309 with their `spectra cli …` equivalents, and document the five new project-scoped commands in the Installation section
+- [X] T059 [P] Update `CONTRIBUTING.md`: replace the removed-flag references on lines 307, 362, 372, and 385, and update the copy of the old extension description so it does not contradict `spectra/extension.yml`
+- [X] T060 [P] Update `test/README.md`: replace the removed-flag references in the scenario table on lines 67 and 74 with `spectra cli version` and `spectra cli update` / `spectra cli uninstall`, and add rows for the new project-scoped commands
+- [X] T061 Add a step to `.github/workflows/ci.yml` that builds the wheel and asserts neither `tools/` nor `tests/` appears in it, making FR-023 machine-checked rather than a property of `pyproject.toml` that a future edit could quietly break
+- [X] T062 Refresh the managed region in `CLAUDE.md` by running `/speckit.agent-context.update` so the two-channel note names `agents-list.json` and the generator, rather than hand-editing inside the `<!-- SPECKIT START -->` markers
+- [X] T063 Run `python -m unittest discover -s tests` and every step of `specs/006-agent-roster-cli/quickstart.md` in order, then confirm `git status` is clean — a dirty tree after a full run means something is not deterministic
+- [ ] T064 **BLOCKED — needs a Windows machine; this work was done on macOS.** Run steps 5 through 11 of `specs/006-agent-roster-cli/quickstart.md` in PowerShell on Windows, watching specifically that a generator run leaves `git diff --exit-code` clean (line endings written `\n`) and that `spectra check` resolves the project root from a nested path (FR-050)
 
 ---
 
