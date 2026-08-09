@@ -11,8 +11,8 @@
 #
 # Commands (CMD / `docker run ... <cmd>`):
 #   shell    install the CLI, then drop into an interactive shell (default)
-#   install  install the CLI, run `spectra` once, then drop into a shell to inspect state
-#   run      install the CLI, run `spectra` once and exit with its exit code
+#   install  install the CLI, run `spectra install` once, then drop into a shell to inspect state
+#   run      install the CLI, run `spectra install` once and exit with its exit code
 set -euo pipefail
 
 SOURCE="${SPECTRA_SOURCE:?SPECTRA_SOURCE is not set. Did you launch via test/run.sh?}"
@@ -47,7 +47,8 @@ banner() {
   c "Spectra CLI clean-room — bare machine"
   dim "  uv only · no specify · no .specify/ · no catalog registered"
   echo
-  echo "  Run the CLI end to end:   spectra"
+  echo "  Run the CLI end to end:   spectra install"
+  echo "  (bare 'spectra' just prints the banner and exits)"
   echo "  It will, in order:"
   echo "    • install Spec Kit (latest release) via uv"
   echo "    • offer to 'specify init' this folder (pick your agent when prompted)"
@@ -70,14 +71,14 @@ case "${1:-shell}" in
     ;;
   install)
     banner
-    spectra || true
+    spectra install || true
     echo
     c "Finished — inspect the state above."
     c "Try: specify extension list"
     exec /bin/bash -l
     ;;
   run)
-    exec spectra
+    exec spectra install
     ;;
   *)
     # Anything else: run it verbatim (e.g. a one-off scenario command).

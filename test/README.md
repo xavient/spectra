@@ -35,8 +35,8 @@ here is a fresh user's first five minutes; exit the shell and the machine is gon
 
 ```bash
 test/run.sh                  # interactive shell, tests your LOCAL working copy
-test/run.sh install          # installs the CLI, runs `spectra`, then drops you in to look
-test/run.sh run              # runs `spectra` once, exits with its code
+test/run.sh install          # installs the CLI, runs `spectra install`, then drops you in to look
+test/run.sh run              # runs `spectra install` once, exits with its code
 
 test/run.sh --published      # installs from git+https://github.com/xavient/spectra (main)
 test/run.sh --published 3.0.0 run   # …or from that tag
@@ -59,18 +59,18 @@ catalog advertises.
 
 The logic that actually breaks between releases lives in a few spots. The container starts bare, so
 the **full bootstrap is the default happy path** — no setup needed. Walk these in a `test/run.sh`
-shell (`spectra`, inspect, `exit`, re-launch for a fresh machine):
+shell (`spectra install`, inspect, `exit`, re-launch for a fresh machine):
 
 | # | Scenario | How to set it up | Expected |
 |---|----------|------------------|----------|
-| 1 | **Full bootstrap (happy path)** | bare container, run `spectra`, answer `y` to install Spec Kit / `specify init` | Spec Kit installs at the latest release; `specify init` creates `.specify/`; catalog registered; the extension downloads anonymously (no token, no 404) and its commands are listed |
+| 1 | **Full bootstrap (happy path)** | bare container, run `spectra install`, answer `y` to install Spec Kit / `specify init` | Spec Kit installs at the latest release; `specify init` creates `.specify/`; catalog registered; the extension downloads anonymously (no token, no 404) and its commands are listed |
 | 1b | **Version marker** | `spectra --version` | matches the repo's `VERSION` file (confirms `--published <tag>` pulled the right source) |
-| 1c | **Catalog drives the install** | run `spectra` and read step 3 | it installs the extensions **the catalog advertises**, not a hardcoded name — this is what lets a new agent ship without a CLI release |
+| 1c | **Catalog drives the install** | run `spectra install` and read step 3 | it installs the extensions **the catalog advertises**, not a hardcoded name — this is what lets a new agent ship without a CLI release |
 | 2 | **Spec Kit bootstrap declined** | at step 1 answer `n` | dies at step 1 with manual install guidance |
 | 2b | **`specify` already present (regression guard)** | pre-install `uv tool install specify-cli --from git+https://github.com/github/spec-kit.git`; re-run | step 1 finds `specify`, no prompt |
 | 3 | **Project init declined** | at step 2 answer `n` | dies at step 2 with `specify init` guidance |
 | 3b | **Already a Spec Kit project** | after step 1 installs `specify`, run `specify init --here --force`, then re-run | step 2 detects the project, no prompt |
-| 4 | **Re-run idempotency** | complete a run, then run `spectra` again | 2nd run: "already registered" for the catalog, no duplicate catalog entry |
+| 4 | **Re-run idempotency** | complete a run, then run `spectra install` again | 2nd run: "already registered" for the catalog, no duplicate catalog entry |
 | 5 | **Self-management** | `spectra --update`, then `spectra --uninstall` | update reports up-to-date/ahead against the latest Release; uninstall prompts, then `uv tool list` no longer shows `spectra-cli` |
 
 ## What this track does NOT cover

@@ -37,6 +37,24 @@ jobs:
           fi
           echo "spectra --version reports $REPORTED."
 
+      - name: Bare `spectra` is informational and changes nothing
+        # The install flow lives behind `spectra install`. Running bare must stay a no-op that
+        # exits 0 — if it ever starts installing again, it would mutate whatever folder a user
+        # happened to be standing in. Asserting on an empty dir catches exactly that.
+        env:
+          SPECTRA_NO_UPDATE_CHECK: '1'
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/bare && cd /tmp/bare
+          spectra > /tmp/bare-output.txt
+          grep -q "spectra --help" /tmp/bare-output.txt \
+            || { echo "::error::bare \`spectra\` did not point at --help." >&2; exit 1; }
+          if [ -n "$(ls -A /tmp/bare)" ]; then
+            echo "::error::bare \`spectra\` wrote into the current directory: $(ls -A /tmp/bare)" >&2
+            exit 1
+          fi
+          echo "Bare \`spectra\` printed the overview and touched nothing."
+
   catalog:
     name: Catalog and package stay in sync
     # Constitution Principle V: catalog.json, extension.yml and the published zip must never drift.

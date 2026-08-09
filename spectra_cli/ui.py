@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import os
 import platform
+import re
 import shutil
 import subprocess
 import sys
@@ -146,6 +147,46 @@ def intro_note() -> None:
     print(f"{PURPLE_DIM}│{RESET} That means a Spec Kit project — a folder containing a {BOLD}.specify/{RESET} directory.")
     print(f"{PURPLE_DIM}│{RESET} Not initialized yet? Spectra can set it up for you (step 2).")
     print(f"{PURPLE_DIM}└{line}{RESET}")
+
+
+# --------------------------------------------------------------------------- #
+# Help panels
+# --------------------------------------------------------------------------- #
+
+MAX_WIDTH = 88
+
+_ANSI = re.compile(r"\033\[[0-9;]*m")
+
+
+def visible_len(s: str) -> int:
+    """Length of `s` as rendered — color escapes occupy no columns."""
+    return len(_ANSI.sub("", s))
+
+
+def _box_width() -> int:
+    return min(shutil.get_terminal_size((80, 24)).columns, MAX_WIDTH)
+
+
+def panel(title: str, rows) -> None:
+    """Draw a rounded, titled box of label/description pairs, in Spectra's palette.
+
+    `rows` is a sequence of `(label, description)`; labels arrive pre-colored, so widths are
+    measured with `visible_len` rather than `len`. Descriptions wrap inside the box.
+    """
+    width = _box_width()
+    inner = width - 4  # "│ " + content + " │"
+    label_w = min(max((visible_len(lb) for lb, _ in rows), default=0), max(12, inner // 2))
+    desc_w = max(inner - label_w - 2, 20)
+
+    fill = max(width - 5 - len(title), 0)
+    print(f"{PURPLE_DIM}╭─{RESET} {BOLD}{title}{RESET} {PURPLE_DIM}{'─' * fill}╮{RESET}")
+    for label, desc in rows:
+        for i, line in enumerate(textwrap.wrap(desc, width=desc_w) or [""]):
+            left = label if i == 0 else ""
+            content = f"{left}{' ' * max(label_w - visible_len(left), 0)}  {line}"
+            gap = " " * max(inner - visible_len(content), 0)
+            print(f"{PURPLE_DIM}│{RESET} {content}{gap} {PURPLE_DIM}│{RESET}")
+    print(f"{PURPLE_DIM}╰{'─' * (width - 2)}╯{RESET}")
 
 
 # --------------------------------------------------------------------------- #

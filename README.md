@@ -152,11 +152,14 @@ uv tool install spectra-cli --from git+https://github.com/xavient/spectra
 ```
 
 That puts a `spectra` command on your `PATH`. Then `cd` into the project you want Spectra in and run
-it:
+the install:
 
 ```bash
-spectra
+spectra install
 ```
+
+(Bare `spectra` just prints the banner and points at `--help` — it never touches the current folder.
+`install` is the verb that does the work.)
 
 It installs the `specify` CLI if it's missing (at the latest Spec Kit release), offers to run
 `specify init` if the current folder isn't a Spec Kit project yet, registers the Spectra catalog, and
