@@ -1,159 +1,615 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Spectra -- Spec Kit extensions by TELUS Digital</title>
-<style>:root{--bg:#0c0a16;--fg:#e9e7f2;--muted:#a3a0b5;--accent:#a78bfa;
---card:#15121f;--border:#2a2540;--codebg:#0d0b17;--codefg:#e6edf3}
-*{box-sizing:border-box}
-body{margin:0;color:var(--fg);
-background:radial-gradient(1100px 520px at 12% -8%,#241b46 0%,rgba(36,27,70,0) 55%),var(--bg);
-background-attachment:fixed;min-height:100vh;
-font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
-main{max-width:860px;margin:0 auto;padding:40px 24px 90px}
-.hero{padding:20px 0 10px;text-align:center}
-.logo{height:30px;width:auto;display:block;margin:0 auto 26px}
-.pill{display:inline-flex;align-items:center;gap:9px;background:var(--card);border:1px solid var(--border);border-radius:999px;padding:7px 15px;margin:0 0 26px;font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.14em;color:var(--muted)}
-.pill .dot{width:8px;height:8px;border-radius:50%;background:#34d399;box-shadow:0 0 10px rgba(52,211,153,.75)}
-.wordmark{font-size:clamp(3.5rem,12vw,6.5rem);line-height:.95;margin:0;font-weight:800;
-letter-spacing:-.02em;color:var(--accent)}
-.tagline{font-size:clamp(1.2rem,3.2vw,1.7rem);color:#d4d2e4;font-weight:500;margin:.45em 0 0}
-.lead{color:var(--muted);font-size:1.05rem;margin:1.2em auto 0;max-width:62ch}
-.lead a{color:var(--accent)}
-.prereq{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 22px;margin:44px 0 8px}
-.prereq h2{font-size:.78rem;margin:0 0 .5em;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
-.prereq ul{margin:0;padding-left:1.2em}
-.prereq code,.badges code,.dl code,.sec-lead code{background:#221d33;border:1px solid var(--border);border-radius:6px;padding:1px 6px;font-size:.85em}
-.sec-title{font-size:1.5rem;margin:48px 0 2px;color:var(--fg);font-weight:800;letter-spacing:-.01em;border-bottom:1px solid var(--border);padding-bottom:8px}
-.sec-lead{color:var(--muted);margin:.5em 0 14px;max-width:64ch}
-.subhead{font-size:1.12rem;margin:28px 0 2px;color:var(--fg);font-weight:700;letter-spacing:-.01em}
-.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 24px;margin:14px 0}
-.card header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.card h2{font-size:1.3rem;margin:0;color:var(--fg)}
-.ver{color:var(--muted);font-size:.85rem}
-.desc{color:var(--muted)}
-label{display:block;font-size:.82rem;color:var(--muted);margin:16px 0 6px}
-.btn{display:inline-flex;align-items:center;gap:9px;background:linear-gradient(135deg,#7c5cde,#a78bfa);color:#fff;text-decoration:none;font-weight:600;font-size:.98rem;padding:13px 24px;border-radius:11px;border:1px solid rgba(167,139,250,.5);box-shadow:0 8px 26px rgba(167,139,250,.22);transition:transform .15s ease,filter .15s ease}
-.btn:hover{transform:translateY(-1px);filter:brightness(1.07)}
-.btn .sub{font-weight:500;opacity:.85;font-size:.9rem}
-.cta{display:flex;gap:14px;justify-content:center;align-items:center;flex-wrap:wrap;margin:34px 0 0}
-.btn-ghost{display:inline-flex;align-items:center;gap:9px;background:#1b1730;color:var(--fg);text-decoration:none;font-weight:600;font-size:.98rem;padding:13px 24px;border-radius:11px;border:1px solid var(--border);transition:transform .15s ease,border-color .15s ease,background .15s ease}
-.btn-ghost:hover{transform:translateY(-1px);border-color:var(--accent);background:#211c38}
-.caption{color:var(--muted);font-size:.85rem;margin:22px 0 0}
-.cmd{display:flex;gap:8px;align-items:stretch}
-.cmd pre{flex:1;margin:0;background:var(--codebg);color:var(--codefg);border:1px solid var(--border);
-border-radius:9px;padding:12px 14px;overflow-x:auto;font-size:.88rem}
-.cmd code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
-button.copy{border:1px solid var(--border);background:#1d1930;color:var(--fg);border-radius:9px;
-padding:0 16px;cursor:pointer;font-size:.85rem;white-space:nowrap}
-button.copy:hover{background:#262038;border-color:var(--accent)}
-.dl{margin:12px 0 0;font-size:.9rem;color:var(--muted)}
-.dl a,a{color:var(--accent)}
-.dl strong{color:var(--fg)}
-.cmds{list-style:none;margin:14px 0 0;padding:14px 0 0;border-top:1px solid var(--border)}
-.cmds li{margin:0 0 12px}
-.cmds li:last-child{margin-bottom:0}
-.cmds code{background:#221d33;border:1px solid var(--border);border-radius:6px;padding:1px 6px;font-size:.82rem;color:var(--fg)}
-.cmds .cdesc{display:block;margin-top:5px;color:var(--muted);font-size:.9rem}
-.cmds .args{display:block;margin-top:7px;font-size:.84rem;color:var(--muted)}
-.cmds .args strong{color:var(--fg);font-weight:600}
-.cmds .ex{display:block;margin-top:8px;font-size:.85rem;color:var(--muted)}
-.cmds .ex .lbl{text-transform:uppercase;letter-spacing:.06em;font-size:.72rem;color:var(--muted);margin-right:6px}
-.cmds .ex pre{margin:5px 0 0;background:var(--codebg);color:var(--codefg);border:1px solid var(--border);border-radius:9px;padding:10px 12px;overflow-x:auto;font-size:.84rem;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
-footer{margin-top:48px;color:var(--muted);font-size:.82rem;border-top:1px solid var(--border);padding-top:18px}</style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Spectra — Spec Kit extensions by TELUS Digital</title>
+<meta name="description" content="A curated catalog of Spec Kit extensions that enable full agentic development across the entire software development lifecycle. One uv command installs it." />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23a78bfa' d='M12 2 2 7l10 5 10-5-10-5Z'/%3E%3Cpath fill='%23a78bfa' opacity='.55' d='m2 12 10 5 10-5M2 17l10 5 10-5'/%3E%3C/svg%3E" />
+<style>
+  :root {
+    --bg: #0c0a16;
+    --bg-2: #120f22;
+    --panel: rgba(255,255,255,0.035);
+    --panel-2: rgba(255,255,255,0.05);
+    --border: rgba(167,139,250,0.20);
+    --text: #e9e7f2;
+    --muted: #a3a0b5;
+    --accent: #a78bfa;
+    --accent-2: #c4b5fd;
+    --green: #34d399;
+    --code-bg: #0d0b17;
+    --radius: 14px;
+    --maxw: 960px;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--text);
+    background:
+      radial-gradient(1100px 520px at 78% -10%, rgba(167,139,250,0.18), transparent 60%),
+      radial-gradient(900px 480px at 10% 6%, rgba(124,92,222,0.12), transparent 55%),
+      linear-gradient(180deg, var(--bg-2), var(--bg));
+    background-attachment: fixed;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  /* faint grid overlay */
+  body::before {
+    content: "";
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(167,139,250,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(167,139,250,0.05) 1px, transparent 1px);
+    background-size: 46px 46px;
+    mask-image: radial-gradient(circle at 50% 0%, #000 0%, transparent 75%);
+  }
+  .wrap { position: relative; z-index: 1; max-width: var(--maxw); margin: 0 auto; padding: 0 22px; }
+  a { color: var(--accent-2); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  header.site {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 26px 0 8px;
+  }
+  header.site img.logo { height: 30px; width: auto; opacity: .95; }
+  header.site .nav a { color: var(--muted); font-size: 14px; margin-left: 20px; }
+  header.site .nav a:hover { color: var(--text); }
+
+  .hero { padding: 56px 0 34px; text-align: center; }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 12px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--accent); border: 1px solid var(--border);
+    background: var(--panel); padding: 6px 12px; border-radius: 999px;
+  }
+  .eyebrow .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 10px var(--green); }
+  h1 {
+    font-size: clamp(46px, 11vw, 86px); line-height: .98; margin: 22px 0 10px;
+    letter-spacing: -0.03em; font-weight: 800;
+    background: linear-gradient(180deg, #ffffff, #a78bfa);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .tagline { font-size: clamp(17px, 2.4vw, 21px); color: var(--text); margin: 0 auto 14px; max-width: 720px; }
+  .lede { color: var(--muted); max-width: 680px; margin: 0 auto 30px; }
+
+  .cta { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-weight: 600; font-size: 16px; padding: 13px 22px; border-radius: 12px;
+    border: 1px solid transparent; cursor: pointer;
+  }
+  .btn-primary {
+    color: #150f28;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    box-shadow: 0 10px 30px rgba(167,139,250,0.30);
+  }
+  .btn-primary:hover { text-decoration: none; filter: brightness(1.06); transform: translateY(-1px); }
+  .btn-ghost { color: var(--text); border-color: var(--border); background: var(--panel); }
+  .btn-ghost:hover { text-decoration: none; border-color: rgba(167,139,250,0.45); }
+  .btn small { font-weight: 500; opacity: .8; }
+
+  .subnote { color: var(--muted); font-size: 13px; margin-top: 14px; }
+
+  /* Version pills. Both are populated at load time (see the script at the bottom) and stay
+     hidden until their source responds — nothing here is a hand-typed version number. */
+  .pills { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin: 18px 0 0; }
+  .release {
+    display: none; align-items: center; gap: 8px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12.5px; color: var(--accent);
+    border: 1px solid var(--border); background: var(--panel);
+    padding: 5px 12px; border-radius: 999px;
+  }
+  .release.show { display: inline-flex; }
+  .release .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 10px var(--green); }
+
+  section.block { padding: 30px 0; }
+  h2 { font-size: 24px; letter-spacing: -0.01em; margin: 8px 0 18px; }
+  h2 .num { color: var(--accent); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 18px; margin-right: 10px; }
+
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .card {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px;
+  }
+  .card h3 { margin: 6px 0 6px; font-size: 16px; }
+  .card p { margin: 0; color: var(--muted); font-size: 14.5px; }
+  .card .ico { width: 30px; height: 30px; color: var(--accent); }
+
+  .panel {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 22px 24px;
+  }
+  ul.check { list-style: none; padding: 0; margin: 0; }
+  ul.check li { padding: 8px 0 8px 30px; position: relative; color: var(--text); }
+  ul.check li::before {
+    content: ""; position: absolute; left: 0; top: 13px;
+    width: 9px; height: 9px; border-radius: 50%;
+    background: var(--accent); box-shadow: 0 0 10px rgba(167,139,250,0.7);
+  }
+  ul.check li span { color: var(--muted); }
+
+  ol.steps { counter-reset: s; list-style: none; padding: 0; margin: 0; }
+  ol.steps > li { position: relative; padding: 4px 0 22px 46px; margin: 0; }
+  ol.steps > li::before {
+    counter-increment: s; content: counter(s);
+    position: absolute; left: 0; top: 0;
+    width: 30px; height: 30px; border-radius: 9px;
+    display: grid; place-items: center;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-weight: 700; font-size: 14px;
+    color: var(--accent); background: rgba(167,139,250,0.10); border: 1px solid var(--border);
+  }
+  ol.steps > li::after {
+    content: ""; position: absolute; left: 15px; top: 34px; bottom: 6px; width: 1px;
+    background: var(--border);
+  }
+  ol.steps > li:last-child::after { display: none; }
+  ol.steps b { color: var(--text); }
+  ol.steps .os { color: var(--muted); font-size: 13px; }
+
+  pre {
+    background: var(--code-bg); border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 16px; overflow-x: auto; margin: 12px 0 0;
+  }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 13.5px; }
+  pre code { color: #ded7f5; }
+  /* Copy-to-clipboard button on command blocks (button injected by script below). */
+  .codewrap { position: relative; margin: 12px 0 0; }
+  .codewrap pre { margin: 0; }
+  .copy-btn {
+    position: absolute; top: 8px; right: 8px;
+    display: inline-flex; align-items: center; gap: 6px;
+    font: 600 12px/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    color: var(--muted); background: var(--code-bg);
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: 6px 9px; cursor: pointer;
+    transition: color .15s ease, border-color .15s ease;
+  }
+  .copy-btn:hover { color: var(--text); border-color: var(--accent-2); }
+  .copy-btn:focus-visible { outline: 2px solid var(--accent-2); outline-offset: 2px; }
+  .copy-btn.copied { color: var(--green); border-color: var(--green); cursor: default; }
+  .copy-btn svg { width: 14px; height: 14px; flex: none; }
+  p code, li code, span code {
+    background: var(--panel-2); border: 1px solid var(--border);
+    padding: 1px 6px; border-radius: 6px; font-size: 13px; color: #ded7f5;
+  }
+  .muted { color: var(--muted); }
+
+  .callout {
+    border-left: 3px solid var(--accent); background: rgba(167,139,250,0.06);
+    border-radius: 0 10px 10px 0; padding: 12px 16px; margin: 16px 0 0; color: var(--text); font-size: 14.5px;
+  }
+
+  /* OS tabs for the "check & install uv/Git" instructions in "Before you start". */
+  .osnote { color: var(--muted); font-size: 14.5px; margin: 22px 0 12px; }
+  .osnote b { color: var(--text); }
+  .tabs { margin-top: 6px; }
+  .tablist {
+    display: inline-flex; gap: 4px; padding: 4px; flex-wrap: wrap;
+    background: var(--code-bg); border: 1px solid var(--border); border-radius: 12px;
+  }
+  .tab {
+    appearance: none; cursor: pointer;
+    font: 600 14px/1 system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--muted); background: transparent;
+    border: 1px solid transparent; border-radius: 9px; padding: 9px 18px;
+    transition: color .15s ease, background .15s ease;
+  }
+  .tab:hover { color: var(--text); }
+  .tab[aria-selected="true"] {
+    color: #150f28; background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  }
+  .tab:focus-visible { outline: 2px solid var(--accent-2); outline-offset: 2px; }
+  .tabpanel { margin-top: 4px; }
+  .tabpanel[hidden] { display: none; }
+  .step-label { display: block; margin: 20px 0 0; font-size: 14.5px; color: var(--text); }
+  .step-label .n {
+    color: var(--accent); font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-weight: 700; margin-right: 8px;
+  }
+  .step-label small { display: block; color: var(--muted); font-weight: 400; font-size: 13px; margin-top: 3px; }
+  .tabpanel .more { color: var(--muted); font-size: 13px; margin: 12px 0 0; }
+  .tool-group { margin-top: 26px; padding-top: 18px; border-top: 1px solid var(--border); }
+  .tool-group:first-child { margin-top: 0; padding-top: 0; border-top: none; }
+  .tool-group > .tool-label { font-size: 13px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--accent); }
+
+  /* Agents */
+  .ext header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .ext header h3 { font-size: 20px; margin: 0; }
+  .ext .badges { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; color: var(--muted); }
+  .ext .desc { color: var(--muted); font-size: 14.5px; }
+  ul.cmds { list-style: none; margin: 16px 0 0; padding: 16px 0 0; border-top: 1px solid var(--border); }
+  ul.cmds > li { margin: 0 0 18px; }
+  ul.cmds > li:last-child { margin-bottom: 0; }
+  ul.cmds .name { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13.5px; color: var(--accent); font-weight: 700; }
+  ul.cmds .cdesc { display: block; margin-top: 6px; color: var(--muted); font-size: 14.5px; }
+  ul.cmds .args { display: block; margin-top: 7px; font-size: 13.5px; color: var(--muted); }
+  ul.cmds .args b { color: var(--text); }
+  ul.cmds .lbl { display: block; text-transform: uppercase; letter-spacing: .06em; font-size: 11.5px; color: var(--muted); margin: 10px 0 0; }
+
+  footer.site {
+    border-top: 1px solid var(--border); margin-top: 30px; padding: 26px 0 46px;
+    color: var(--muted); font-size: 13.5px; display: flex; justify-content: space-between; gap: 14px; flex-wrap: wrap;
+  }
+
+  @media (max-width: 720px) {
+    .grid3 { grid-template-columns: 1fr; }
+    header.site { flex-wrap: wrap; gap: 10px; }
+  }
+</style>
 </head>
 <body>
-<main>
-  <header class="hero">
-    <img class="logo" src="https://raw.githubusercontent.com/xavient/spectra/main/assets/TELUS_Digital_logo.png" alt="TELUS Digital">
-    <span class="pill"><span class="dot"></span> TELUS Digital &middot; Agentic SDLC</span>
-    <h1 class="wordmark">SPECTRA</h1>
-    <p class="tagline">Agentic software engineering across the entire SDLC</p>
-    <p class="lead">A catalog of <a href="https://github.com/github/spec-kit">Spec Kit</a> extensions for
-    full agentic development across the SDLC, by TELUS Digital.</p>
-    <div class="cta">
-      <a class="btn" href="https://github.com/xavient/spectra/releases/latest/download/spectra-setup.py">&#8681;&nbsp; <strong>Download</strong> <span class="sub">the installer</span></a>
-      <a class="btn-ghost" href="https://github.com/xavient/spectra/">View on GitHub</a>
-    </div>
-    <p class="caption">Installs into a Spec Kit project &middot; works with Claude, kiro-cli &amp; more &middot; public catalog, no token needed</p>
+<div class="wrap">
+
+  <header class="site">
+    <img class="logo" src="https://raw.githubusercontent.com/xavient/spectra/main/assets/TELUS_Digital_logo.png" alt="TELUS Digital" />
+    <nav class="nav">
+      <a href="https://github.com/xavient/spectra">GitHub</a>
+      <a href="#install">Install</a>
+      <a href="#agents">Agents</a>
+    </nav>
   </header>
 
-  <section class="prereq">
-    <h2>Before you start</h2>
-    <ul>
-      <li>Spectra builds on <a href="https://github.com/github/spec-kit">Spec Kit</a> and installs <strong>into a Spec Kit project</strong> &mdash; a folder containing <code>.specify/</code>.</li>
-      <li>Run everything below from <strong>inside that project</strong>. Don&rsquo;t have one yet? The installer offers to run <code>specify init</code> for you.</li>
-      <li>After Spectra installs, <strong>restart your agent</strong> so it picks up the new commands.</li>
-    </ul>
+  <section class="hero">
+    <span class="eyebrow"><span class="dot"></span> TELUS Digital · Agentic SDLC</span>
+    <h1>SPECTRA</h1>
+    <p class="tagline">Agentic software engineering across the entire SDLC.</p>
+    <p class="lede">
+      A curated catalog of <a href="https://github.com/github/spec-kit">Spec Kit</a> extensions that
+      take spec-driven development beyond code: structured BRD authoring, context-aware architecture
+      decision records, business-domain guardrail analysis, and correctly-targeted PR delivery. One
+      command installs the <code>spectra</code> tool; it handles the rest.
+    </p>
+    <div class="cta">
+      <a class="btn btn-primary" href="#install">Install with uv &nbsp;<small>one command</small></a>
+      <a class="btn btn-ghost" href="https://github.com/xavient/spectra">View on GitHub</a>
+    </div>
+    <div class="pills">
+      <span class="release" id="release"><span class="dot"></span><span id="release-version"></span></span>
+      <span class="release" id="ext-release"><span class="dot"></span><span id="ext-version"></span></span>
+    </div>
+    <p class="subnote">Runs on macOS, Windows &amp; Linux · installed as a uv tool · public catalog, no token needed</p>
   </section>
 
-  <h2 class="sec-title">Installation</h2>
-  <p class="sec-lead">Two ways to set up Spectra: the <strong>installer</strong> does everything for you, or
-  <strong>manual setup</strong> is a copy-paste path. The catalog is <strong>public</strong> &mdash; no GitHub
-  login or token needed.</p>
+  <section class="block">
+    <div class="grid3">
+      <div class="card">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="m2 12 10 5 10-5M2 17l10 5 10-5"/></svg>
+        <h3>One command, fully set up</h3>
+        <p>Installs the Spec Kit CLI if it's missing, offers to initialize your project, registers the public catalog, and installs every extension in it.</p>
+      </div>
+      <div class="card">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16v14H4z"/><path d="M4 9h16"/><path d="M9 13h7"/></svg>
+        <h3>Grounded in your project</h3>
+        <p>Every command reads real context — your constitution, specs, existing artifacts, and source — before it writes anything. A command that ignores the project it runs in is a defect.</p>
+      </div>
+      <div class="card">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v18"/><path d="M5 8h14"/><path d="M7 21h10"/><circle cx="12" cy="5" r="2"/></svg>
+        <h3>Agent-agnostic</h3>
+        <p>Commands are written in Spec Kit's generic format, so Spec Kit translates them into whatever your agent speaks — Claude, kiro-cli, and the rest.</p>
+      </div>
+    </div>
+  </section>
 
-  <h3 class="subhead">Spectra Installer</h3>
-  <p class="sec-lead">The recommended path. Download the single installer script and run it from inside your
-  Spec Kit project &mdash; it installs Spec Kit if needed, offers to initialize the project, registers the
-  Spectra catalog, and installs the extension.</p>
-  <article class="card">
-    <a class="btn" href="https://github.com/xavient/spectra/releases/latest/download/spectra-setup.py">&#8681;&nbsp; Download the installer</a>
-    <p class="dl">Always fetches the <strong>latest</strong> release &mdash; or browse the
-    <a href="https://github.com/xavient/spectra/releases/latest">releases page</a>.</p>
-    <label>Then run it from inside your Spec Kit project:</label>
-    <div class="cmd"><pre><code>python3 spectra-setup.py</code></pre><button class="copy" type="button" data-cmd="python3 spectra-setup.py">Copy</button></div>
-    <p class="dl"><strong>Run it inside a Spec Kit project</strong> (a folder containing <code>.specify/</code>).
-    Not in one yet? The installer offers to run <code>specify init</code> first. When it finishes, Spectra is
-    installed &mdash; restart your agent, then see <a href="#agents">Agents</a> below. You can delete the
-    installer script afterward.</p>
-  </article>
-
-  <h3 class="subhead">Manual setup</h3>
-  <p class="sec-lead">Prefer copy-paste? Register the public catalog once per project (this marks it
-  install-allowed, so installs resolve by name with no &ldquo;untrusted source&rdquo; prompt), then install the
-  extension and restart your agent.</p>
-  <article class="card">
-    <label>1 &middot; Register the Spectra catalog &mdash; run inside a Spec Kit project:</label>
-    <div class="cmd"><pre><code>specify extension catalog add https://raw.githubusercontent.com/xavient/spectra/main/catalog.json --name spectra --install-allowed</code></pre><button class="copy" type="button" data-cmd="specify extension catalog add https://raw.githubusercontent.com/xavient/spectra/main/catalog.json --name spectra --install-allowed">Copy</button></div>
-    <label>2 &middot; Install the extension, then restart your agent:</label>
-    <div class="cmd"><pre><code>specify extension add spectra</code></pre><button class="copy" type="button" data-cmd="specify extension add spectra">Copy</button></div>
-  </article>
-
-  <h2 class="sec-title" id="agents">Agents</h2>
-  <p class="sec-lead">Spectra ships as a <strong>single extension</strong> under the unified
-  <code>speckit.spectra.*</code> namespace &mdash; install once and get every command. <strong>Examples use
-  Claude&rsquo;s trigger form</strong> &mdash; a leading slash with dashes, like <code>/speckit-spectra-adr</code>.
-  Other agents differ (kiro-cli uses <code>/speckit.spectra.adr</code>); your agent&rsquo;s own command/skill
-  list shows the exact trigger.</p>
-  <section class="extensions">
-    <article class="card">
-      <header><h2>Spectra</h2><span class="badges"><code>spectra</code> <span class="ver">v1.3.0</span></span></header>
-      <p class="desc">Spectra&rsquo;s agentic SDLC commands for Spec Kit, bundled as a single extension: structured BRD authoring, context-aware Architecture Decision Records, business-domain guardrail analysis, and correctly-targeted GitHub PR delivery.</p>
-      <label>Commands</label>
-      <ul class="cmds">
-        <li><code>speckit.spectra.adr</code><span class="cdesc">Create a context-aware Architecture Decision Record grounded in your codebase, prior ADRs, and constitution &mdash; it asks a few clarifying questions, then writes the ADR under <code>Docs/ADR/</code>. Use it when making a significant architecture or technology choice.</span><span class="args"><strong>Arguments:</strong> a short description of the decision. If omitted, you&rsquo;ll be asked for one before drafting.</span><span class="ex"><span class="lbl">Example (Claude)</span><pre>/speckit-spectra-adr We should standardize on PostgreSQL for all primary data stores</pre></span></li>
-        <li><code>speckit.spectra.domain-analyzer</code><span class="cdesc">Scan the existing codebase, docs, and ADRs to infer the project&#x27;s domain, then write an opt-in proposal of candidate guardrails for SME review and handoff to the constitution. It never edits the constitution or source &mdash; you choose what to adopt.</span><span class="args"><strong>Arguments:</strong> none required &mdash; runs on the whole project (ideal for brownfield). Optionally pass a domain hint to steer it.</span><span class="ex"><span class="lbl">Example (Claude)</span><pre>/speckit-spectra-domain-analyzer
-/speckit-spectra-domain-analyzer this is a banking system</pre></span></li>
-        <li><code>speckit.spectra.create-pr</code><span class="cdesc">Open a correctly-targeted GitHub PR for the current spec branch, deriving the base from your promotion strategy and returning the PR URL. Confirms before any push, and is also offered automatically after <code>implement</code>.</span><span class="args"><strong>Arguments:</strong> none opens a <strong>ready-for-review</strong> PR (default); <code>--draft</code> opens a draft; <code>--base &lt;branch&gt;</code> overrides the derived base branch (confirmed first).</span><span class="ex"><span class="lbl">Example (Claude)</span><pre>/speckit-spectra-create-pr
-/speckit-spectra-create-pr --draft</pre></span></li>
-        <li><code>speckit.spectra.brd</code><span class="cdesc">Turn a raw business requirement &mdash; typed text or a <code>.docx</code>/<code>.pdf</code>/<code>.md</code>/<code>.txt</code> document &mdash; into a structured, specify-ready BRD written under <code>/brds</code>. Reads project context, asks a few clarifying questions only when the requirement has gaps, and never invents requirements &mdash; then hand the result to the specify command.</span><span class="args"><strong>Arguments:</strong> the requirement as text, or a path to a requirement document. With no input it asks for one.</span><span class="ex"><span class="lbl">Example (Claude)</span><pre>/speckit-spectra-brd Support agents need to merge duplicate customer tickets while preserving history</pre></span></li>
+  <section class="block" id="prereqs">
+    <h2><span class="num">01</span>Before you start</h2>
+    <div class="panel">
+      <ul class="check">
+        <li><b>uv</b> — <span>Astral's Python tool installer; it manages Python for you. Not sure if you have it? <a href="#get-uv">Check &amp; install it below</a>.</span></li>
+        <li><b>Git</b> — <span>uv uses it to fetch Spectra from GitHub. Not sure if you have it? <a href="#get-uv">Check &amp; install it below</a>.</span></li>
+        <li><b>A Spec Kit project</b> — <span>Spectra installs <b>into</b> one: a folder containing <code>.specify/</code>. Don't have one? <code>spectra</code> offers to create it for you, and installs the <code>specify</code> CLI first if it's missing.</span></li>
+        <li><b>Internet access</b> — <span>to <code>github.com</code> and <code>raw.githubusercontent.com</code>. The catalog is public, so there's no login, token, or <code>gh</code> setup.</span></li>
       </ul>
-    </article>
+
+      <p class="osnote" id="get-uv"><b>Get uv &amp; Git</b> — both are needed before you install Spectra. First check whether each is already installed, and install only what's missing. Pick your operating system:</p>
+
+      <div class="tabs" data-tabs>
+        <div class="tablist" role="tablist" aria-label="Operating system">
+          <button class="tab" type="button" role="tab" id="tab-macos" aria-controls="panel-macos" aria-selected="true">macOS</button>
+          <button class="tab" type="button" role="tab" id="tab-windows" aria-controls="panel-windows" aria-selected="false" tabindex="-1">Windows</button>
+          <button class="tab" type="button" role="tab" id="tab-linux" aria-controls="panel-linux" aria-selected="false" tabindex="-1">Linux</button>
+        </div>
+
+        <!-- macOS -->
+        <div class="tabpanel" role="tabpanel" id="panel-macos" aria-labelledby="tab-macos">
+          <div class="tool-group">
+            <span class="tool-label">uv</span>
+            <span class="step-label"><span class="n">1</span>Check if uv is already installed
+              <small>In the Terminal app. Prints a version number if it's there; says “command not found” if it isn't.</small></span>
+            <pre><code>uv --version</code></pre>
+            <span class="step-label"><span class="n">2</span>Not installed? Install it
+              <small>Official standalone installer — no admin rights needed.</small></span>
+            <pre><code>curl -LsSf https://astral.sh/uv/install.sh | sh</code></pre>
+            <p class="more">Prefer Homebrew? <code>brew install uv</code>. Afterwards, open a new terminal and re-run <code>uv --version</code> to confirm.</p>
+          </div>
+          <div class="tool-group">
+            <span class="tool-label">Git</span>
+            <span class="step-label"><span class="n">1</span>Check if Git is already installed
+              <small>In the Terminal app. Prints a version number if it's there; if it isn't, macOS itself offers to install the Xcode Command Line Tools (which include Git) — accept that prompt.</small></span>
+            <pre><code>git --version</code></pre>
+            <p class="more">Prefer Homebrew? <code>brew install git</code>. Afterwards, open a new terminal and re-run <code>git --version</code> to confirm.</p>
+          </div>
+        </div>
+
+        <!-- Windows -->
+        <div class="tabpanel" role="tabpanel" id="panel-windows" aria-labelledby="tab-windows" hidden>
+          <div class="tool-group">
+            <span class="tool-label">uv</span>
+            <span class="step-label"><span class="n">1</span>Check if uv is already installed
+              <small>In PowerShell. Prints a version number if it's there; errors if it isn't.</small></span>
+            <pre><code>uv --version</code></pre>
+            <span class="step-label"><span class="n">2</span>Not installed? Install it
+              <small>Official standalone installer, run in PowerShell.</small></span>
+            <pre><code>powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"</code></pre>
+            <p class="more">Prefer a package manager? <code>winget install --id=astral-sh.uv -e</code> or <code>scoop install main/uv</code>. Afterwards, open a new terminal and re-run <code>uv --version</code> to confirm.</p>
+          </div>
+          <div class="tool-group">
+            <span class="tool-label">Git</span>
+            <span class="step-label"><span class="n">1</span>Check if Git is already installed
+              <small>In PowerShell. Prints a version number if it's there; errors if it isn't.</small></span>
+            <pre><code>git --version</code></pre>
+            <span class="step-label"><span class="n">2</span>Not installed? Install it
+              <small>Official installer via winget.</small></span>
+            <pre><code>winget install --id Git.Git -e</code></pre>
+            <p class="more">No winget? Download it from <a href="https://git-scm.com/download/win">git-scm.com</a>. Afterwards, open a new terminal and re-run <code>git --version</code> to confirm.</p>
+          </div>
+        </div>
+
+        <!-- Linux -->
+        <div class="tabpanel" role="tabpanel" id="panel-linux" aria-labelledby="tab-linux" hidden>
+          <div class="tool-group">
+            <span class="tool-label">uv</span>
+            <span class="step-label"><span class="n">1</span>Check if uv is already installed
+              <small>Prints a version number if it's there; says “command not found” if it isn't.</small></span>
+            <pre><code>uv --version</code></pre>
+            <span class="step-label"><span class="n">2</span>Not installed? Install it
+              <small>Official standalone installer — installs to <code>~/.local/bin</code>, no root needed.</small></span>
+            <pre><code>curl -LsSf https://astral.sh/uv/install.sh | sh</code></pre>
+            <p class="more">Afterwards, open a new terminal and re-run <code>uv --version</code> to confirm.</p>
+          </div>
+          <div class="tool-group">
+            <span class="tool-label">Git</span>
+            <span class="step-label"><span class="n">1</span>Check if Git is already installed
+              <small>Prints a version number if it's there; says “command not found” if it isn't.</small></span>
+            <pre><code>git --version</code></pre>
+            <span class="step-label"><span class="n">2</span>Not installed? Install it
+              <small>Debian/Ubuntu. On Fedora use <code>sudo dnf install git</code>; on Arch, <code>sudo pacman -S git</code>.</small></span>
+            <pre><code>sudo apt update &amp;&amp; sudo apt install -y git</code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
   </section>
 
-  <footer>SPECTRA &middot; a single Spec Kit extension &middot; 4 commands &middot; by TELUS Digital</footer>
-</main>
+  <section class="block" id="install">
+    <h2><span class="num">02</span>Install &amp; use</h2>
+    <div class="panel">
+      <ol class="steps">
+        <li>
+          <b>Install Spectra.</b> <span class="os">Run once, from anywhere — this installs the <code>spectra</code> command itself.</span>
+          <pre><code>uv tool install spectra-cli --from git+https://github.com/xavient/spectra</code></pre>
+        </li>
+        <li>
+          <b>Run it inside your project.</b> <span class="os"><code>cd</code> into the project you want Spectra in, then:</span>
+          <pre><code>spectra</code></pre>
+          <p class="more">It checks for the Spec Kit CLI (installing it if missing), confirms you're in a Spec Kit project (offering <code>specify init</code> if not), registers the public Spectra catalog, and installs every extension the catalog advertises.</p>
+          <div class="callout">When it finishes, <b>restart your AI agent</b> so it picks up the new commands. Then see <a href="#agents">Agents</a> below.</div>
+        </li>
+        <li>
+          <b>Check your version.</b> <span class="os">Prints the installed version and tells you if a newer one exists.</span>
+          <pre><code>spectra --version</code></pre>
+        </li>
+        <li>
+          <b>Keep it up to date.</b> <span class="os">Updates the <code>spectra</code> command via uv.</span>
+          <pre><code>spectra --update</code></pre>
+          <p class="more">That updates the tool. The <b>extensions</b> update separately and on their own schedule — from inside your project, run <code>specify extension update spectra</code>. You do not need a new <code>spectra</code> version to get new agents.</p>
+        </li>
+        <li>
+          <b>Uninstall.</b> <span class="os">Removes the command. Extensions already installed into your projects are left untouched.</span>
+          <pre><code>spectra --uninstall</code></pre>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="block" id="manual">
+    <h2><span class="num">03</span>Manual setup</h2>
+    <p class="muted">Prefer copy-paste, or can't install a tool? Register the public catalog once per project (this marks it install-allowed, so installs resolve by name with no “untrusted source” prompt), then install the extension and restart your agent.</p>
+    <div class="panel">
+      <ol class="steps">
+        <li>
+          <b>Install the Spec Kit CLI.</b> <span class="os">Spectra installs into a Spec Kit project, so you need Spec Kit first.</span>
+          <pre><code>uv tool install specify-cli --from git+https://github.com/github/spec-kit.git</code></pre>
+        </li>
+        <li>
+          <b>Register the Spectra catalog.</b> <span class="os">Run inside a Spec Kit project.</span>
+          <pre><code>specify extension catalog add https://raw.githubusercontent.com/xavient/spectra/main/catalog.json --name spectra --priority 5 --install-allowed</code></pre>
+          <p class="more"><code>--install-allowed</code> is required — catalogs are discovery-only by default. Commit the resulting <code>.specify/extension-catalogs.yml</code> so everyone who clones the project inherits the catalog.</p>
+        </li>
+        <li>
+          <b>Install the extension, then restart your agent.</b>
+          <pre><code>specify extension add spectra</code></pre>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="block" id="agents">
+    <h2><span class="num">04</span>Agents</h2>
+    <p class="muted">Spectra ships as a <b>single extension</b> under the unified <code>speckit.spectra.*</code> namespace — install once and get every command. <b>Examples use Claude's trigger form</b> — a leading slash with dashes, like <code>/speckit-spectra-adr</code>. Other agents differ (kiro-cli uses <code>/speckit.spectra.adr</code>); your agent's own command list shows the exact trigger.</p>
+    <div class="panel ext">
+      <header>
+        <h3>Spectra</h3>
+        <span class="badges"><code>spectra</code> <span id="ext-version-inline">—</span></span>
+      </header>
+      <p class="desc">Spectra's agentic SDLC commands for Spec Kit, bundled as a single extension: structured BRD authoring, context-aware Architecture Decision Records, business-domain guardrail analysis, and correctly-targeted GitHub PR delivery.</p>
+      <ul class="cmds">
+        <li>
+          <span class="name">speckit.spectra.brd</span>
+          <span class="cdesc">Turn a raw business requirement — typed text or a <code>.docx</code>/<code>.pdf</code>/<code>.md</code>/<code>.txt</code> document — into a structured, specify-ready BRD written under <code>/brds</code>. Reads project context, asks a few clarifying questions only when the requirement has gaps, and never invents requirements — then hands the result to the specify command.</span>
+          <span class="args"><b>Arguments:</b> the requirement as text, or a path to a requirement document. With no input it asks for one.</span>
+          <span class="lbl">Example (Claude)</span>
+          <pre><code>/speckit-spectra-brd Support agents need to merge duplicate customer tickets while preserving history</code></pre>
+        </li>
+        <li>
+          <span class="name">speckit.spectra.adr</span>
+          <span class="cdesc">Create a context-aware Architecture Decision Record grounded in your codebase, prior ADRs, and constitution — it asks a few clarifying questions, then writes the ADR under <code>Docs/ADR/</code>. Use it when making a significant architecture or technology choice.</span>
+          <span class="args"><b>Arguments:</b> a short description of the decision. If omitted, you'll be asked for one before drafting.</span>
+          <span class="lbl">Example (Claude)</span>
+          <pre><code>/speckit-spectra-adr We should standardize on PostgreSQL for all primary data stores</code></pre>
+        </li>
+        <li>
+          <span class="name">speckit.spectra.domain-analyzer</span>
+          <span class="cdesc">Scan the existing codebase, docs, and ADRs to infer the project's domain, then write an opt-in proposal of candidate guardrails for SME review and handoff to the constitution. It never edits the constitution or source — you choose what to adopt.</span>
+          <span class="args"><b>Arguments:</b> none required — runs on the whole project (ideal for brownfield). Optionally pass a domain hint to steer it.</span>
+          <span class="lbl">Example (Claude)</span>
+          <pre><code>/speckit-spectra-domain-analyzer this is a banking system</code></pre>
+        </li>
+        <li>
+          <span class="name">speckit.spectra.create-pr</span>
+          <span class="cdesc">Open a correctly-targeted GitHub PR for the current spec branch, deriving the base from your promotion strategy and returning the PR URL. Confirms before any push, and is also offered automatically after <code>implement</code>.</span>
+          <span class="args"><b>Arguments:</b> none opens a <b>ready-for-review</b> PR (default); <code>--draft</code> opens a draft; <code>--base &lt;branch&gt;</code> overrides the derived base branch (confirmed first).</span>
+          <span class="lbl">Example (Claude)</span>
+          <pre><code>/speckit-spectra-create-pr --draft</code></pre>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="site">
+    <span>SPECTRA · a curated catalog of Spec Kit extensions · by TELUS Digital</span>
+    <span><a href="https://github.com/xavient/spectra">github.com/xavient/spectra</a></span>
+  </footer>
+
+</div>
 <script>
-document.querySelectorAll('button.copy').forEach(function (btn) {
-  btn.addEventListener('click', function () {
-    navigator.clipboard.writeText(btn.getAttribute('data-cmd')).then(function () {
-      var prev = btn.textContent;
-      btn.textContent = 'Copied';
-      setTimeout(function () { btn.textContent = prev; }, 1200);
+  // Two independently-versioned channels, both read live so neither is ever hand-typed here:
+  //   * the CLI  -> the newest published GitHub Release (tags/Releases are CLI-only)
+  //   * the extension -> the version field in the catalog itself
+  // See the constitution, Principle VI.
+  (function () {
+    var pill = document.getElementById("release");
+    var label = document.getElementById("release-version");
+    if (!pill || !label) return;
+    fetch("https://api.github.com/repos/xavient/spectra/releases/latest", {
+      headers: { Accept: "application/vnd.github+json" }
+    })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (data) {
+        if (!data || !data.tag_name) return;
+        var v = String(data.tag_name).replace(/^v/, "");
+        label.textContent = "CLI v" + v;
+        pill.classList.add("show");
+      })
+      .catch(function () { /* leave the pill hidden */ });
+  })();
+
+  (function () {
+    var pill = document.getElementById("ext-release");
+    var label = document.getElementById("ext-version");
+    var inline = document.getElementById("ext-version-inline");
+    if (!pill || !label) return;
+    fetch("https://raw.githubusercontent.com/xavient/spectra/main/catalog.json")
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (data) {
+        var ext = data && data.extensions && data.extensions.spectra;
+        if (!ext || !ext.version) return;
+        label.textContent = "Extension v" + ext.version;
+        pill.classList.add("show");
+        if (inline) inline.textContent = "v" + ext.version;
+      })
+      .catch(function () { /* leave the pill hidden */ });
+  })();
+
+  // Add a "Copy" button to every command block. Each <pre> is wrapped so the button stays
+  // anchored to the top-right even when a long command scrolls horizontally.
+  (function () {
+    var COPY = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+    var TICK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
+
+    function copyText(text) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        return navigator.clipboard.writeText(text);
+      }
+      // Fallback for non-secure contexts (e.g. opening the file locally over file://).
+      return new Promise(function (resolve, reject) {
+        try {
+          var ta = document.createElement("textarea");
+          ta.value = text; ta.setAttribute("readonly", "");
+          ta.style.position = "absolute"; ta.style.left = "-9999px";
+          document.body.appendChild(ta); ta.select();
+          var ok = document.execCommand("copy");
+          document.body.removeChild(ta);
+          ok ? resolve() : reject();
+        } catch (e) { reject(e); }
+      });
+    }
+
+    document.querySelectorAll("pre").forEach(function (pre) {
+      var codeEl = pre.querySelector("code") || pre;
+      var text = codeEl.textContent;
+
+      var wrap = document.createElement("div");
+      wrap.className = "codewrap";
+      pre.parentNode.insertBefore(wrap, pre);
+      wrap.appendChild(pre);
+
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "copy-btn";
+      btn.setAttribute("aria-label", "Copy command to clipboard");
+      btn.innerHTML = COPY + "<span>Copy</span>";
+      wrap.appendChild(btn);
+
+      var timer;
+      btn.addEventListener("click", function () {
+        copyText(text).then(function () {
+          clearTimeout(timer);
+          btn.classList.add("copied");
+          btn.innerHTML = TICK + "<span>Copied</span>";
+          timer = setTimeout(function () {
+            btn.classList.remove("copied");
+            btn.innerHTML = COPY + "<span>Copy</span>";
+          }, 1600);
+        }).catch(function () {
+          btn.innerHTML = COPY + "<span>Press ⌘/Ctrl+C</span>";
+        });
+      });
     });
-  });
-});
+  })();
+
+  // OS tab switcher for the "Get uv & Git" instructions. Clicking a tab reveals its panel
+  // and hides the rest; ArrowLeft/ArrowRight move between tabs for keyboard users.
+  (function () {
+    document.querySelectorAll("[data-tabs]").forEach(function (group) {
+      var tabs = Array.prototype.slice.call(group.querySelectorAll('[role="tab"]'));
+      if (!tabs.length) return;
+
+      function select(tab, focus) {
+        tabs.forEach(function (t) {
+          var on = t === tab;
+          t.setAttribute("aria-selected", on ? "true" : "false");
+          t.setAttribute("tabindex", on ? "0" : "-1");
+          var panel = document.getElementById(t.getAttribute("aria-controls"));
+          if (panel) panel.hidden = !on;
+        });
+        if (focus) tab.focus();
+      }
+
+      tabs.forEach(function (tab, i) {
+        tab.addEventListener("click", function () { select(tab); });
+        tab.addEventListener("keydown", function (e) {
+          var dir = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
+          if (!dir) return;
+          e.preventDefault();
+          select(tabs[(i + dir + tabs.length) % tabs.length], true);
+        });
+      });
+    });
+  })();
 </script>
 </body>
 </html>

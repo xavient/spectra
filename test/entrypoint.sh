@@ -1,54 +1,65 @@
 #!/usr/bin/env bash
-# Clean-room entrypoint. Drops you into a BARE machine with a clean, empty
-# working folder (intentionally NOT a Spec Kit project), places the installer
-# under test at a known path, then hands off. The installer is meant to
-# bootstrap everything itself, so we set nothing up for it.
+# Clean-room entrypoint. Installs the Spectra CLI under test, then drops you into
+# a clean, empty working folder (intentionally NOT a Spec Kit project) and hands
+# off. Everything downstream of uv — the Spec Kit CLI, the project, the catalog,
+# the extensions — is meant to be bootstrapped by `spectra` itself, so we set up
+# none of it.
 #
-# The installer to test arrives one of two ways (set by test/run.sh):
-#   * mounted at /work/spectra-setup.py        — the local working copy
-#   * downloaded from a release into the same path  — the published artifact
+# The CLI source arrives via SPECTRA_SOURCE (set by test/run.sh):
+#   * /work/src                               — the local working copy, mounted read-only
+#   * git+https://github.com/xavient/spectra  — the published CLI (optionally @<tag>)
 #
 # Commands (CMD / `docker run ... <cmd>`):
-#   shell    drop into an interactive shell in the project (default)
-#   install  run the installer once, then drop into a shell to inspect state
-#   run      run the installer once and exit with its exit code
+#   shell    install the CLI, then drop into an interactive shell (default)
+#   install  install the CLI, run `spectra` once, then drop into a shell to inspect state
+#   run      install the CLI, run `spectra` once and exit with its exit code
 set -euo pipefail
 
-INSTALLER="/work/spectra-setup.py"
+SOURCE="${SPECTRA_SOURCE:?SPECTRA_SOURCE is not set. Did you launch via test/run.sh?}"
 PROJECT_DIR="/work/project"
 
 c() { printf '\033[38;5;141m%s\033[0m\n' "$*"; }
 dim() { printf '\033[38;5;98m%s\033[0m\n' "$*"; }
 
-if [[ ! -f "$INSTALLER" ]]; then
-  echo "No installer found at $INSTALLER." >&2
-  echo "Did you launch via test/run.sh? It mounts/downloads the installer." >&2
-  exit 1
+# A local source is mounted read-only so the container can never dirty your working
+# tree — but setuptools writes `*.egg-info` into the source dir as it builds, so copy
+# it somewhere writable first and build from the copy.
+if [[ -d "$SOURCE" ]]; then
+  BUILD_SRC="/tmp/spectra-src"
+  rm -rf "$BUILD_SRC"
+  cp -a "$SOURCE" "$BUILD_SRC"
+  dim "Copied the mounted working copy to $BUILD_SRC (your tree stays read-only and clean)."
+  SOURCE="$BUILD_SRC"
 fi
 
-# Clean, empty working folder — deliberately NOT a Spec Kit project so the
-# installer exercises its own `specify init` bootstrap (step 2).
+c "Installing the Spectra CLI from: $SOURCE"
+uv tool install spectra-cli --from "$SOURCE" --force
+echo
+dim "Installed: $(spectra --version --no-update-check 2>/dev/null || echo 'unknown')"
+
+# Clean, empty working folder — deliberately NOT a Spec Kit project so the CLI
+# exercises its own `specify init` bootstrap (step 2).
 mkdir -p "$PROJECT_DIR"
-cp "$INSTALLER" "$PROJECT_DIR/spectra-setup.py"
 cd "$PROJECT_DIR"
 
 banner() {
   echo
-  c "Spectra installer clean-room — bare machine"
-  dim "  no specify · no uv · no .specify/ · no catalog registered"
+  c "Spectra CLI clean-room — bare machine"
+  dim "  uv only · no specify · no .specify/ · no catalog registered"
   echo
-  echo "  Run the installer end to end:   python3 spectra-setup.py"
+  echo "  Run the CLI end to end:   spectra"
   echo "  It will, in order:"
-  echo "    • install uv + Spec Kit (latest release)"
+  echo "    • install Spec Kit (latest release) via uv"
   echo "    • offer to 'specify init' this folder (pick your agent when prompted)"
-  echo "    • register the public Spectra catalog and list extensions"
+  echo "    • register the public Spectra catalog and install every extension in it"
   echo
-  echo "  Then install the extension (no auth needed — the catalog is public):"
-  echo "    specify extension add spectra"
-  echo
-  echo "  Inspect what the installer did:"
-  echo "    command -v uv specify ; specify --version"
+  echo "  Inspect what it did:"
+  echo "    command -v uv specify spectra ; specify --version"
+  echo "    specify extension list"
   echo "    cat .specify/extension-catalogs.yml 2>/dev/null"
+  echo
+  echo "  Manage the tool itself:"
+  echo "    spectra --version ; spectra --update ; spectra --uninstall"
   echo
 }
 
@@ -59,14 +70,14 @@ case "${1:-shell}" in
     ;;
   install)
     banner
-    python3 spectra-setup.py || true
+    spectra || true
     echo
-    c "Installer finished — the Spectra catalog is registered."
-    c "Try: specify extension add spectra"
+    c "Finished — inspect the state above."
+    c "Try: specify extension list"
     exec /bin/bash -l
     ;;
   run)
-    exec python3 spectra-setup.py
+    exec spectra
     ;;
   *)
     # Anything else: run it verbatim (e.g. a one-off scenario command).

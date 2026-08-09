@@ -10,6 +10,12 @@
 __pycache__/
 *.pyc
 
+# Build artifacts from `pip install .` / `python -m build`
+build/
+dist/
+*.egg-info/
+.venv/
+
 # Stray zips (local scratch, CI release artifacts) -- but DO track the published Pages site
 *.zip
 !docs/packages/*.zip

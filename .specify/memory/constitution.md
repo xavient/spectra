@@ -1,14 +1,21 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version: 1.0.0 → 1.1.0
-Bump type: MINOR — new principle added (VI. Two Independently-Versioned Release Channels) plus
-  materially expanded versioning guidance in Publishing & Distribution Standards.
-Rationale: Records the standing reality that Spectra ships through two independent distribution
-  channels — the extension catalog (raw `catalog.json` / package links) and the `spectra-setup.py`
-  installer (a GitHub Release asset) — each versioned with SemVer on its own cadence and NOT 1:1 with
-  the other. Adding an agent/command bumps the catalog/extension version without necessarily bumping
-  the installer, and vice versa. Already documented in CONTRIBUTING.md; now governed by the constitution.
+Version: 1.2.0 → 1.3.0
+Bump type: MINOR — materially expanded guidance in Principle VI and Publishing & Distribution
+  Standards; two factual corrections in Principle V.
+Rationale: The installer channel changed shape. `spectra-setup.py` — a standalone script downloaded
+  from a GitHub Release asset — is retired in favour of `spectra_cli/`, installed as a `uv` tool from
+  this repo's git URL and exposing a `spectra` command. Principle VI now describes that channel, and
+  settles the question the change surfaced: with two independently-versioned channels in one repo,
+  which one owns git tags. Answer: the CLI, exclusively — the catalog has nothing to tag, since
+  merging to `main` is its release. Adds the run-time catalog read that makes channel independence
+  real (adding an agent needs no CLI release), the VERSION single-sourcing rule the release workflow
+  enforces, and the no-hard-coded-versions rule for the landing page.
+
+  Two corrections to Principle V, which asserted things that were not true: GitHub Pages is enabled
+  (serving `main` `/docs`), not disabled; and the catalog/package sync is now CI-enforced rather than
+  purely a review obligation.
 
 Principles:
   I.   Spec-Driven Development (We Dogfood Spec Kit)
@@ -16,23 +23,28 @@ Principles:
   III. Agent-Agnostic Commands
   IV.  Context-Aware by Default
   V.   The Catalog and Package Are Maintained in Sync
-  VI.  Two Independently-Versioned Release Channels   (NEW)
+  VI.  Two Independently-Versioned Release Channels
 
 Sections: Publishing & Distribution Standards · Development Workflow ·
   Version Control & Branching Strategy · Governance
 
-Modified principles: V — adds a cross-reference to new Principle VI (installer is a separate channel)
-Added sections: Core Principle VI (Two Independently-Versioned Release Channels)
+Modified principles:
+  V  — corrects the GitHub Pages claim; adds the no-hard-coded-versions rule for docs/index.html;
+       points the channel cross-reference at the CLI instead of the retired script
+  VI — installer channel → CLI channel; adds the tags-belong-to-the-CLI rule and the run-time
+       catalog read
+Added sections: (none)
 Removed sections: (none)
 
 Templates & docs in sync:
   - .specify/templates/plan-template.md ✅ (Constitution Check gate is generic)
   - .specify/templates/spec-template.md ✅
   - .specify/templates/tasks-template.md ✅
-  - README.md ✅ — Installation already describes the versioned installer release asset
-  - CONTRIBUTING.md ✅ — "Release the installer" section + "the two channels version independently"
-  - catalog.json / spectra/extension.yml (extension/catalog version) ✅
-  - spectra-setup.py `__version__` (installer version) ✅
+  - README.md ✅ — Installation rewritten around `uv tool install`; adds "Two release channels"
+  - CONTRIBUTING.md ✅ — "Release the CLI (spectra-cli)" replaces "Release the installer"
+  - catalog.json / spectra/extension.yml (extension/catalog version) ✅ — unchanged at 1.3.0
+  - VERSION (CLI version) ✅ — 3.0.0, succeeding installer v2.0.0
+  - .github/workflows/{ci,release}.yml ✅ — enforce VERSION/tag parity and catalog sync
 
 Follow-up TODOs: (none)
 -->
@@ -109,9 +121,11 @@ their output in the actual codebase and its constitution. Context-awareness is t
 The repository is **public** — anyone can access it with no authentication — and Spectra is
 distributed straight from it over direct `raw.githubusercontent.com` links: the root `catalog.json`
 is the install-facing catalog and the single downloadable package lives at `docs/packages/spectra.zip`.
-GitHub Pages is disabled. **Anyone can add the catalog and install the extension anonymously.** There
-is no build script: the catalog and package are maintained by hand and committed. Completing, changing,
-or releasing the extension MUST include, in the same change:
+GitHub Pages serves `main` `/docs` at <https://xavient.github.io/spectra/>, but it publishes the
+landing page only — **no part of the install path depends on it.** **Anyone can add the catalog and
+install the extension anonymously.** There is no build script: the catalog and package are maintained
+by hand and committed. Completing, changing, or releasing the extension MUST include, in the same
+change:
 
 - building the package into `docs/packages/spectra.zip` (a single top-level `spectra/` folder, the
   layout Spec Kit expects);
@@ -126,8 +140,13 @@ or releasing the extension MUST include, in the same change:
 never drift from the `spectra/` folder.
 
 This sync obligation governs the **catalog channel only** (the extension, its package, and the pages
-that link to them). The `spectra-setup.py` installer is a *separate* distribution channel with its own
-version and is NOT expected to move in lockstep with the catalog — it is governed by Principle VI.
+that link to them). The `spectra` CLI is a *separate* distribution channel with its own version and is
+NOT expected to move in lockstep with the catalog — it is governed by Principle VI.
+
+The landing page MUST NOT hard-code either channel's version number. `docs/index.html` reads the
+extension version from `catalog.json` and the CLI version from the newest published GitHub Release, at
+page load. A version typed into HTML is drift waiting to happen; a version fetched from the artifact
+that defines it cannot drift.
 
 Rationale: The repo is the catalog channel's only distribution point — users discover and install the
 extension entirely from it, against the raw `catalog.json`. A stale catalog or a missing zip ships a
@@ -142,22 +161,34 @@ Spectra ships through **two** distribution channels, and each carries its **own*
 - **Catalog channel** — the `spectra` extension, distributed over the raw `catalog.json` and
   `docs/packages/spectra.zip` links. Its version is authoritative in `spectra/extension.yml` (mirrored
   into the `spectra` entry of `catalog.json`) and MUST bump — per SemVer — whenever a command (agent) is
-  added, changed, or removed.
-- **Installer channel** — `spectra-setup.py`, distributed as a versioned GitHub Release asset. Its
-  version is authoritative in the script's `__version__` (mirrored by the release tag `vX.Y.Z`) and MUST
-  bump — per SemVer — only when the installer script itself changes in a way consumers should pick up.
+  added, changed, or removed. This channel is **never tagged**: merging to `main` is its release.
+- **CLI channel** — the `spectra_cli/` package, distributed as a `uv` tool installed from this repo's
+  git URL (`uv tool install spectra-cli --from git+https://github.com/xavient/spectra`). Its version is
+  authoritative in the root `VERSION` file (read by `pyproject.toml`, reported at runtime via
+  `importlib.metadata`, and mirrored by the release tag) and MUST bump — per SemVer — only when the CLI
+  itself changes in a way consumers should pick up.
+
+**Git tags and GitHub Releases on this repository belong to the CLI channel, and only to it.** Tags MUST
+be bare semver (`X.Y.Z`); Releases MUST be titled `Spectra CLI X.Y.Z`. The catalog channel MUST NOT be
+tagged or released. Reserving tags for one channel is what makes `/releases/latest` an unambiguous
+answer to "what is the newest `spectra` command" — which both `spectra --update` and the landing page
+depend on. If the catalog also cut releases, the CLI's update check could resolve to an extension
+release and attempt to install it as a version of itself.
 
 The two version numbers MUST NOT be coupled: adding or changing a command (an agent/extension) bumps the
-catalog/extension version **without necessarily** touching the installer, and changing `spectra-setup.py`
-bumps the installer version **without necessarily** touching the extension or catalog. A change to one
-channel MUST NOT force a version bump of the other, and the two versions are not expected to match at any
-point in time.
+catalog/extension version **without necessarily** touching the CLI, and changing `spectra_cli/` bumps the
+CLI version **without necessarily** touching the extension or catalog. A change to one channel MUST NOT
+force a version bump of the other, and the two versions are not expected to match at any point in time.
 
-Rationale: The catalog and the installer serve different needs and change for different reasons — the
-catalog evolves as we add SDLC agents, while the installer changes only when the onboarding flow does.
-Forcing a shared version number would either inflate the installer on every agent addition or block agent
-releases on unrelated installer work. Independent SemVer per channel keeps each artifact's version honest
-about what actually changed in it.
+To keep that independence real rather than aspirational, the CLI MUST NOT hard-code the set of
+extensions it installs. It MUST read `catalog.json` at run time and install what the catalog
+advertises, so adding an agent reaches every existing install with no CLI release at all.
+
+Rationale: The catalog and the CLI serve different needs and change for different reasons — the catalog
+evolves as we add SDLC agents, while the CLI changes only when the onboarding flow does. Forcing a
+shared version number would either inflate the CLI on every agent addition or block agent releases on
+unrelated CLI work. Independent SemVer per channel keeps each artifact's version honest about what
+actually changed in it.
 
 ## Publishing & Distribution Standards
 
@@ -165,9 +196,14 @@ about what actually changed in it.
   independent cadences (Principle VI). Each **extension (catalog) release** MUST bump `extension.version`
   in `spectra/extension.yml` and the matching `version` in the `catalog.json` entry, and add a matching
   `spectra/CHANGELOG.md` entry under that version heading; renaming or removing a command is a breaking
-  (MAJOR) change. Each **installer release** MUST bump `__version__` in `spectra-setup.py` and be
-  published under a matching Git tag `vX.Y.Z`; a breaking change to the install flow or prerequisites is
-  MAJOR. A bump to one channel MUST NOT be mirrored onto the other unless that channel actually changed.
+  (MAJOR) change. Each **CLI release** MUST bump the root `VERSION` file and be published under a
+  matching bare-semver Git tag `X.Y.Z`; a breaking change to the install flow, the command surface, or
+  the prerequisites is MAJOR. A bump to one channel MUST NOT be mirrored onto the other unless that
+  channel actually changed.
+- **The CLI version is single-sourced and CI-enforced.** `VERSION` is the sole source of truth for the
+  CLI: `pyproject.toml` reads it and the tool reports it via `importlib.metadata`. The release workflow
+  MUST refuse to publish when the pushed tag and `VERSION` disagree, so the committed version, the git
+  tag, and the installed version cannot drift.
 - **Compatibility pinning.** `spectra/extension.yml` MUST set `requires.speckit_version` to the Spec
   Kit version range actually tested against. Re-test when Spec Kit is upgraded.
 - **Required manifest fields.** `extension.yml` MUST provide `schema_version`, `id`, `name`,
@@ -180,7 +216,9 @@ about what actually changed in it.
   redistributors, so dropping it silently weakens the attribution requirement.
 - **No silent drift.** Before publishing, verify that `catalog.json`, `docs/packages/spectra.zip`, and
   `docs/index.html` all agree with the `spectra/` folder and use the raw
-  `raw.githubusercontent.com/xavient/spectra/main/...` URLs; any mismatch MUST be resolved first.
+  `raw.githubusercontent.com/xavient/spectra/main/...` URLs; any mismatch MUST be resolved first. CI
+  enforces this: `.github/workflows/ci.yml` fails when `extension.yml` and `catalog.json` disagree on
+  the version or the command count, or when the committed zip has drifted from the `spectra/` folder.
 
 ## Development Workflow
 
@@ -251,4 +289,4 @@ and why, and MUST update this file together with any dependent templates and doc
 binding. Complexity that violates a principle MUST be justified or removed; unjustified violations
 block merge.
 
-**Version**: 1.2.0 | **Ratified**: 2026-07-12 | **Last Amended**: 2026-08-08
+**Version**: 1.3.0 | **Ratified**: 2026-07-12 | **Last Amended**: 2026-08-09
