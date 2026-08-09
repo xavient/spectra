@@ -1,0 +1,423 @@
+{
+  "schema_version": "1.0",
+  "phases": [
+    { "id": "foundation", "title": "Foundation", "aidlc": "Inception" },
+    { "id": "requirements-discovery", "title": "Requirements & Discovery", "aidlc": "Inception" },
+    { "id": "architecture-design", "title": "Architecture & Design", "aidlc": "Construction" },
+    { "id": "planning", "title": "Planning", "aidlc": "Construction" },
+    { "id": "implementation", "title": "Implementation", "aidlc": "Construction" },
+    { "id": "testing-quality", "title": "Testing & Quality", "aidlc": "Construction" },
+    { "id": "deployment-operations", "title": "Deployment & Operations", "aidlc": "Operation" }
+  ],
+  "agents": [
+    {
+      "id": "constitution",
+      "title": "Guardrails",
+      "description": "Encode your coding, security, and architecture standards once, so every downstream agent inherits them.",
+      "status": "available",
+      "phase": "foundation",
+      "type": "core",
+      "provider": "speckit",
+      "command": "speckit.constitution"
+    },
+    {
+      "id": "domain-analyzer",
+      "title": "Domain Analyzer",
+      "description": "Infer the project's business domain from its code and docs, then propose opt-in candidate guardrails for SME review.",
+      "status": "available",
+      "phase": "foundation",
+      "type": "add-on",
+      "provider": "spectra",
+      "command": "speckit.spectra.domain-analyzer"
+    },
+    {
+      "id": "fda-part-11-iec-62304",
+      "title": "FDA 21 CFR Part 11 & IEC 62304",
+      "description": "Check electronic-records and e-signature integrity plus medical-device lifecycle rigor, mapped to software safety class.",
+      "status": "planned",
+      "phase": "foundation",
+      "type": "add-on",
+      "provider": "spectra"
+    },
+    {
+      "id": "iso-27001-27701",
+      "title": "ISO 27001 / 27701",
+      "description": "Audit ISMS and privacy-management controls against Annex A, reusing shared evidence across SOC 2, ISO, and HIPAA.",
+      "status": "planned",
+      "phase": "foundation",
+      "type": "add-on",
+      "provider": "spectra"
+    },
+    {
+      "id": "specify",
+      "title": "Requirements Analyst",
+      "description": "Turn a BRD or product brief into structured user stories with clear, testable acceptance criteria.",
+      "status": "available",
+      "phase": "requirements-discovery",
+      "type": "core",
+      "provider": "speckit",
+      "command": "speckit.specify"
+    },
+    {
+      "id": "brd",
+      "title": "BRD Generator",
+      "description": "Turn a raw business requirement, typed or in a document, into a structured, specify-ready BRD.",
+      "status": "available",
+      "phase": "requirements-discovery",
+      "type": "add-on",
+      "provider": "spectra",
+      "command": "speckit.spectra.brd"
+    },
+    {
+      "id": "clarify",
+      "title": "Clarifier",
+      "description": "Interrogate vague or missing requirements up front, before they turn into expensive rework.",
+      "status": "available",
+      "phase": "requirements-discovery",
+      "type": "add-on",
+      "provider": "speckit",
+      "command": "speckit.clarify"
+    },
+    {
+      "id": "checklist",
+      "title": "Requirements Quality",
+      "description": "Score the spec for completeness, clarity, and consistency — effectively unit tests for your requirements.",
+      "status": "available",
+      "phase": "requirements-discovery",
+      "type": "add-on",
+      "provider": "speckit",
+      "command": "speckit.checklist"
+    },
+    {
+      "id": "gdpr",
+      "title": "GDPR Compliance",
+      "description": "Verify data-subject rights, lawful basis, minimization, retention, and transfers, and scaffold Article 30 records.",
+      "status": "planned",
+      "phase": "requirements-discovery",
+      "type": "add-on",
+      "provider": "spectra"
+    },
+    {
+      "id": "canadian-privacy",
+      "title": "Canadian Privacy — PIPEDA / PHIPA / Law 25",
+      "description": "Evaluate PIPEDA's fair-information principles and Quebec Law 25's mandatory PIAs and privacy-by-default duties.",
+      "status": "planned",
+      "phase": "requirements-discovery",
+      "type": "add-on",
+      "provider": "spectra"
+    },
+    {
+      "id": "eu-ai-act",
+      "title": "EU AI Act & Responsible-AI Governance",
+      "description": "Classify AI components by risk tier and assemble the transparency and Annex IV documentation the EU AI Act requires.",
+      "status": "planned",
+      "phase": "requirements-discovery",
+      "type": "add-on",
+      "provider": "spectra"
+    },
+    {
+      "id": "legal-obligation-extraction",
+      "title": "Legal-Obligation Extraction",
+      "description": "Turn regulatory and contractual text into testable acceptance criteria the compliance agents can consume.",
+      "status": "planned",
+      "phase": "requirements-discovery",
+      "type": "add-on",
+      "provider": "spectra"
+    },
+    {
+      "id": "plan",
+      "title": "Architecture Planner",
+      "description": "Produce the technical plan and tech-stack decisions, choosing the design patterns that fit the problem.",
+      "status": "available",
+      "phase": "architecture-design",
+      "type": "core",
+      "provider": "speckit",
+      "command": "speckit.plan"
+    },
+    {
+      "id": "adr",
+      "title": "Architecture Decision Records (ADR)",
+      "description": "Capture a context-aware Architecture Decision Record grounded in the codebase, prior ADRs, and the constitution.",
+      "status": "available",
+      "phase": "architecture-design",
+      "type": "add-on",
+      "provider": "spectra",
+      "command": "speckit.spectra.adr"
+    },
+    {
+      "id": "architecture-reviewer",
+      "title": "Architecture Reviewer",
+      "description": "Audit the design against best practices, design principles, and your own standards before a line is written.",
+      "status": "planned",
+      "phase": "architecture-design",
+      "type": "add-on",
+      "provider": "spectra"
+    },
+    {
+      "id": "hipaa",
+      "title": "HIPAA Compliance",
+      "description": "Audit PHI handling against the Security Rule technical safeguards and map gaps to §164.312.",
+      "status": "planned",
+      "phase": "architecture-design",
+      "type": "add-on",
+      "provider": "spectra"
+    },
+    {
+      "id": "pci-dss",
+      "title": "PCI-DSS",
+      "description": "Scope the cardholder-data environment and check development, storage, crypto, and testing controls against v4.0.1.",
+      "status": "planned",
+      "phase": "architecture-design",
+      "type": "add-on",
+      "provider": "spectra"
+    },
+    {
+      "id": "threat-modeling",
+      "title": "Threat Modeling",
+      "description": "Generate design-time STRIDE and attack-surface analysis from data-flow and architecture.",
+      "status": "planned",
+      "phase": "architecture-design",
+      "type": "add-on",
+      "provider": "spectra"
+    },
+    {
+      "id": "performance-scalability",
+      "title": "Performance & Scalability",
+      "description": "Static hot-path, complexity, and N+1 analysis with load-model sanity checks, surfacing risk before the build.",
+      "status": "planned",
+      "phase": "architecture-design",
+      "type": "add-on",
+      "provider": "spectra"
+    },
+    {
+      "id": "data-governance",
+      "title": "Data Governance & Privacy Engineering",
+      "description": "Discover PII and PHI across code and schemas, map data flows and lineage, and classify data.",
+      "status": "planned",
+      "phase": "architecture-design",
+      "type": "add-on",
+      "provider": "spectra"
+    },
+    {
+      "id": "api-design-contract",
+      "title": "API Design & Contract",
+      "description": "Lint OpenAPI specs, detect breaking changes, and enforce versioning and backward compatibility.",
+      "status": "planned",
+      "phase": "architecture-design",
+      "type": "add-on",
+      "provider": "spectra"
+    },
+    {
+      "id": "tasks",
+      "title": "Task Planner",
+      "description": "Break the plan into an ordered, dependency-aware task list, ready to sync straight to an issue tracker.",
+      "status": "available",
+      "phase": "planning",
+      "type": "core",
+      "provider": "speckit",
+      "command": "speckit.tasks"
+    },
+    {
+      "id": "analyze",
+      "title": "Consistency",
+      "description": "Cross-check spec, plan, and tasks for drift, gaps, and contradictions before the build kicks off.",
+      "status": "available",
+      "phase": "planning",
+      "type": "add-on",
+      "provider": "speckit",
+      "command": "speckit.analyze"
+    },
+    {
+      "id": "implement",
+      "title": "Implementation",
+      "description": "Execute the task list in dependency order, building to spec with tests written alongside the code.",
+      "status": "available",
+      "phase": "implementation",
+      "type": "core",
+      "provider": "speckit",
+      "command": "speckit.implement"
+    },
+    {
+      "id": "dependency-supply-chain",
+      "title": "Dependency & Supply-Chain",
+      "description": "Generate an SBOM and run reachability-aware vulnerability, license, and transitive supply-chain analysis.",
+      "status": "planned",
+      "phase": "implementation",
+      "type": "add-on",
+      "provider": "spectra"
+    },
+    {
+      "id": "database-data-layer",
+      "title": "Database & Data-Layer",
+      "description": "Review schema design, migration safety, and indexing, flagging lock risk and backward-incompatible changes.",
+      "status": "planned",
+      "phase": "implementation",
+      "type": "add-on",
+      "provider": "spectra"
+    },
+    {
+      "id": "documentation-quality",
+      "title": "Documentation Quality",
+      "description": "Assess API doc coverage, README and runbook completeness, and drift where the code changed but the docs did not.",
+      "status": "planned",
+      "phase": "implementation",
+      "type": "add-on",
+      "provider": "spectra"
+    },
+    {
+      "id": "technical-debt",
+      "title": "Technical-Debt & Maintainability",
+      "description": "Quantify complexity, duplication, dead code, and smells into a maintainability rating and remediation estimate.",
+      "status": "planned",
+      "phase": "implementation",
+      "type": "add-on",
+      "provider": "spectra"
+    },
+    {
+      "id": "testing",
+      "title": "Testing",
+      "description": "Generate unit, integration, smoke, and end-to-end tests mapped to acceptance criteria — run inside the Implementation agent, not as a separate command.",
+      "status": "available",
+      "phase": "testing-quality",
+      "type": "core",
+      "provider": "speckit",
+      "command": "speckit.implement"
+    },
+    {
+      "id": "test-coverage",
+      "title": "Test Coverage Analyst",
+      "description": "Find the gaps against the test pyramid, so coverage is real protection rather than just a percentage.",
+      "status": "planned",
+      "phase": "testing-quality",
+      "type": "add-on",
+      "provider": "spectra"
+    },
+    {
+      "id": "test-automation",
+      "title": "Test Automation Analyst",
+      "description": "Recommend what is worth automating and where each test should run across the pipeline.",
+      "status": "planned",
+      "phase": "testing-quality",
+      "type": "add-on",
+      "provider": "spectra"
+    },
+    {
+      "id": "security-analyst",
+      "title": "Security Analyst",
+      "description": "Surface threat exposure and OWASP-class issues through static and dynamic analysis of the change.",
+      "status": "planned",
+      "phase": "testing-quality",
+      "type": "add-on",
+      "provider": "spectra"
+    },
+    {
+      "id": "accessibility-wcag",
+      "title": "Accessibility & WCAG Compliance",
+      "description": "Audit the UI against WCAG 2.2 AA, map conformance to ADA, Section 508, and EN 301 549, then scaffold a VPAT.",
+      "status": "planned",
+      "phase": "testing-quality",
+      "type": "add-on",
+      "provider": "spectra"
+    },
+    {
+      "id": "carbon-green-software",
+      "title": "Carbon & Green-Software",
+      "description": "Estimate software carbon intensity with the ISO-standard SCI methodology and surface the efficiency hotspots.",
+      "status": "planned",
+      "phase": "testing-quality",
+      "type": "add-on",
+      "provider": "spectra"
+    },
+    {
+      "id": "i18n-readiness",
+      "title": "Internationalization Readiness",
+      "description": "Flag hardcoded strings, locale and RTL handling, and un-externalized resources before localization begins.",
+      "status": "planned",
+      "phase": "testing-quality",
+      "type": "add-on",
+      "provider": "spectra"
+    },
+    {
+      "id": "responsible-ai-bias",
+      "title": "Responsible-AI & Bias",
+      "description": "Audit ML components for bias, fairness, and explainability, and scaffold the model card.",
+      "status": "planned",
+      "phase": "testing-quality",
+      "type": "add-on",
+      "provider": "spectra"
+    },
+    {
+      "id": "create-pr",
+      "title": "GitHub (PR)",
+      "description": "Open a correctly-targeted GitHub PR for the current spec branch and return its URL.",
+      "status": "available",
+      "phase": "deployment-operations",
+      "type": "core",
+      "provider": "spectra",
+      "command": "speckit.spectra.create-pr"
+    },
+    {
+      "id": "operations-monitor",
+      "title": "Operations Monitor",
+      "description": "Analyze logs, latency, and error signals post-deployment, surfacing anomalies and predicting SLA breaches.",
+      "status": "planned",
+      "phase": "deployment-operations",
+      "type": "add-on",
+      "provider": "spectra"
+    },
+    {
+      "id": "incident-responder",
+      "title": "Incident Responder",
+      "description": "Correlate incident signals with recent deployments, recommend a targeted rollback or fix, and validate the resolution.",
+      "status": "planned",
+      "phase": "deployment-operations",
+      "type": "add-on",
+      "provider": "spectra"
+    },
+    {
+      "id": "soc-2",
+      "title": "SOC 2",
+      "description": "Map controls to the AICPA Trust Services Criteria and assemble continuous, change-managed evidence.",
+      "status": "planned",
+      "phase": "deployment-operations",
+      "type": "add-on",
+      "provider": "spectra"
+    },
+    {
+      "id": "sox-change-management",
+      "title": "SOX Change-Management",
+      "description": "Validate segregation of duties and change-approval evidence, producing an immutable release-approval trail.",
+      "status": "planned",
+      "phase": "deployment-operations",
+      "type": "add-on",
+      "provider": "spectra"
+    },
+    {
+      "id": "iac-analysis",
+      "title": "Infrastructure-as-Code Analysis",
+      "description": "Detect Terraform, CloudFormation, and Kubernetes misconfigurations and drift, mapped to CIS, PCI, and SOC 2.",
+      "status": "planned",
+      "phase": "deployment-operations",
+      "type": "add-on",
+      "provider": "spectra"
+    },
+    {
+      "id": "cost-finops",
+      "title": "Cost & FinOps",
+      "description": "Estimate cloud cost from IaC, flag right-sizing and waste, and show the cost delta of each change.",
+      "status": "planned",
+      "phase": "deployment-operations",
+      "type": "add-on",
+      "provider": "spectra"
+    },
+    {
+      "id": "observability-readiness",
+      "title": "Observability Readiness",
+      "description": "Check whether logs, metrics, and traces are instrumented, SLOs defined, and alert coverage adequate.",
+      "status": "planned",
+      "phase": "deployment-operations",
+      "type": "add-on",
+      "provider": "spectra"
+    }
+  ]
+}

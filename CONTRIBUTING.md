@@ -176,17 +176,39 @@ generic Spec Kit form is `/speckit.<step>`):
    `$ARGUMENTS` commands, and the `speckit.spectra.<command>` namespace.
 3. **Tasks** — `/speckit.tasks` (`/speckit-tasks`). Produces the dependency-ordered `tasks.md`.
 4. **Implement** — `/speckit.implement` (`/speckit-implement`). Executes the tasks: it adds the
-   command file under `spectra/commands/`, registers it in `spectra/extension.yml`, bumps the
-   extension `version` with a matching `spectra/CHANGELOG.md` entry, rebuilds `docs/packages/spectra.zip`
-   (a single top-level `spectra/` folder), updates the `spectra` entry's `version` and command count in
-   `catalog.json`, updates `docs/index.html`, and — if the command introduces a new agent — adds a row
-   to the Agents table in [README.md](README.md).
-5. **Test locally.** Install your working copy with `--dev` and exercise it end to end — see
+   command file under `spectra/commands/`, registers it in `spectra/extension.yml`, adds the agent to
+   [`agents-list.json`](agents-list.json) — the **single source of truth for the roster** — bumps the
+   extension `version` with a matching `spectra/CHANGELOG.md` entry, rebuilds
+   `docs/packages/spectra.zip` with `python tools/build_package.py`, updates the `spectra` entry's
+   `version` and command count in `catalog.json`, and updates `docs/index.html`.
+5. **Regenerate the agent listings** — `python tools/generate_agent_docs.py`. Every *structured*
+   listing of agents is generated from the roster, so you never hand-edit one: the Agents table in
+   [README.md](README.md), the Spec Kit core and Roadmap sections of [AGENTS_LIST.md](AGENTS_LIST.md),
+   and the Commands table in [`spectra/README.md`](spectra/README.md). Those regions are delimited by
+   `<!-- SPECTRA:GENERATED START id=… -->` markers and carry a do-not-edit notice; anything outside
+   them is yours.
+6. **Write the prose the generator will not.** A newly *shipped* agent needs a hand-authored block in
+   `AGENTS_LIST.md` — what it does, its arguments, when to use it, worked examples — introduced by an
+   anchor naming the agent's roster id:
+
+   ```markdown
+   <!-- SPECTRA:AGENT id=your-agent -->
+   ### Your Agent ✅
+   ```
+
+   The anchor keys the prose to the agent by **id**, not by heading text, so a title can be reworded
+   without breaking anything. `python tools/generate_agent_docs.py --check` fails if a shipped agent
+   has no prose block, if a prose block exists for an agent the roster does not ship, if a
+   hand-written heading has drifted from the canonical title, or if the roster and the manifest
+   disagree about the shipped set. CI runs the same command.
+7. **Test locally.** Install your working copy with `--dev` and exercise it end to end — see
    [Test the extension locally](#test-the-extension-locally). Iterate by re-running `/speckit.implement`
    or editing the generated files directly.
-6. **Publish.** Commit the updated `spectra/` folder, the updated `catalog.json`, **and** `docs/` (plus
-   the `specs/` artifacts), then push to `main`. The catalog and package are live immediately over their
-   `raw.githubusercontent.com` links — no Pages build to wait on.
+8. **Publish.** Commit the updated `spectra/` folder, `agents-list.json`, the regenerated listings, the
+   updated `catalog.json`, **and** `docs/` (plus the `specs/` artifacts), then push to `main`. The
+   catalog and package are live immediately over their `raw.githubusercontent.com` links — no Pages
+   build to wait on. The roster needs no release at all: merging publishes it, which is why a new agent
+   reaches every installed `spectra` command without a CLI release.
 
 The [Anatomy of an extension](#anatomy-of-an-extension) section above documents the structure the
 workflow produces — read it so you can review and refine the generated output, not so you can build
@@ -241,14 +263,20 @@ only the raw links. (The `spectra` CLI is the other channel, published as a GitH
 
 ### What ships
 
-There is **no build script** — the catalog and package are maintained by hand and committed:
+Two small maintainer scripts under `tools/` produce the generated artifacts; everything else is
+maintained by hand and committed:
 
 - `catalog.json` (repo root) — **the** catalog Spec Kit fetches and the single source of truth. The
   `spectra` entry carries the full metadata (name, description, version, tags, author, license, …) plus
   the `catalog_url` and the `download_url` pointing at the raw link above.
 - `docs/packages/spectra.zip` — the one package (a single top-level `spectra/` folder, the layout
-  Spec Kit expects). Rebuilt whenever the extension changes or is released (see the
-  [Spec Kit workflow](#add-a-new-command-use-the-spec-kit-workflow)).
+  Spec Kit expects). Rebuilt with `python tools/build_package.py` whenever the extension changes or is
+  released; entries are written in sorted order with a fixed timestamp, so rebuilding an unchanged
+  folder produces a byte-identical archive.
+- `agents-list.json` (repo root) — the public, machine-readable **agent roster**, and the single source
+  of truth for what Spectra offers. Read at run time by `spectra agent-list` and by the landing page,
+  and consumed by `tools/generate_agent_docs.py` to rewrite every structured agent listing. Adding an
+  agent here is what makes it visible everywhere.
 - `docs/index.html` — the landing page that walks users through adding the catalog, then installing
   the extension by name.
 - `assets/TELUS_Digital_logo.png` — the one logo, used by the README and the landing page.
@@ -304,7 +332,7 @@ uv tool install spectra-cli --from git+https://github.com/xavient/spectra
 
 There is **no build artifact and no release asset** — uv builds the wheel from source at install time.
 A GitHub Release is still published for every version, because that Release object is what
-`spectra --version` / `spectra --update` and the landing page's version pill read via
+`spectra cli version` / `spectra cli update` and the landing page's version pill read via
 `/releases/latest`.
 
 ### Tags and Releases belong to the CLI
@@ -359,7 +387,7 @@ at all. Bump the extension, not this. See [Publish the catalog and package](#pub
 
    > **Never publish or re-publish an old release without re-checking `/releases/latest`.** Left to
    > GitHub's default, "Latest" is resolved by `created_at` with `published_at` as the tie-breaker, so
-   > touching an older release can steal the slot and point `spectra --update` and the landing page's
+   > touching an older release can steal the slot and point `spectra cli update` and the landing page's
    > version pill at an ancient version. `make_latest: true` in the workflow protects new releases;
    > for anything done by hand, verify afterwards:
    > ```bash
@@ -369,7 +397,7 @@ at all. Bump the extension, not this. See [Publish the catalog and package](#pub
 4. **Smoke-test what a consumer gets**, from any directory:
    ```bash
    uv tool install spectra-cli --from git+https://github.com/xavient/spectra --force
-   spectra --version
+   spectra cli version
    ```
    For a full clean-room run (no uv, no `specify`, no `.specify/`), use [`test/run.sh`](test/run.sh).
 
@@ -382,7 +410,7 @@ spectra
 
 Unpinned, so new installs track `main`. Keep `main` releasable. A specific version is pinned by
 appending the tag (`--from git+https://github.com/xavient/spectra@3.0.0`), which is exactly what
-`spectra --update` does. Keep the README's [Installation](README.md#installation) section and the
+`spectra cli update` does. Keep the README's [Installation](README.md#installation) section and the
 landing page in sync if the install command ever changes.
 
 > **Heads-up:** the `download_url`s inside `catalog.json` point at `raw.githubusercontent.com/.../main/...`,

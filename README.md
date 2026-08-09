@@ -82,6 +82,9 @@ phases below, each also mapped onto the [**AI-DLC**](#ai-dlc) phases (Inception 
 
 **Status:** ✅ available today · 🚧 under development.
 
+<!-- SPECTRA:GENERATED START id=readme-agents-table -->
+<!-- Generated from agents-list.json — do not edit by hand. Run: python tools/generate_agent_docs.py -->
+
 | Agent | SDLC phase | AI-DLC phase | Type | Status |
 | ----- | ---------- | ------------ | ---- | ------ |
 | Guardrails | Foundation | Inception | Core | ✅ available |
@@ -132,6 +135,7 @@ phases below, each also mapped onto the [**AI-DLC**](#ai-dlc) phases (Inception 
 The agents marked ✅ that aren't shipped by Spectra (Guardrails, Requirements Analyst, Clarifier,
 Requirements Quality, Architecture Planner, Task Planner, Consistency, Implementation, Testing) are
 Spec Kit's own core commands — Spectra layers on top of them.
+<!-- SPECTRA:GENERATED END id=readme-agents-table -->
 
 Full details for every agent — what it does, its arguments, and how to run it — live in
 **[AGENTS_LIST.md](AGENTS_LIST.md)**.
@@ -185,29 +189,43 @@ alternatives.
 
 </details>
 
-#### Keeping it up to date
+#### Working with your agents
+
+Once Spectra is installed, the **top-level commands act on the agents in the project you're standing
+in**:
 
 ```bash
-spectra --version   # print your version; note if a newer one exists
-spectra --update    # update the spectra command to the latest release via uv
+spectra agent-list   # every agent Spectra offers, grouped by SDLC phase (works anywhere)
+spectra check        # is Spectra installed in this project? offers to install it if not
+spectra version      # are my agents current? names the fix if they aren't
+spectra update       # bring the agents up to the published version, via Spec Kit
+spectra uninstall    # remove the agents from this project; the command stays on your machine
 ```
+
+`spectra agent-list` reads the published roster at run time, so a newly published agent shows up
+without you updating anything.
+
+#### Keeping the command itself up to date
+
+Managing the **tool** lives under `spectra cli`, so it can never be confused with managing your
+agents:
+
+```bash
+spectra cli version     # print the command's version; note if a newer one exists
+spectra cli update      # update the spectra command to the latest release via uv
+spectra cli uninstall   # remove the spectra command from this machine
+```
+
+> **Changed in 5.0.0.** `--version`, `--update`, and `--uninstall` were removed. They reported on the
+> *tool*, which is the number you're least likely to care about. Run one and it tells you which
+> replacement you want.
 
 **The command and the extensions update separately** — and that's deliberate. New agents reach you
-through the catalog, not through a new `spectra` release, so run this from inside your project when
-we publish extension updates:
-
-```bash
-specify extension update spectra
-```
+through the catalog, not through a new `spectra` release, so `spectra update` (or
+`specify extension update spectra`) is what you run from inside your project when we publish
+extension updates.
 
 See [Two release channels](#two-release-channels) for why.
-
-#### Uninstall
-
-```bash
-spectra --uninstall          # asks you to confirm first
-spectra --uninstall --yes    # skip the prompt (for scripts / fleet cleanup)
-```
 
 This removes the `spectra` command only. Extensions already installed into your projects are left
 untouched — remove those with `specify extension remove spectra`.
@@ -273,10 +291,9 @@ specify extension update spectra  # pull a newer version when we publish one
 specify extension remove spectra  # uninstall (configs are backed up by default)
 ```
 
-Spectra ships as a **single extension** — `specify extension add spectra` registers all of its
-commands (`speckit.spectra.adr`, `speckit.spectra.domain-analyzer`, `speckit.spectra.create-pr`,
-`speckit.spectra.brd`) at once. After installing, **restart your AI agent** so it picks up the new commands, then run one. On
-Claude:
+Spectra ships as a **single extension** — `specify extension add spectra` registers every
+`speckit.spectra.*` command at once (run `spectra agent-list` to see them). After installing,
+**restart your AI agent** so it picks up the new commands, then run one. On Claude:
 
 ```
 /speckit-spectra-adr We should standardize on PostgreSQL for all primary data stores
@@ -306,7 +323,7 @@ Spectra ships two things, and they carry **two different version numbers on purp
 |---|---|---|
 | What it is | the uv tool that sets everything up | the agents your AI assistant runs |
 | You install it with | `uv tool install spectra-cli --from git+…` | `specify extension add spectra` |
-| You update it with | `spectra --update` | `specify extension update spectra` |
+| You update it with | `spectra cli update` | `spectra update` (or `specify extension update spectra`) |
 | Its version comes from | the latest [GitHub Release](https://github.com/xavient/spectra/releases) | `version` in [`catalog.json`](catalog.json) |
 
 They are **not** expected to match, and a bump to one does not imply a bump to the other. Adding a new

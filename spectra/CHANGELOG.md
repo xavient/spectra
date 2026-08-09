@@ -3,6 +3,24 @@
 All notable changes to the `spectra` extension are documented here. This project follows
 [Semantic Versioning](https://semver.org/).
 
+## [1.3.1] - 2026-08-09
+
+### Changed
+- **The extension description is now the positioning line used everywhere else:** "TELUS Digital -
+  Agentic software engineering across the entire SDLC." It previously enumerated the four shipped
+  commands, which meant it needed editing every time an agent was added and disagreed with the
+  wording on the landing page and in the README. One line, one place, no drift.
+- **The Commands table in `README.md` is generated** from the new root `agents-list.json` roster
+  rather than maintained by hand. The region is marked with
+  `<!-- SPECTRA:GENERATED START id=spectra-readme-commands -->`; everything around it, including the
+  four per-agent sections, stays hand-written. Its Effect column is dropped — `effect: read-write` is
+  declared once for the extension in `extension.yml`.
+- **The PR agent is titled "GitHub (PR)" everywhere.** It previously appeared as `github`, GitHub,
+  GitHub (PR), and "GitHub PR delivery" across four documents. Its command is unchanged:
+  `speckit.spectra.create-pr`.
+
+No command was added, changed, or removed, which is why this is a PATCH.
+
 ## [1.3.0] - 2026-08-08
 
 ### Changed

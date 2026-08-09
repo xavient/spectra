@@ -190,6 +190,65 @@ def panel(title: str, rows) -> None:
 
 
 # --------------------------------------------------------------------------- #
+# The agent roster
+# --------------------------------------------------------------------------- #
+
+AVAILABLE_GLYPH = "✅"
+PLANNED_GLYPH = "🚧"
+
+PROVIDER_LABELS = {"spectra": "Spectra", "speckit": "Spec Kit"}
+
+
+def agent_list(roster, installed=None) -> None:
+    """Print the roster grouped by SDLC phase, one line per agent.
+
+    Grouping is what keeps forty-plus entries readable: a flat list of that length is a wall, while
+    seven labelled groups of four to nine can be skimmed. Rows are aligned into columns rather than
+    boxed, because a box would force the longest command to wrap on an 80-column terminal and the
+    command is the part a user copies.
+
+    Four things are unambiguous on every row — status, type, provider, and either the command or the
+    fact that there is not one yet. `installed` is a tri-state: True or False inside a Spec Kit
+    project, and None outside one, where the question does not apply and the column is omitted.
+    """
+    groups = roster.grouped()
+    title_w = max((len(agent.title) for agent in roster.agents), default=0)
+    type_w = max((len(agent.type) for agent in roster.agents), default=0)
+    provider_w = max(len(label) for label in PROVIDER_LABELS.values())
+
+    for phase, agents in groups:
+        print()
+        print(f"{BOLD}{PURPLE}{phase.title}{RESET} {PURPLE_DIM}· {phase.aidlc}{RESET}")
+        for agent in agents:
+            glyph = f"{GREEN}{AVAILABLE_GLYPH}{RESET}" if agent.available \
+                else f"{YELLOW}{PLANNED_GLYPH}{RESET}"
+            title = f"{agent.title}{' ' * (title_w - len(agent.title))}"
+            kind = f"{PURPLE_DIM}{agent.type}{' ' * (type_w - len(agent.type))}{RESET}"
+            provider_label = PROVIDER_LABELS.get(agent.provider, agent.provider)
+            provider = (f"{PURPLE_DIM}{provider_label}"
+                        f"{' ' * (provider_w - len(provider_label))}{RESET}")
+            if agent.command:
+                trailing = f"{CYAN}{agent.command}{RESET}"
+            else:
+                trailing = dim("under development")
+            row = f"  {glyph} {title}  {kind}  {provider}  {trailing}"
+            if installed and agent.shipped:
+                row += f"  {GREEN}✓ installed here{RESET}"
+            print(row)
+
+    available = sum(1 for agent in roster.agents if agent.available)
+    print()
+    print(dim(f"  {len(roster.agents)} agents · {available} available today · "
+              f"{len(roster.agents) - available} under development"))
+    print(dim("  Spec Kit agents come with Spec Kit itself — Spectra builds on them but does not "
+              "install or version them."))
+    if installed is False:
+        print(dim("  Spectra is not installed in this project. Add it with: spectra install"))
+    print()
+
+
+
+# --------------------------------------------------------------------------- #
 # Subprocess helpers
 # --------------------------------------------------------------------------- #
 

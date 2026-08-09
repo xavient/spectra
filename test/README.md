@@ -64,19 +64,24 @@ shell (`spectra install`, inspect, `exit`, re-launch for a fresh machine):
 | # | Scenario | How to set it up | Expected |
 |---|----------|------------------|----------|
 | 1 | **Full bootstrap (happy path)** | bare container, run `spectra install`, answer `y` to install Spec Kit / `specify init` | Spec Kit installs at the latest release; `specify init` creates `.specify/`; catalog registered; the extension downloads anonymously (no token, no 404) and its commands are listed |
-| 1b | **Version marker** | `spectra --version` | matches the repo's `VERSION` file (confirms `--published <tag>` pulled the right source) |
+| 1b | **Version marker** | `spectra cli version` | first line matches the repo's `VERSION` file (confirms `--published <tag>` pulled the right source) |
 | 1c | **Catalog drives the install** | run `spectra install` and read step 3 | it installs the extensions **the catalog advertises**, not a hardcoded name — this is what lets a new agent ship without a CLI release |
 | 2 | **Spec Kit bootstrap declined** | at step 1 answer `n` | dies at step 1 with manual install guidance |
 | 2b | **`specify` already present (regression guard)** | pre-install `uv tool install specify-cli --from git+https://github.com/github/spec-kit.git`; re-run | step 1 finds `specify`, no prompt |
 | 3 | **Project init declined** | at step 2 answer `n` | dies at step 2 with `specify init` guidance |
 | 3b | **Already a Spec Kit project** | after step 1 installs `specify`, run `specify init --here --force`, then re-run | step 2 detects the project, no prompt |
 | 4 | **Re-run idempotency** | complete a run, then run `spectra install` again | 2nd run: "already registered" for the catalog, no duplicate catalog entry |
-| 5 | **Self-management** | `spectra --update`, then `spectra --uninstall` | update reports up-to-date/ahead against the latest Release; uninstall prompts, then `uv tool list` no longer shows `spectra-cli` |
+| 5 | **Self-management** | `spectra cli update`, then `spectra cli uninstall` | update reports up-to-date/ahead against the latest Release; uninstall prompts, then `uv tool list` no longer shows `spectra-cli` |
+| 6 | **Removed flags name their replacements** | `spectra --version`, `--update`, `--uninstall` | each exits 2 and names both `spectra cli …` and the project-scoped equivalent — never a bare "unrecognized arguments" |
+| 7 | **The roster is data** | `spectra agent-list` from `/tmp` (not a Spec Kit project) | lists every agent grouped by SDLC phase, exit 0; no planned agent shows a command |
+| 8 | **Project state is distinguishable** | `spectra check` in `/tmp`, then in a fresh `specify init` project, then after `spectra install` | three different sentences: not a Spec Kit project (exit 5), not installed + offer, installed (exit 0) |
+| 9 | **Agents are current** | `spectra version` after a successful install | reports up to date; hand-edit `.specify/extensions/spectra/extension.yml` to an older version and it reports both and names `spectra update` |
+| 10 | **Project uninstall leaves the tool** | `spectra uninstall`, then `spectra cli version` | the extension is gone from the project; the command still runs |
 
 ## What this track does NOT cover
 
 - Real cross-platform behavior (the Windows branches of `find_uv`, and the Windows file-lock path in
-  `--update` / `--uninstall`). The container is Linux; Windows and macOS still need a human on those
+  `cli update` / `cli uninstall`). The container is Linux; Windows and macOS still need a human on those
   OSes.
 - The extension and its commands **installing and working** — this track tests onboarding only, up to
   the extension being installed. That is exactly what

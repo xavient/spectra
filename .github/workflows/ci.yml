@@ -22,20 +22,69 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install the package
         run: python -m pip install .
+      - name: The test suite passes
+        # Standard-library `unittest`, not pytest: the zero-dependency constraint applies to the
+        # whole repository, so CI installs nothing beyond the package itself.
+        run: python -m unittest discover -s tests -v
       - name: The command runs and reports the committed version
+        # `spectra cli version` replaced `--version` in 5.0.0. Its first line stays the bare version
+        # precisely so this remains a one-line comparison.
         # SPECTRA_NO_UPDATE_CHECK keeps this offline and deterministic — no GitHub round trip.
         env:
           SPECTRA_NO_UPDATE_CHECK: '1'
         run: |
           set -euo pipefail
           spectra --help > /dev/null
-          REPORTED="$(spectra --version)"
+          REPORTED="$(spectra cli version | head -1)"
           FILE_VERSION="$(tr -d '[:space:]' < VERSION)"
           if [ "$REPORTED" != "$FILE_VERSION" ]; then
-            echo "::error::spectra --version reported '$REPORTED' but VERSION says '$FILE_VERSION'." >&2
+            echo "::error::spectra cli version reported '$REPORTED' but VERSION says '$FILE_VERSION'." >&2
             exit 1
           fi
-          echo "spectra --version reports $REPORTED."
+          echo "spectra cli version reports $REPORTED."
+
+      - name: The removed flags name their replacements
+        # Removing them is the breaking change in 5.0.0; leaving a user with "unrecognized arguments"
+        # would tell them what is wrong but not what to do instead.
+        env:
+          SPECTRA_NO_UPDATE_CHECK: '1'
+        run: |
+          set -euo pipefail
+          for flag in --version --update --uninstall; do
+            if spectra "$flag" > /tmp/removed.txt 2>&1; then
+              echo "::error::spectra $flag still succeeds; it was supposed to be removed." >&2
+              exit 1
+            fi
+            grep -q 'was removed in' /tmp/removed.txt \
+              || { echo "::error::spectra $flag did not explain that it was removed." >&2; exit 1; }
+            grep -q 'spectra cli' /tmp/removed.txt \
+              || { echo "::error::spectra $flag did not name its replacement." >&2; exit 1; }
+          done
+          echo "All three removed flags name their replacements."
+
+      - name: Neither tools/ nor tests/ ships in the wheel
+        # FR-023: the generator is maintainer tooling and must never reach a user's machine. Today
+        # that holds because pyproject lists `packages = ["spectra_cli"]` explicitly rather than
+        # auto-discovering — a property a future edit could quietly break, so assert it rather than
+        # trusting it.
+        run: |
+          set -euo pipefail
+          python -m pip wheel . --no-deps -w /tmp/wheel
+          CONTENTS="$(python -c "
+          import pathlib, zipfile
+          wheel = next(pathlib.Path('/tmp/wheel').glob('*.whl'))
+          print('\\n'.join(sorted(zipfile.ZipFile(wheel).namelist())))
+          ")"
+          echo "$CONTENTS"
+          for forbidden in tools/ tests/ agents-list.json; do
+            if echo "$CONTENTS" | grep -q "^$forbidden"; then
+              echo "::error::$forbidden was packaged into the wheel; it is maintainer-only." >&2
+              exit 1
+            fi
+          done
+          echo "$CONTENTS" | grep -q '^spectra_cli/cli.py$' \
+            || { echo "::error::the wheel does not contain spectra_cli." >&2; exit 1; }
+          echo "The wheel ships spectra_cli only."
 
       - name: Bare `spectra` is informational and changes nothing
         # The install flow lives behind `spectra install`. Running bare must stay a no-op that
@@ -61,6 +110,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: The generated agent listings match agents-list.json
+        # The roster is the single source of truth (Principle V). This fails when a generated region
+        # was hand-edited, when a shipped agent has no prose block, when a prose block exists for an
+        # agent that is not shipped, when a hand-written heading has drifted from the canonical title,
+        # or when the roster and the manifest disagree about the shipped set.
+        run: python3 tools/generate_agent_docs.py --check
       - name: extension.yml, catalog.json and the zip agree
         run: |
           set -euo pipefail
@@ -77,6 +132,29 @@ jobs:
             exit 1
           fi
           echo "Extension $EXT_VERSION with $EXT_COMMANDS commands; catalog agrees."
+      - name: Every published copy of the description agrees
+        # FR-051/SC-010: the extension description is published in three places and must read
+        # identically in all of them. The landing page is deliberately absent from this check — it
+        # fetches the value from catalog.json rather than carrying a copy, which is the only way
+        # "every copy agrees" stays true without anyone having to remember it.
+        run: |
+          set -euo pipefail
+          LINE='TELUS Digital - Agentic software engineering across the entire SDLC.'
+          EXT_DESC="$(python3 -c 'import re,sys;t=open("spectra/extension.yml").read();print(re.search(r"^  description: \"(.*)\"$",t,re.M).group(1))')"
+          CAT_DESC="$(python3 -c 'import json;print(json.load(open("catalog.json"))["extensions"]["spectra"]["description"])')"
+          ZIP_DESC="$(unzip -p docs/packages/spectra.zip spectra/extension.yml | python3 -c 'import re,sys;t=sys.stdin.read();print(re.search(r"^  description: \"(.*)\"$",t,re.M).group(1))')"
+          for name in EXT CAT ZIP; do
+            eval "value=\$${name}_DESC"
+            if [ "$value" != "$LINE" ]; then
+              echo "::error::$name description is '$value' but should be '$LINE'." >&2
+              exit 1
+            fi
+          done
+          if grep -qF "$LINE" docs/index.html; then
+            echo "::error::docs/index.html hard-codes the description; it must fetch it from catalog.json." >&2
+            exit 1
+          fi
+          echo "extension.yml, catalog.json and the packaged manifest all carry the agreed line."
       - name: The published zip matches the spectra/ folder
         run: |
           set -euo pipefail

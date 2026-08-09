@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/xavient/spectra/main/agents-list.json",
+  "title": "Spectra agent roster",
+  "description": "The single source of truth for the agents Spectra offers. Published from the repository default branch over raw links and readable anonymously. This schema documents the contract; it is not validated at runtime by a third-party library, because the CLI is standard-library only. The equivalent rules are enforced by tools/generate_agent_docs.py --check.",
+  "type": "object",
+  "required": ["schema_version", "phases", "agents"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+$",
+      "description": "MAJOR.MINOR. An additive, backward-compatible change bumps MINOR; a change that invalidates existing readers bumps MAJOR. A reader that understands MAJOR renders a newer MINOR with a notice and ignores unknown fields; it refuses a newer MAJOR.",
+      "examples": ["1.0"]
+    },
+    "phases": {
+      "type": "array",
+      "minItems": 1,
+      "description": "SDLC phases in presentation order. Array order is authoritative.",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "aidlc"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+            "description": "Stable slug, unique across phases."
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Display text for the SDLC phase.",
+            "examples": ["Requirements & Discovery"]
+          },
+          "aidlc": {
+            "type": "string",
+            "enum": ["Inception", "Construction", "Operation"],
+            "description": "The AI-DLC phase every agent in this phase belongs to. Recorded once per phase rather than once per agent because the mapping is total and duplication is the drift this roster exists to remove."
+          }
+        }
+      }
+    },
+    "agents": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Every agent Spectra offers, in presentation order within each phase. Array order is authoritative.",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "description", "status", "phase", "type", "provider"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+            "description": "Stable slug, unique across agents. The handle every automated consumer keys off: prose-block matching, roster/manifest cross-checking, generated anchors. Never derived from title, so a title may be reworded without breaking anything.",
+            "examples": ["adr", "create-pr", "domain-analyzer"]
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Display text. Exactly one per agent, used identically in the roster, every generated document, and the CLI.",
+            "examples": ["Architecture Decision Records (ADR)", "GitHub (PR)"]
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[^\\n\\r]+$",
+            "description": "One line. Multi-line or multi-paragraph prose is prohibited; longer explanation belongs in a hand-authored prose block."
+          },
+          "status": {
+            "type": "string",
+            "enum": ["available", "planned"],
+            "description": "available renders as the runnable set; planned renders as under development and is never presented as invocable."
+          },
+          "phase": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+            "description": "Must match one phases[].id."
+          },
+          "type": {
+            "type": "string",
+            "enum": ["core", "add-on"],
+            "description": "Whether the agent is part of the required core roster or an optional add-on. Orthogonal to provider: GitHub (PR) is core and Spectra-provided."
+          },
+          "provider": {
+            "type": "string",
+            "enum": ["spectra", "speckit"],
+            "description": "Which product ships the agent. Only spectra entries are installed, updated, or versioned by Spectra; speckit entries are informational."
+          },
+          "command": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The command that invokes the agent. Required when status is available; must be absent (not empty, not null) when planned.",
+            "examples": ["speckit.spectra.adr", "speckit.constitution"]
+          }
+        },
+        "allOf": [
+          {
+            "if": { "properties": { "status": { "const": "available" } } },
+            "then": { "required": ["command"] }
+          },
+          {
+            "if": { "properties": { "status": { "const": "planned" } } },
+            "then": { "not": { "required": ["command"] } }
+          }
+        ]
+      }
+    }
+  },
+  "$comment": "Cross-document rules this schema cannot express, enforced by tools/generate_agent_docs.py --check: (1) agents[].id is unique; (2) agents[].phase resolves to a phases[].id; (3) the set of ids with provider=spectra and status=available equals the set of commands registered in spectra/extension.yml, and each such command string matches exactly, while descriptions are deliberately NOT compared; (4) every id in that same set has a SPECTRA:AGENT prose anchor in AGENTS_LIST.md, and no anchor exists outside it."
+}
