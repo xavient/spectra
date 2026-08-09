@@ -131,7 +131,7 @@ names the file.
 - [X] T037 [US4] Add a `python tools/generate_agent_docs.py --check` step to the `catalog` job in `.github/workflows/ci.yml`, after T035 so the step lands green
 - [X] T038 [US4] Update `CONTRIBUTING.md`: name the roster and the generator in the "Add a new command" procedure (step 4 currently says to add a row to the README Agents table by hand), and correct the "There is no build script" assertion in the "What ships" section (FR-021)
 - [X] T039 [US4] Amend `.specify/memory/constitution.md` Principle V: remove "There is no build script", replace the hand-maintained README Agents table clause with the roster-and-generator rule, add `agents-list.json` to the sync list and the generated-docs check to "No silent drift", update the `spectra --update` reference on line 174 to `spectra cli update`, generalize the existing no-hard-coded-versions rule so it covers the extension description and agent data the landing page now fetches, bump the version to 1.4.0, and record the change in the sync-impact header (FR-022)
-- [ ] T040 [US4] Run steps 1, 2, and 3 of `specs/006-agent-roster-cli/quickstart.md` — determinism, all six verification cases including the deliberate pass, and the rename-survives check (SC-003, SC-005, SC-006, SC-011)
+- [X] T040 [US4] Run steps 1, 2, and 3 of `specs/006-agent-roster-cli/quickstart.md` — determinism, all six verification cases including the deliberate pass, and the rename-survives check (SC-003, SC-005, SC-006, SC-011)
 
 **Checkpoint**: The roster is the single source of truth and drift is mechanically impossible to merge.
 All four P1 stories are done.

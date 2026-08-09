@@ -22,10 +22,17 @@ Proves FR-011, FR-015, FR-016, SC-011, and User Story 4 scenarios 5 and 6.
 
 ```bash
 python tools/generate_agent_docs.py
-git diff --exit-code README.md AGENTS_LIST.md    # committed output is current: no diff
+git diff --exit-code README.md AGENTS_LIST.md spectra/README.md   # current: no diff
 
-python tools/generate_agent_docs.py              # run it a second time
-git diff --exit-code README.md AGENTS_LIST.md    # still no diff: deterministic
+python tools/generate_agent_docs.py                                # run it a second time
+git diff --exit-code README.md AGENTS_LIST.md spectra/README.md   # still no diff: deterministic
+```
+
+The package is rebuilt the same way, and is byte-identical for an unchanged folder:
+
+```bash
+python tools/build_package.py
+git diff --exit-code docs/packages/spectra.zip
 ```
 
 Then prove it leaves prose alone:
@@ -123,7 +130,28 @@ git checkout agents-list.json
 
 ## 3. Renaming a title breaks nothing
 
-Proves FR-003b, FR-010, SC-005, and User Story 4 scenario 13.
+Proves FR-003b, FR-010, FR-018a, SC-005, and User Story 4 scenarios 13 and 14.
+
+A **planned** agent has no hand-written prose, so renaming it is purely a roster edit and propagates
+completely:
+
+```bash
+python - <<'PY'
+import json, pathlib
+p = pathlib.Path("agents-list.json"); d = json.loads(p.read_text())
+for a in d["agents"]:
+    if a["id"] == "gdpr": a["title"] = "GDPR Readiness"
+p.write_text(json.dumps(d, indent=2) + "\n")
+PY
+python tools/generate_agent_docs.py
+grep -c "GDPR Readiness" README.md AGENTS_LIST.md    # both 1
+grep -c "GDPR Compliance" README.md AGENTS_LIST.md   # both 0
+python tools/generate_agent_docs.py --check          # PASSES: prose is matched by id, not title
+git checkout agents-list.json README.md AGENTS_LIST.md
+```
+
+A **shipped** agent additionally has hand-written headings, and those are not generated — so renaming
+one is a two-part edit, and `--check` says so rather than letting the drift through:
 
 ```bash
 python - <<'PY'
@@ -133,12 +161,15 @@ for a in d["agents"]:
     if a["id"] == "create-pr": a["title"] = "GitHub Pull Requests"
 p.write_text(json.dumps(d, indent=2) + "\n")
 PY
-python tools/generate_agent_docs.py
-grep -c "GitHub Pull Requests" README.md AGENTS_LIST.md   # both non-zero
-grep -c "GitHub (PR)" README.md AGENTS_LIST.md            # both zero
-python tools/generate_agent_docs.py --check               # still PASSES: prose matched by id
-git checkout agents-list.json README.md AGENTS_LIST.md
+python tools/generate_agent_docs.py                  # generated tables pick up the new title
+python tools/generate_agent_docs.py --check          # FAILS, naming create-pr and spectra/README.md
+git checkout agents-list.json README.md AGENTS_LIST.md spectra/README.md
 ```
+
+The distinction is the point. The agent's **id** never moved, so its prose block stayed matched and no
+machinery broke; what the containment check caught is a *human* sentence that now disagrees with the
+roster. That is the failure this feature exists to make impossible to merge — the PR agent had four
+different names before this change.
 
 ## 4. Unit tests
 
@@ -341,8 +372,8 @@ must not appear drifted (`git diff --exit-code` after a generator run — line e
 | Step | Proves |
 | --- | --- |
 | 1 | US4 · FR-011, FR-015, FR-016 · SC-011 |
-| 2 | US4 · FR-017, FR-018, FR-019, FR-019a, FR-020 · SC-006 |
-| 3 | FR-003b, FR-010 · SC-005 |
+| 2 | US4 · FR-017, FR-018, FR-018a, FR-019, FR-019a, FR-020 · SC-006 |
+| 3 | FR-003b, FR-010, FR-018a · SC-005 |
 | 4 | every module-level FR |
 | 5 | US1 · FR-025, FR-026, FR-027, FR-042 |
 | 6 | US2 · FR-028, FR-029, FR-044, FR-045 · SC-009 |
