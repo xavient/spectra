@@ -155,19 +155,33 @@ spec's Assumptions: CI is the backstop, and a hook that rewrites files during co
 
 ## 8. What exactly the generator owns
 
-**Decision**: Three regions — the README Agents table, the Spec Kit core agents section of
-`AGENTS_LIST.md`, and the Roadmap section of `AGENTS_LIST.md`. The README region is drawn slightly wider
-than FR-012's letter: it also contains the sentence enumerating which ✅ agents come from Spec Kit rather
-than Spectra. Two adjacent counts are removed from hand-authored prose instead of being generated —
-`AGENTS_LIST.md`'s "These four ship in the `spectra` extension today" is reworded to drop the number.
+**Decision**: Four regions — the README Agents table, the Spec Kit core agents section of
+`AGENTS_LIST.md`, the Roadmap section of `AGENTS_LIST.md`, and the Commands table in `spectra/README.md`.
+The README region is drawn slightly wider than a bare table: it also contains the sentence enumerating which
+✅ agents come from Spec Kit rather than Spectra. Two adjacent counts are removed from hand-authored prose
+instead of being generated — `AGENTS_LIST.md`'s "These four ship in the `spectra` extension today" and the
+root README's inline list of the four command names are both reworded to drop the enumeration.
 
 **Rationale**: That README sentence lists nine agent titles. It is classification wearing prose clothing,
 and it would drift on the very first roster change while every table around it stayed correct — the exact
 failure mode BR-09 documents. Rewording the "four" is cheaper than generating a count and reads better
 than "These 4".
 
-**Alternatives considered**: Leaving the sentence hand-written — rejected; it is a known drift site being
-walked past. Generating the count sentence — rejected as over-engineering for one word.
+`spectra/README.md` was added to this list during cross-artifact analysis, not during planning. It
+independently declared all four shipped agents in a Commands table, *and* named the PR agent a fourth way
+("GitHub PR delivery") beyond the three the BRD identified — while shipping inside
+`docs/packages/spectra.zip`, so a stale copy is republished to everyone who downloads the package. Its
+Effect column is dropped rather than modelled in the roster, because `spectra/extension.yml` already
+declares `effect: read-write` for the extension as a whole. Its four hand-written per-agent sections stay
+hand-written, guarded by the weaker title-containment check (FR-018a) rather than by generation.
+
+**Alternatives considered**: Leaving the README sentence hand-written — rejected; it is a known drift site
+being walked past. Generating the count sentence — rejected as over-engineering for one word. Deleting
+`spectra/README.md`'s Commands table outright instead of generating it — genuinely tempting, since the same
+file repeats the same four agents in detail immediately below, but rejected because a summary index at the
+top of the extension's own README earns its place, and generating it costs one more region in machinery we
+are building anyway. Adding an `effect` field to the roster to preserve the dropped column — rejected: a
+field exists to be a source of truth, and the manifest already is one for effect.
 
 ---
 

@@ -166,6 +166,9 @@ contains the agent with an identical title; hand-edit a generated region and con
 13. **Given** an agent whose title is changed in the roster while its identifier stays the same, **When**
     the generator and the automated verification run, **Then** every listing shows the new title, the
     agent's prose block is still matched to it, and verification passes.
+14. **Given** a hand-written heading in an artifact whose agent listing is not fully generated, and whose
+    wording no longer matches the agent's canonical title, **When** the automated verification runs,
+    **Then** it fails and names both the agent and the file.
 
 ---
 
@@ -281,6 +284,10 @@ change.
   `catalog.json`.
 - **FR-002**: `agents-list.json` MUST be the single source of truth for which agents Spectra offers; no
   other artifact may independently declare the roster.
+- **FR-002a**: "Artifact" in FR-002 means any committed document, published page, or packaged file that
+  enumerates or names the agents Spectra offers — including the extension's own `README.md`, which ships
+  inside the published package. Each such artifact MUST either derive its agent listing from the roster or
+  contain no listing at all.
 - **FR-003**: For each agent the roster MUST record a stable identifier, a human-readable title, a
   one-line description, an availability status, an SDLC phase, an AI-DLC phase, a type (core or add-on),
   and which product provides it.
@@ -311,15 +318,18 @@ change.
   roster is newer than this CLI, naming the CLI update command. Unrecognized fields MUST be ignored
   rather than treated as an error.
 - **FR-010**: Each agent MUST have exactly one title, used identically in the roster, every generated
-  document, and the CLI; the title is display text only. The existing three-way disagreement over the PR
-  agent's name MUST be resolved to a single title.
+  document, the CLI, and every artifact in scope under FR-002a; the title is display text only. The
+  existing disagreement over the PR agent's name MUST be resolved to a single title, across all four
+  places it currently differs.
 
 #### Generation and consistency
 
 - **FR-011**: A generator MUST rewrite the structured agent listings from `agents-list.json`, and MUST be
   runnable by a maintainer as a single command.
-- **FR-012**: The generator MUST own, in full, the Agents table in `README.md`, the roadmap section of
-  `AGENTS_LIST.md`, and the Spec Kit core agents section of `AGENTS_LIST.md`.
+- **FR-012**: The generator MUST own, at minimum and in full, the Agents table in `README.md`, the roadmap
+  section of `AGENTS_LIST.md`, the Spec Kit core agents section of `AGENTS_LIST.md`, and the Commands table
+  in `spectra/README.md`. Owning further structured listings is permitted; leaving any of these
+  hand-authored is not.
 - **FR-013**: Per-agent explanatory prose for shipped agents — arguments, when to use them, worked
   examples — MUST remain hand-authored and MUST NOT be generated.
 - **FR-014**: The boundary between generated and hand-authored content MUST be explicit in the document
@@ -334,6 +344,9 @@ change.
   no hand-authored prose block, or when a prose block exists for an agent the roster does not list as
   shipped. Prose blocks MUST be matched to roster entries by the agent's stable identifier, not by its
   title.
+- **FR-018a**: Automated verification MUST fail, naming the agent and the file, when a shipped agent's
+  canonical title does not appear in an artifact in scope under FR-002a whose agent listing is not fully
+  generated — the containment check that keeps hand-written headings from drifting away from the roster.
 - **FR-019**: Automated verification MUST fail when the roster and the extension manifest disagree about
   which agents the extension ships, matching entries to manifest commands by the agent's stable
   identifier.
@@ -396,7 +409,8 @@ change.
   data cannot be retrieved, and MUST NOT report a misleading result.
 - **FR-041a**: Each fetch of published data MUST time out after 10 seconds and then produce the failure
   message required by FR-041, so no command can appear to hang.
-- **FR-042**: The CLI MUST NOT hard-code the list of agents; the roster is data, fetched at run time.
+- **FR-042**: The CLI MUST NOT hard-code the list of agents; the roster is data, fetched at run time. (A
+  specific, directly testable instance of FR-002.)
 - **FR-043**: The help screen MUST make the distinction between project-scoped and tool-scoped commands
   evident to a first-time reader.
 - **FR-044**: Project-scoped commands MUST distinguish "not a Spec Kit project" from "a Spec Kit project
@@ -471,8 +485,8 @@ change.
   verification rather than shipping silently.
 - **SC-004**: Publishing a new agent requires zero CLI releases for it to appear in the roster listing for
   every existing installation.
-- **SC-005**: Every agent has exactly one title across the roster, the generated documents, and the CLI,
-  verified automatically, with the count of disagreements at zero.
+- **SC-005**: Every agent has exactly one title across the roster, the generated documents, the CLI, and
+  every artifact in scope under FR-002a — verified automatically, with the count of disagreements at zero.
 - **SC-006**: A hand-edit to a generated document is caught before merge, every time — verified by
   deliberately introducing one and observing the failure.
 - **SC-007**: A user told their agents are out of date reaches an up-to-date state in one command, which

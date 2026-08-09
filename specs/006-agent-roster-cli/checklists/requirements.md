@@ -53,3 +53,20 @@ Iteration 1 found three issues, all fixed before this checklist was marked compl
 Coverage check: BR-01 through BR-41 of BRD-004 each map to at least one FR; SC-01 through SC-10 each map
 to a numbered success criterion; Journeys 1–6 map to User Stories 1–6, with User Story 7 added to carry
 the BRD's Presentation requirements (BR-40, BR-41), which had no journey of their own.
+
+### Re-validation after cross-artifact analysis (2026-08-09)
+
+`/speckit.analyze` found eleven issues, none CRITICAL, all since remediated. Two changed this spec:
+
+- **FR-002 was unbounded.** It forbade any "other artifact" declaring the roster without saying what
+  counted as one, while FR-010 and SC-005 scoped title consistency to "the roster, every generated
+  document, and the CLI". `spectra/README.md` therefore fell formally outside — and it independently
+  declared all four shipped agents *and* named the PR agent a fourth way ("GitHub PR delivery"), inside a
+  file that ships in the published package. Added **FR-002a** to bound the term, widened FR-010, FR-012,
+  and SC-005 to match, and added **FR-018a** for the containment check that keeps hand-written headings
+  honest.
+- **FR-042 is now marked as a specific instance of FR-002**, which it always was.
+
+All 16 checklist items were re-evaluated against the amended spec and still pass: the two new
+requirements are testable, scoped, and covered by tasks T031, T034, and T036. Requirement count went from
+59 to 61; every FR and every SC is now cited by at least one task.

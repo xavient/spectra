@@ -15,10 +15,11 @@ Three separable pieces of work, in dependency order:
 
 1. **The roster** — a new stdlib-parseable JSON document holding all 44 of today's roster entries, keyed
    by a stable slug per agent and carrying a `major.minor` schema version.
-2. **The generator** — a maintainer-only script at `tools/generate_agent_docs.py` that rewrites three
-   marked regions (the README Agents table, and the Spec Kit core and Roadmap sections of
-   `AGENTS_LIST.md`) from the roster, and, under `--check`, verifies those regions plus prose-block
-   presence plus roster↔manifest agreement. CI runs `--check`; nothing ships it to users.
+2. **The generator** — a maintainer-only script at `tools/generate_agent_docs.py` that rewrites four
+   marked regions (the README Agents table, the Spec Kit core and Roadmap sections of `AGENTS_LIST.md`,
+   and the Commands table in `spectra/README.md`) from the roster, and, under `--check`, verifies those
+   regions plus prose-block presence plus title containment plus roster↔manifest agreement. CI runs
+   `--check`; nothing ships it to users.
 3. **The command surface** — five new project-scoped commands (`agent-list`, `check`, `version`,
    `update`, `uninstall`), a `cli` group for the three tool-scoped ones, and removal of the
    `--version` / `--update` / `--uninstall` flags. Three new stdlib-only modules (`roster.py`,
@@ -80,7 +81,7 @@ Evaluated against `.specify/memory/constitution.md` v1.3.0.
 | **II — A Single Self-Contained Extension** | PASS | No new command and no new top-level extension folder. `spectra/` changes only in `extension.yml`'s `description` and `CHANGELOG.md`. `tools/` and `tests/` are repo tooling, excluded from the package by the explicit `packages = ["spectra_cli"]` in `pyproject.toml`. |
 | **III — Agent-Agnostic Commands** | N/A | No `speckit.spectra.*` command is added or changed. The command-name pattern is untouched. |
 | **IV — Context-Aware by Default** | PASS (by analogy) | Governs extension commands, not the CLI. The CLI equivalent is honoured: every project-scoped command reads real project state — walking up for `.specify/`, reading the installed manifest — rather than assuming. |
-| **V — Catalog and Package in Sync** | **FAIL against current text** | Two clauses of Principle V become false with this change: "There is no build script" and "updating the Agents table in `README.md` when a command introduces or changes an agent". Amending them is in scope (FR-022) and tracked below in Complexity Tracking. The *sync obligation itself* is honoured: the description change triggers a full catalog-channel sync — `extension.yml`, `catalog.json`, `docs/packages/spectra.zip`, `docs/index.html`, `spectra/CHANGELOG.md`. |
+| **V — Catalog and Package in Sync** | **FAIL against current text** | Two clauses of Principle V become false with this change: "There is no build script" and "updating the Agents table in `README.md` when a command introduces or changes an agent". Amending them is in scope (FR-022) and tracked below in Complexity Tracking. The *sync obligation itself* is honoured: the description change and the newly generated Commands table in `spectra/README.md` together trigger a full catalog-channel sync — `extension.yml`, `spectra/README.md`, `catalog.json`, `docs/packages/spectra.zip`, `docs/index.html`, `spectra/CHANGELOG.md`. |
 | **VI — Two Independently-Versioned Channels** | PASS | CLI `VERSION` 4.0.0 → 5.0.0 (MAJOR: flags removed). Extension 1.3.0 → 1.3.1 (PATCH: description only). Each bumps for its own reason; neither is bumped because the other moved. The run-time-read rule is strengthened, not weakened — FR-042 forbids hard-coding the agent list, exactly as `install.py` already refuses to hard-code the extension list. |
 | **Publishing — SemVer per channel** | PASS | Extension bump carries a matching `spectra/CHANGELOG.md` entry; CLI bump is released by a bare semver tag `5.0.0`. |
 | **Publishing — VERSION single-sourced, CI-enforced** | PASS, with a required CI edit | `release.yml` parity check is unaffected. `ci.yml` currently asserts `spectra --version` equals `VERSION`; that flag is being removed, so the assertion moves to `spectra cli version`, whose first output line stays the bare version precisely to keep it assertable. |
@@ -138,6 +139,7 @@ tests/                           # NEW — stdlib unittest, not packaged
 
 spectra/                         # the catalog channel
 ├── extension.yml                # EDITED — description only (1.3.0 → 1.3.1)
+├── README.md                    # EDITED — Commands table becomes a generated region; PR agent retitled
 └── CHANGELOG.md                 # EDITED — 1.3.1 entry
 
 README.md                        # EDITED — Agents table becomes a generated region; flag docs updated

@@ -228,14 +228,16 @@ verdicts: `up_to_date`, `out_of_date`, `ahead`. All three exit 0 (FR-032a).
 | --- | --- | --- | --- |
 | Generated region | `id` in its start marker | generator | Rewritten in full on every run. Byte-identical across runs (FR-016). Missing or malformed marker is a hard error naming file and marker (FR-020). |
 | Prose block | `id` in its `SPECTRA:AGENT` anchor | human | Never read, never written, never parsed for content by the generator — only its anchor's existence is checked (FR-013, FR-018). |
+| Hand-written agent heading outside a region | its enclosing file | human | Content is never generated, but the agent's canonical title must appear in the file — a containment check, not equality (FR-018a). |
 | Hand-authored surroundings | — | human | Byte-identical after any generator run (FR-015). |
 
-Three regions exist, all with fixed ids:
+Four regions exist, all with fixed ids:
 
 | Region id | File | Content |
 | --- | --- | --- |
 | `readme-agents-table` | `README.md` | The Agents table, plus the sentence naming which ✅ agents are Spec Kit's rather than Spectra's. |
 | `agents-list-speckit-core` | `AGENTS_LIST.md` | The Spec Kit core agents section body. |
 | `agents-list-roadmap` | `AGENTS_LIST.md` | The Roadmap section body, grouped by phase, planned entries only. |
+| `spectra-readme-commands` | `spectra/README.md` | The Commands table for the shipped Spectra agents. Ships inside the package, so regenerating it obliges a zip rebuild. |
 
 Marker syntax and anchor placement: [`contracts/generated-regions.md`](contracts/generated-regions.md).

@@ -39,18 +39,38 @@ Rules:
 The generator never guesses a region's extent, never appends a missing marker, and never skips a file it
 cannot parse — silently skipping is how a "successful" run leaves documentation stale.
 
-## The three regions
+## The four regions
 
 | Region id | File | Generated content |
 | --- | --- | --- |
 | `readme-agents-table` | `README.md` | The Agents table — one row per roster entry, columns Agent / SDLC phase / AI-DLC phase / Type / Status — plus the sentence naming which ✅ agents are Spec Kit's own rather than Spectra's. |
 | `agents-list-speckit-core` | `AGENTS_LIST.md` | The Spec Kit core agents section body: one subsection per `provider: speckit` entry, with its title, command, one-line description, and how to run it. |
 | `agents-list-roadmap` | `AGENTS_LIST.md` | The Roadmap section body: `status: planned` entries grouped under their phase title, in roster order. |
+| `spectra-readme-commands` | `spectra/README.md` | The Commands table: one row per `provider: spectra`, `status: available` entry, columns Command / What it does. |
 
-The `readme-agents-table` region is deliberately drawn a little wider than FR-012's letter, to include that
+The `readme-agents-table` region is deliberately drawn a little wider than a bare table, to include that
 trailing sentence. It enumerates nine agent titles — classification in prose clothing — and it is the
 sentence most likely to be correct today and wrong after the next roster change. Recorded in
 `research.md` decision 8.
+
+### Why `spectra/README.md` is generated, and what changes in it
+
+That file ships **inside** `docs/packages/spectra.zip`, so a stale copy is not merely wrong on GitHub — it
+is republished to every user who downloads the package. It independently declared all four shipped agents,
+and named the PR agent a fourth way ("GitHub PR delivery"), which is precisely what FR-002a and FR-010
+forbid.
+
+Two consequences for the generated table:
+
+- **The Effect column is dropped.** The roster does not model per-agent effect, and inventing a field to
+  reproduce one column would be the wrong trade. `spectra/extension.yml` already declares
+  `effect: read-write` for the extension as a whole, and the surrounding hand-written prose states it.
+- **Regenerating this file invalidates the zip.** Any change to `spectra/README.md` obliges a package
+  rebuild in the same change, under constitution Principle V. The generator does not rebuild the zip; the
+  task that runs it does.
+
+The file's four hand-written per-agent sections stay hand-written. They are prose blocks in everything but
+location, and they are covered by the containment check below rather than by generation.
 
 ## Prose anchors
 
@@ -85,9 +105,15 @@ reworded freely and prose matching survives.
 | Each region matches what the roster would produce | the file, and the region id | FR-017 |
 | Every `provider: spectra`, `status: available` id has an anchor | the agent id whose prose is missing | FR-018 |
 | No anchor exists for an id outside that set | the offending anchor id | FR-018 |
+| Each shipped agent's canonical title appears in `spectra/README.md` | the agent id and the file | FR-018a |
 | The roster's shipped-Spectra id set equals the manifest's command set | the ids present in one and not the other | FR-019 |
 | Each shipped entry's `command` equals the manifest's registered command | the agent id and both command strings | FR-019a |
 | Roster descriptions are single-line, ids unique and slug-shaped, `phase` resolves, `command` present iff available | the offending field and agent id | FR-004, FR-007, FR-003a |
+
+The title-containment check is deliberately weak — substring presence, not structural equality. It exists to
+catch a hand-written heading drifting away from the roster, which is a real failure that already happened
+four times over for one agent. Asserting anything stronger would mean generating the prose, and the whole
+point of the split is that we do not.
 
 Descriptions in the roster and the manifest are **not** compared. They address different audiences — the
 manifest's are consumed by Spec Kit and the user's coding agent at install time, the roster's are one-liners
