@@ -65,6 +65,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: The generated agent listings match agents-list.json
+        # The roster is the single source of truth (Principle V). This fails when a generated region
+        # was hand-edited, when a shipped agent has no prose block, when a prose block exists for an
+        # agent that is not shipped, when a hand-written heading has drifted from the canonical title,
+        # or when the roster and the manifest disagree about the shipped set.
+        run: python3 tools/generate_agent_docs.py --check
       - name: extension.yml, catalog.json and the zip agree
         run: |
           set -euo pipefail

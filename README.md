@@ -82,6 +82,9 @@ phases below, each also mapped onto the [**AI-DLC**](#ai-dlc) phases (Inception 
 
 **Status:** ✅ available today · 🚧 under development.
 
+<!-- SPECTRA:GENERATED START id=readme-agents-table -->
+<!-- Generated from agents-list.json — do not edit by hand. Run: python tools/generate_agent_docs.py -->
+
 | Agent | SDLC phase | AI-DLC phase | Type | Status |
 | ----- | ---------- | ------------ | ---- | ------ |
 | Guardrails | Foundation | Inception | Core | ✅ available |
@@ -132,6 +135,7 @@ phases below, each also mapped onto the [**AI-DLC**](#ai-dlc) phases (Inception 
 The agents marked ✅ that aren't shipped by Spectra (Guardrails, Requirements Analyst, Clarifier,
 Requirements Quality, Architecture Planner, Task Planner, Consistency, Implementation, Testing) are
 Spec Kit's own core commands — Spectra layers on top of them.
+<!-- SPECTRA:GENERATED END id=readme-agents-table -->
 
 Full details for every agent — what it does, its arguments, and how to run it — live in
 **[AGENTS_LIST.md](AGENTS_LIST.md)**.
@@ -273,10 +277,9 @@ specify extension update spectra  # pull a newer version when we publish one
 specify extension remove spectra  # uninstall (configs are backed up by default)
 ```
 
-Spectra ships as a **single extension** — `specify extension add spectra` registers all of its
-commands (`speckit.spectra.adr`, `speckit.spectra.domain-analyzer`, `speckit.spectra.create-pr`,
-`speckit.spectra.brd`) at once. After installing, **restart your AI agent** so it picks up the new commands, then run one. On
-Claude:
+Spectra ships as a **single extension** — `specify extension add spectra` registers every
+`speckit.spectra.*` command at once (run `spectra agent-list` to see them). After installing,
+**restart your AI agent** so it picks up the new commands, then run one. On Claude:
 
 ```
 /speckit-spectra-adr We should standardize on PostgreSQL for all primary data stores

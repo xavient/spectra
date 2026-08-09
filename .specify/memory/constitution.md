@@ -1,6 +1,43 @@
 <!--
 SYNC IMPACT REPORT
 ==================
+Version: 1.3.0 → 1.4.0
+Bump type: MINOR — materially expanded guidance in Principle V.
+Rationale: Principle V asserted two things this repository no longer does. It said there is no build
+  script, and that the Agents table in README.md is updated by hand when a command introduces or
+  changes an agent. Both became untrue with the agent roster: `agents-list.json` is now the single
+  source of truth for what Spectra offers, and `tools/generate_agent_docs.py` rewrites every
+  *structured* agent listing from it — the README Agents table, the Spec Kit core and Roadmap sections
+  of AGENTS_LIST.md, and the Commands table in spectra/README.md. `tools/build_package.py` likewise
+  builds the zip that used to be assembled by hand.
+
+  The amendment adds the roster to Principle V's sync list, states the generated/hand-authored split
+  explicitly (if it is a table or a list it is generated; if it is a paragraph it is written), extends
+  the no-drift clause to AGENTS_LIST.md and the roster, generalizes the landing page's
+  no-hard-coded-versions rule to cover the extension description and agent data the page now fetches,
+  and records the new CI assertions that make the split enforceable rather than aspirational. Also
+  updates two references to the `spectra --update` / README-table workflow that CLI 5.0.0 and the
+  generator replaced.
+
+Modified principles:
+  V  — no-build-script clause removed; roster and generator added to the sync obligations; the
+       generated vs hand-authored boundary stated; no-drift and no-hard-coded rules widened
+  VI — `spectra --update` → `spectra cli update` (the flag was removed in CLI 5.0.0)
+Added sections: (none)
+Removed sections: (none)
+
+Templates & docs in sync:
+  - agents-list.json ✅ — new: the roster, 44 agents
+  - tools/generate_agent_docs.py ✅ — new: owns four generated regions; `--check` verifies them
+  - tools/build_package.py ✅ — new: deterministic zip rebuild
+  - README.md / AGENTS_LIST.md / spectra/README.md ✅ — agent listings are now generated regions
+  - CONTRIBUTING.md ✅ — "Add a new command" names the roster, the generator, and the prose block
+  - .github/workflows/ci.yml ✅ — runs `tools/generate_agent_docs.py --check`
+  - .specify/templates/*.md ✅ — unaffected (the Constitution Check gate is generic)
+
+Follow-up TODOs: (none)
+
+--- Previous report ---
 Version: 1.2.0 → 1.3.0
 Bump type: MINOR — materially expanded guidance in Principle VI and Publishing & Distribution
   Standards; two factual corrections in Principle V.
@@ -123,30 +160,45 @@ distributed straight from it over direct `raw.githubusercontent.com` links: the 
 is the install-facing catalog and the single downloadable package lives at `docs/packages/spectra.zip`.
 GitHub Pages serves `main` `/docs` at <https://xavient.github.io/spectra/>, but it publishes the
 landing page only — **no part of the install path depends on it.** **Anyone can add the catalog and
-install the extension anonymously.** There is no build script: the catalog and package are maintained
-by hand and committed. Completing, changing, or releasing the extension MUST include, in the same
-change:
+install the extension anonymously.** Two small maintainer scripts under `tools/` produce the generated
+artifacts — `build_package.py` for the zip and `generate_agent_docs.py` for the agent listings — and
+their output is committed rather than built on demand, so the repository always reads correctly for
+someone who never runs either. Everything else is maintained by hand. Completing, changing, or releasing
+the extension MUST include, in the same change:
 
+- registering the agent in `agents-list.json` — the **single source of truth for the roster**;
 - building the package into `docs/packages/spectra.zip` (a single top-level `spectra/` folder, the
-  layout Spec Kit expects);
+  layout Spec Kit expects) with `tools/build_package.py`;
 - updating `catalog.json` — the single source of truth for the catalog — so the `spectra` entry
   (name, description, version, tags, command count, and `download_url`) matches `spectra/extension.yml`
   and the new zip;
 - updating `docs/index.html` so the landing page lists the extension and its commands;
-- updating the Agents table in `README.md` when a command introduces or changes an agent; and
-- committing `catalog.json`, `docs/`, `README.md`, and the `spectra/` folder, then pushing to `main`.
+- regenerating every structured agent listing with `tools/generate_agent_docs.py`, and hand-writing the
+  per-agent prose block a newly shipped agent needs; and
+- committing `agents-list.json`, `catalog.json`, `docs/`, `README.md`, `AGENTS_LIST.md`, and the
+  `spectra/` folder, then pushing to `main`.
 
-`catalog.json`, `docs/index.html`, `README.md`, and the published `docs/packages/spectra.zip` MUST
-never drift from the `spectra/` folder.
+**The roster is authored once and published everywhere.** `agents-list.json` declares which agents
+Spectra offers; every *structured* listing of agents is generated from it and MUST NOT be hand-edited.
+The generated regions — the Agents table in `README.md`, the Spec Kit core and Roadmap sections of
+`AGENTS_LIST.md`, and the Commands table in `spectra/README.md` — are delimited by
+`<!-- SPECTRA:GENERATED START id=… -->` markers and carry a do-not-edit notice. Per-agent explanatory
+prose stays hand-authored and MUST NOT be generated; automation guarantees only that it *exists*, never
+what it says. The division is by kind of content, not by file: if it is a table or a list, it is
+generated; if it is a paragraph, it is written.
+
+`catalog.json`, `docs/index.html`, `README.md`, `AGENTS_LIST.md`, and the published
+`docs/packages/spectra.zip` MUST never drift from the `spectra/` folder or from `agents-list.json`.
 
 This sync obligation governs the **catalog channel only** (the extension, its package, and the pages
 that link to them). The `spectra` CLI is a *separate* distribution channel with its own version and is
 NOT expected to move in lockstep with the catalog — it is governed by Principle VI.
 
-The landing page MUST NOT hard-code either channel's version number. `docs/index.html` reads the
-extension version from `catalog.json` and the CLI version from the newest published GitHub Release, at
-page load. A version typed into HTML is drift waiting to happen; a version fetched from the artifact
-that defines it cannot drift.
+The landing page MUST NOT hard-code data that another artifact already defines — neither channel's
+version number, nor the extension's description, nor the agent roster. `docs/index.html` reads the
+extension version and description from `catalog.json`, the agent information from `agents-list.json`,
+and the CLI version from the newest published GitHub Release, all at page load. A value typed into HTML
+is drift waiting to happen; a value fetched from the artifact that defines it cannot drift.
 
 Rationale: The repo is the catalog channel's only distribution point — users discover and install the
 extension entirely from it, against the raw `catalog.json`. A stale catalog or a missing zip ships a
@@ -171,7 +223,7 @@ Spectra ships through **two** distribution channels, and each carries its **own*
 **Git tags and GitHub Releases on this repository belong to the CLI channel, and only to it.** Tags MUST
 be bare semver (`X.Y.Z`); Releases MUST be titled `Spectra CLI X.Y.Z`. The catalog channel MUST NOT be
 tagged or released. Reserving tags for one channel is what makes `/releases/latest` an unambiguous
-answer to "what is the newest `spectra` command" — which both `spectra --update` and the landing page
+answer to "what is the newest `spectra` command" — which both `spectra cli update` and the landing page
 depend on. If the catalog also cut releases, the CLI's update check could resolve to an extension
 release and attempt to install it as a version of itself.
 
@@ -218,7 +270,11 @@ actually changed in it.
   `docs/index.html` all agree with the `spectra/` folder and use the raw
   `raw.githubusercontent.com/xavient/spectra/main/...` URLs; any mismatch MUST be resolved first. CI
   enforces this: `.github/workflows/ci.yml` fails when `extension.yml` and `catalog.json` disagree on
-  the version or the command count, or when the committed zip has drifted from the `spectra/` folder.
+  the version or the command count, when the committed zip has drifted from the `spectra/` folder, or
+  when `tools/generate_agent_docs.py --check` finds a generated region out of date with
+  `agents-list.json`, a shipped agent with no prose block, a prose block for an agent the roster does
+  not ship, a hand-written heading drifted from an agent's canonical title, or a disagreement between
+  the roster and the manifest about the shipped set.
 
 ## Development Workflow
 
@@ -240,8 +296,8 @@ under it, never as new extensions:
    register it in `spectra/extension.yml`, bump `extension.version` with a matching
    `spectra/CHANGELOG.md` entry, rebuild `docs/packages/spectra.zip` (a single top-level `spectra/`
    folder), update the `spectra` entry in `catalog.json` (the single source of truth) and
-   `docs/index.html`, and update the Agents table in `README.md` when a new agent is introduced
-   (Principle V).
+   `docs/index.html`, register the agent in `agents-list.json`, and regenerate the structured agent
+   listings with `tools/generate_agent_docs.py` (Principle V).
 5. **Test locally** by installing the working copy with `specify extension add --dev <path-to-spectra>`
    into a throwaway Spec Kit project and exercising every command end to end before publishing.
 6. **Publish** by committing the `spectra/` folder, the `specs/` artifacts, the updated `catalog.json`,
@@ -289,4 +345,4 @@ and why, and MUST update this file together with any dependent templates and doc
 binding. Complexity that violates a principle MUST be justified or removed; unjustified violations
 block merge.
 
-**Version**: 1.3.0 | **Ratified**: 2026-07-12 | **Last Amended**: 2026-08-09
+**Version**: 1.4.0 | **Ratified**: 2026-07-12 | **Last Amended**: 2026-08-09

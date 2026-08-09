@@ -6,12 +6,16 @@ extension that bundles Spectra's agentic SDLC commands. Every command lives unde
 
 ## Commands
 
-| Command | What it does | Effect |
-| ------- | ------------ | ------ |
-| `speckit.spectra.adr` | Capture a context-aware Architecture Decision Record grounded in your codebase, prior ADRs, and constitution. | read-write |
-| `speckit.spectra.domain-analyzer` | Infer the project's business domain and propose opt-in, evidence-backed guardrails for the constitution. | read-write |
-| `speckit.spectra.create-pr` | Open a correctly-targeted GitHub PR for the current spec branch after `implement`. | read-write |
-| `speckit.spectra.brd` | Turn a raw business requirement (text or a `.docx`/`.pdf`/`.md`/`.txt` document) into a structured, specify-ready BRD under `/brds`. | read-write |
+<!-- SPECTRA:GENERATED START id=spectra-readme-commands -->
+<!-- Generated from agents-list.json — do not edit by hand. Run: python tools/generate_agent_docs.py -->
+
+| Command | What it does |
+| ------- | ------------ |
+| `speckit.spectra.domain-analyzer` | Infer the project's business domain from its code and docs, then propose opt-in candidate guardrails for SME review. |
+| `speckit.spectra.brd` | Turn a raw business requirement, typed or in a document, into a structured, specify-ready BRD. |
+| `speckit.spectra.adr` | Capture a context-aware Architecture Decision Record grounded in the codebase, prior ADRs, and the constitution. |
+| `speckit.spectra.create-pr` | Open a correctly-targeted GitHub PR for the current spec branch and return its URL. |
+<!-- SPECTRA:GENERATED END id=spectra-readme-commands -->
 
 ## Install
 
@@ -47,7 +51,7 @@ command doesn't show up, restart your agent so it re-scans its command/skill dir
 
 ---
 
-## `speckit.spectra.adr` — Architecture Decision Records
+## `speckit.spectra.adr` — Architecture Decision Records (ADR)
 
 Takes a short description of a decision and then:
 
@@ -99,7 +103,7 @@ and ordering; only genuinely new candidates are appended under a dated heading.
 
 ---
 
-## `speckit.spectra.create-pr` — GitHub PR delivery
+## `speckit.spectra.create-pr` — GitHub (PR)
 
 Closes the loop after `implement`: it **offers** to open a pull request for the completed spec,
 targeting the **correct base branch** for your project's branching/promotion strategy, and returns

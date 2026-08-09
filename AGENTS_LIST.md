@@ -20,10 +20,11 @@ manifest name (`speckit.spectra.<command>`) is the same everywhere.
 
 ## Shipped Spectra agents
 
-These four ship in the `spectra` extension today. Install them all at once with
+These ship in the `spectra` extension today. Install them all at once with
 `specify extension add spectra`, then restart your AI agent so it picks up the commands.
 
-### `adr` — Architecture Decision Records ✅
+<!-- SPECTRA:AGENT id=adr -->
+### Architecture Decision Records (ADR) ✅
 
 **`speckit.spectra.adr`** — Create a context-aware Architecture Decision Record grounded in your codebase,
 prior ADRs, and the project constitution. It gathers project context, asks up to five clarifying
@@ -38,7 +39,8 @@ questions, writes the ADR under `Docs/ADR/`, and flags any constitution update t
   /speckit-spectra-adr We should standardize on PostgreSQL for all primary data stores
   ```
 
-### `domain-analyzer` — Domain Analyzer ✅
+<!-- SPECTRA:AGENT id=domain-analyzer -->
+### Domain Analyzer ✅
 
 **`speckit.spectra.domain-analyzer`** — Scan the existing codebase, docs, and ADRs to infer the
 project's business domain, then write an opt-in proposal of candidate guardrails to
@@ -55,7 +57,8 @@ edits the constitution or source — you choose which guardrails to adopt.
   /speckit-spectra-domain-analyzer this is a banking system
   ```
 
-### `github` — GitHub ✅
+<!-- SPECTRA:AGENT id=create-pr -->
+### GitHub (PR) ✅
 
 **`speckit.spectra.create-pr`** — Open a correctly-targeted GitHub PR for the current spec branch. It
 derives the base branch from your promotion strategy, confirms before any push or PR creation, and
@@ -76,7 +79,8 @@ you don't have to invoke it by hand.
   /speckit-spectra-create-pr --base develop
   ```
 
-### `brd` — BRD Generator ✅
+<!-- SPECTRA:AGENT id=brd -->
+### BRD Generator ✅
 
 **`speckit.spectra.brd`** — Turn a raw business requirement into a structured, **specify-ready** BRD. It
 accepts the requirement as inline text or a document (`.docx`, `.pdf`, `.md`, `.txt`), reads project
@@ -103,65 +107,68 @@ to run the specify command with the BRD; its only write is the BRD file.
 Available today, but shipped by **Spec Kit** itself — Spectra layers on top of them. No installation
 beyond Spec Kit is needed; run them with their built-in commands.
 
+<!-- SPECTRA:GENERATED START id=agents-list-speckit-core -->
+<!-- Generated from agents-list.json — do not edit by hand. Run: python tools/generate_agent_docs.py -->
+
 ### Guardrails — `speckit.constitution` ✅
 
-Encodes your coding, security, and architecture standards once — so every agent downstream inherits
-them automatically.
+Encode your coding, security, and architecture standards once, so every downstream agent inherits
+them.
 
 - **Run it (Claude)** — `/speckit-constitution`
 
 ### Requirements Analyst — `speckit.specify` ✅
 
-Turns a BRD or product brief into structured user stories with clear, testable acceptance criteria.
+Turn a BRD or product brief into structured user stories with clear, testable acceptance criteria.
 
-- **Run it (Claude)** — `/speckit-specify <what you want to build>`
+- **Run it (Claude)** — `/speckit-specify`
 
 ### Clarifier — `speckit.clarify` ✅
 
-Interrogates vague or missing requirements up front, before they turn into expensive rework later.
+Interrogate vague or missing requirements up front, before they turn into expensive rework.
 
 - **Run it (Claude)** — `/speckit-clarify`
 
 ### Requirements Quality — `speckit.checklist` ✅
 
-Scores the spec for completeness, clarity, and consistency — effectively unit tests for your
+Score the spec for completeness, clarity, and consistency — effectively unit tests for your
 requirements.
 
 - **Run it (Claude)** — `/speckit-checklist`
 
 ### Architecture Planner — `speckit.plan` ✅
 
-Produces the technical plan and tech-stack decisions, choosing the design patterns that fit the
-problem — not the hype.
+Produce the technical plan and tech-stack decisions, choosing the design patterns that fit the
+problem.
 
 - **Run it (Claude)** — `/speckit-plan`
 
 ### Task Planner — `speckit.tasks` ✅
 
-Breaks the plan into an ordered, dependency-aware task list — and can sync it straight to your issue
+Break the plan into an ordered, dependency-aware task list, ready to sync straight to an issue
 tracker.
 
 - **Run it (Claude)** — `/speckit-tasks`
 
 ### Consistency — `speckit.analyze` ✅
 
-Cross-checks spec, plan, and tasks for drift, gaps, and contradictions before the build kicks off.
+Cross-check spec, plan, and tasks for drift, gaps, and contradictions before the build kicks off.
 
 - **Run it (Claude)** — `/speckit-analyze`
 
 ### Implementation — `speckit.implement` ✅
 
-Executes the task list in dependency order, building to spec with tests written alongside the code.
+Execute the task list in dependency order, building to spec with tests written alongside the code.
 
 - **Run it (Claude)** — `/speckit-implement`
 
-### Testing — part of `speckit.implement` ✅
+### Testing — `speckit.implement` ✅
 
-Generates unit, integration, smoke, and end-to-end tests, each mapped back to an acceptance
-criterion. Today this runs as part of the Implementation agent — tests are written alongside the code
-rather than as a separate command.
+Generate unit, integration, smoke, and end-to-end tests, each mapped back to an acceptance
+criterion.
 
-- **Run it (Claude)** — covered by `/speckit-implement`
+- **Run it (Claude)** — `/speckit-implement`
+<!-- SPECTRA:GENERATED END id=agents-list-speckit-core -->
 
 ---
 
@@ -170,87 +177,86 @@ rather than as a separate command.
 Planned agents, grouped by SDLC phase. Descriptions reflect intended scope; the command lands when
 each one ships. All are **🚧 under development**.
 
+<!-- SPECTRA:GENERATED START id=agents-list-roadmap -->
+<!-- Generated from agents-list.json — do not edit by hand. Run: python tools/generate_agent_docs.py -->
+
 ### Foundation
 
-- **FDA 21 CFR Part 11 & IEC 62304** (Add-on) — Checks electronic-records and e-signature integrity
-  (Part 11) and medical-device software-lifecycle rigor (IEC 62304) — traceability, audit trails, and
-  risk files mapped to software safety class.
-- **ISO 27001 / 27701** (Add-on) — Audits ISMS and privacy-management controls against Annex A,
-  reusing shared evidence so one control can satisfy SOC 2, ISO, and HIPAA at once.
+- **FDA 21 CFR Part 11 & IEC 62304** (Add-on) — Check electronic-records and e-signature integrity
+  plus medical-device lifecycle rigor, mapped to software safety class.
+- **ISO 27001 / 27701** (Add-on) — Audit ISMS and privacy-management controls against Annex A,
+  reusing shared evidence across SOC 2, ISO, and HIPAA.
 
 ### Requirements & Discovery
 
-- **GDPR Compliance** (Add-on) — Verifies data-subject rights, lawful basis and consent, data
-  minimization, retention and erasure, and cross-border transfer — and scaffolds the Article 30
-  records of processing.
-- **Canadian Privacy — PIPEDA / PHIPA / Law 25** (Add-on) — Evaluates Canada's federal and provincial
-  privacy duties — PIPEDA's fair-information principles plus Quebec Law 25's mandatory PIAs,
-  privacy-by-default, and cross-border assessments.
-- **EU AI Act & Responsible-AI Governance** (Add-on) — Classifies AI components by risk tier and
-  assembles the transparency disclosures and Annex IV technical documentation the EU AI Act requires.
-- **Legal-Obligation Extraction** (Add-on) — Turns regulatory and contractual text into testable
-  acceptance criteria — the connective tissue that lets any new regime flow into the spec and the
-  compliance agents.
+- **GDPR Compliance** (Add-on) — Verify data-subject rights, lawful basis, minimization, retention,
+  and transfers, and scaffold Article 30 records.
+- **Canadian Privacy — PIPEDA / PHIPA / Law 25** (Add-on) — Evaluate PIPEDA's fair-information
+  principles and Quebec Law 25's mandatory PIAs and privacy-by-default duties.
+- **EU AI Act & Responsible-AI Governance** (Add-on) — Classify AI components by risk tier and
+  assemble the transparency and Annex IV documentation the EU AI Act requires.
+- **Legal-Obligation Extraction** (Add-on) — Turn regulatory and contractual text into testable
+  acceptance criteria the compliance agents can consume.
 
 ### Architecture & Design
 
-- **Architecture Reviewer** (Add-on) — Audits the design against best practices, design principles,
+- **Architecture Reviewer** (Add-on) — Audit the design against best practices, design principles,
   and your own standards before a line is written.
-- **HIPAA Compliance** (Add-on) — Audits PHI handling against the Security Rule technical safeguards —
-  access control, audit logging, integrity, authentication, and transmission encryption — and maps
-  gaps to §164.312.
-- **PCI-DSS** (Add-on) — Scopes the cardholder-data environment and checks secure-development,
-  storage, transmission-crypto, and testing controls against PCI-DSS v4.0.1.
-- **Threat Modeling** (Add-on) — Generates design-time STRIDE and attack-surface analysis from
-  data-flow and architecture, complementing the runtime focus of the Security Analyst.
+- **HIPAA Compliance** (Add-on) — Audit PHI handling against the Security Rule technical safeguards
+  and map gaps to §164.312.
+- **PCI-DSS** (Add-on) — Scope the cardholder-data environment and check development, storage,
+  crypto, and testing controls against v4.0.1.
+- **Threat Modeling** (Add-on) — Generate design-time STRIDE and attack-surface analysis from
+  data-flow and architecture.
 - **Performance & Scalability** (Add-on) — Static hot-path, complexity, and N+1 analysis with
-  load-model sanity checks, surfacing scalability risk before the build.
-- **Data Governance & Privacy Engineering** (Add-on) — Discovers PII and PHI across code and schemas,
-  maps data flows and lineage, and classifies data — feeding the privacy and HIPAA agents.
-- **API Design & Contract** (Add-on) — Lints OpenAPI specs, detects breaking changes, and enforces
+  load-model sanity checks, surfacing risk before the build.
+- **Data Governance & Privacy Engineering** (Add-on) — Discover PII and PHI across code and schemas,
+  map data flows and lineage, and classify data.
+- **API Design & Contract** (Add-on) — Lint OpenAPI specs, detect breaking changes, and enforce
   versioning and backward compatibility.
 
 ### Implementation
 
-- **Dependency & Supply-Chain** (Add-on) — Generates an SBOM, runs reachability-aware vulnerability
-  and license analysis, and flags transitive supply-chain risk.
-- **Database & Data-Layer** (Add-on) — Reviews schema design, migration safety, and indexing —
-  flagging lock risk and backward-incompatible changes before they ship.
-- **Documentation Quality** (Add-on) — Assesses API doc coverage, README and runbook completeness, and
-  drift where the code changed but the docs didn't.
-- **Technical-Debt & Maintainability** (Add-on) — Quantifies complexity, duplication, dead code, and
-  code smells into a maintainability rating and remediation estimate.
+- **Dependency & Supply-Chain** (Add-on) — Generate an SBOM and run reachability-aware
+  vulnerability, license, and transitive supply-chain analysis.
+- **Database & Data-Layer** (Add-on) — Review schema design, migration safety, and indexing,
+  flagging lock risk and backward-incompatible changes.
+- **Documentation Quality** (Add-on) — Assess API doc coverage, README and runbook completeness, and
+  drift where the code changed but the docs did not.
+- **Technical-Debt & Maintainability** (Add-on) — Quantify complexity, duplication, dead code, and
+  smells into a maintainability rating and remediation estimate.
 
 ### Testing & Quality
 
-- **Test Coverage Analyst** (Add-on) — Finds the gaps against the test pyramid, so coverage is real
-  protection — not just a percentage.
-- **Test Automation Analyst** (Add-on) — Recommends what's worth automating and where each test should
-  run across the pipeline.
-- **Security Analyst** (Add-on) — Surfaces threat exposure and OWASP-class issues through static and
+- **Test Coverage Analyst** (Add-on) — Find the gaps against the test pyramid, so coverage is real
+  protection rather than just a percentage.
+- **Test Automation Analyst** (Add-on) — Recommend what is worth automating and where each test
+  should run across the pipeline.
+- **Security Analyst** (Add-on) — Surface threat exposure and OWASP-class issues through static and
   dynamic analysis of the change.
-- **Accessibility & WCAG Compliance** (Add-on) — Audits the UI against WCAG 2.2 AA and maps
-  conformance to the laws that adopt it — ADA, Section 508, and EN 301 549 — then scaffolds a VPAT.
-- **Carbon & Green-Software** (Add-on) — Estimates software carbon intensity using the ISO-standard
-  SCI methodology and surfaces the efficiency hotspots that move it.
-- **Internationalization Readiness** (Add-on) — Flags hardcoded strings, locale and RTL handling, and
-  un-externalized resources so the product is ready to localize.
-- **Responsible-AI & Bias** (Add-on) — Audits ML components for bias, fairness, and explainability,
-  and scaffolds the model card.
+- **Accessibility & WCAG Compliance** (Add-on) — Audit the UI against WCAG 2.2 AA, map conformance
+  to ADA, Section 508, and EN 301 549, then scaffold a VPAT.
+- **Carbon & Green-Software** (Add-on) — Estimate software carbon intensity with the ISO-standard
+  SCI methodology and surface the efficiency hotspots.
+- **Internationalization Readiness** (Add-on) — Flag hardcoded strings, locale and RTL handling, and
+  un-externalized resources before localization begins.
+- **Responsible-AI & Bias** (Add-on) — Audit ML components for bias, fairness, and explainability,
+  and scaffold the model card.
 
 ### Deployment & Operations
 
-- **Operations Monitor** (Add-on) — Continuously analyzes logs, latency, and error signals
-  post-deployment; surfaces anomalies and predicts SLA violations before they impact users.
-- **Incident Responder** (Add-on) — Correlates incident signals with recent deployments, recommends a
-  targeted rollback or fix, and validates the resolution against the original spec.
-- **SOC 2** (Add-on) — Maps controls to the AICPA Trust Services Criteria and assembles continuous,
-  change-managed evidence — every control change traceable to a commit.
-- **SOX Change-Management** (Add-on) — Validates segregation of duties and change-approval evidence for
-  financially relevant systems, producing an immutable release-approval trail.
-- **Infrastructure-as-Code Analysis** (Add-on) — Detects Terraform, CloudFormation, and Kubernetes
-  misconfigurations and drift, mapped to CIS, PCI, and SOC 2 baselines.
-- **Cost & FinOps** (Add-on) — Estimates cloud cost from IaC, flags right-sizing and waste, and shows
+- **Operations Monitor** (Add-on) — Analyze logs, latency, and error signals post-deployment,
+  surfacing anomalies and predicting SLA breaches.
+- **Incident Responder** (Add-on) — Correlate incident signals with recent deployments, recommend a
+  targeted rollback or fix, and validate the resolution.
+- **SOC 2** (Add-on) — Map controls to the AICPA Trust Services Criteria and assemble continuous,
+  change-managed evidence.
+- **SOX Change-Management** (Add-on) — Validate segregation of duties and change-approval evidence,
+  producing an immutable release-approval trail.
+- **Infrastructure-as-Code Analysis** (Add-on) — Detect Terraform, CloudFormation, and Kubernetes
+  misconfigurations and drift, mapped to CIS, PCI, and SOC 2.
+- **Cost & FinOps** (Add-on) — Estimate cloud cost from IaC, flag right-sizing and waste, and show
   the cost delta of each change.
-- **Observability Readiness** (Add-on) — Checks whether logs, metrics, and traces are instrumented,
-  SLOs defined, and alert coverage adequate against the golden signals.
+- **Observability Readiness** (Add-on) — Check whether logs, metrics, and traces are instrumented,
+  SLOs defined, and alert coverage adequate.
+<!-- SPECTRA:GENERATED END id=agents-list-roadmap -->
