@@ -27,19 +27,40 @@ jobs:
         # whole repository, so CI installs nothing beyond the package itself.
         run: python -m unittest discover -s tests -v
       - name: The command runs and reports the committed version
+        # `spectra cli version` replaced `--version` in 5.0.0. Its first line stays the bare version
+        # precisely so this remains a one-line comparison.
         # SPECTRA_NO_UPDATE_CHECK keeps this offline and deterministic — no GitHub round trip.
         env:
           SPECTRA_NO_UPDATE_CHECK: '1'
         run: |
           set -euo pipefail
           spectra --help > /dev/null
-          REPORTED="$(spectra --version)"
+          REPORTED="$(spectra cli version | head -1)"
           FILE_VERSION="$(tr -d '[:space:]' < VERSION)"
           if [ "$REPORTED" != "$FILE_VERSION" ]; then
-            echo "::error::spectra --version reported '$REPORTED' but VERSION says '$FILE_VERSION'." >&2
+            echo "::error::spectra cli version reported '$REPORTED' but VERSION says '$FILE_VERSION'." >&2
             exit 1
           fi
-          echo "spectra --version reports $REPORTED."
+          echo "spectra cli version reports $REPORTED."
+
+      - name: The removed flags name their replacements
+        # Removing them is the breaking change in 5.0.0; leaving a user with "unrecognized arguments"
+        # would tell them what is wrong but not what to do instead.
+        env:
+          SPECTRA_NO_UPDATE_CHECK: '1'
+        run: |
+          set -euo pipefail
+          for flag in --version --update --uninstall; do
+            if spectra "$flag" > /tmp/removed.txt 2>&1; then
+              echo "::error::spectra $flag still succeeds; it was supposed to be removed." >&2
+              exit 1
+            fi
+            grep -q 'was removed in' /tmp/removed.txt \
+              || { echo "::error::spectra $flag did not explain that it was removed." >&2; exit 1; }
+            grep -q 'spectra cli' /tmp/removed.txt \
+              || { echo "::error::spectra $flag did not name its replacement." >&2; exit 1; }
+          done
+          echo "All three removed flags name their replacements."
 
       - name: Bare `spectra` is informational and changes nothing
         # The install flow lives behind `spectra install`. Running bare must stay a no-op that

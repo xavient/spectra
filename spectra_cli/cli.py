@@ -1,14 +1,23 @@
 """Command-line entry point for `spectra`.
 
-Bare `spectra` is informational — it prints the banner and points at `--help`, the way the
-`specify` CLI does. `spectra install` runs the install flow; `--version`, `--update`, and
-`--uninstall` manage the tool itself, delegating to uv (see :mod:`spectra_cli.version`).
+The command surface has one organizing rule: **a top-level verb acts on the agents installed in the
+current project; only `spectra cli …` acts on the tool itself.** A user should never have to wonder
+which of two things `spectra version` means.
 
-The parser is built from subcommands rather than one flat argument list, so project-scoped verbs and
-tool-scoped ones can live in separate namespaces as they are added. Flags shared by more than one
-subcommand are declared once and attached to each, with `SUPPRESS` defaults on the subcommand copies
-so that `spectra --yes install` and `spectra install --yes` mean the same thing — without a
-subcommand's default silently overwriting a value the top level already parsed.
+    spectra install | check | version | update | uninstall | agent-list   the project's agents
+    spectra cli version | update | uninstall                              the spectra command
+
+Bare `spectra` stays informational — it prints the banner and points at `--help`, the way the
+`specify` CLI does, and never touches the current folder.
+
+`--version`, `--update`, and `--uninstall` were removed in 5.0.0. They reported on the *tool*, which
+is the number a user is least likely to care about, and they left the two independently-versioned
+channels competing for the same three words. They are detected before parsing so the error can name
+the replacement, which argparse cannot do for an argument it no longer defines.
+
+Flags shared by more than one subcommand are declared once and attached to each, with `SUPPRESS`
+defaults on the subcommand copies so that `spectra --yes install` and `spectra install --yes` mean the
+same thing — without a subcommand's default silently overwriting a value the top level already parsed.
 """
 
 from __future__ import annotations
@@ -19,28 +28,47 @@ import sys
 
 from spectra_cli import extension, install, net, project, roster, ui, version
 
-# The help surface, rendered by `print_help()` into Spectra-purple panels rather than by
-# argparse's plain formatter. Keeping the copy here (not in `add_argument(help=...)`) keeps the
-# rendered table and the parser reading from one list.
+# The help surface, rendered by `print_help()` into Spectra-purple panels rather than by argparse's
+# plain formatter. Keeping the copy here (not in `add_argument(help=...)`) keeps the rendered table and
+# the parser reading from one list — and the two panel titles are what make the project/tool split
+# evident to a first-time reader instead of something they have to infer from the verbs.
 OPTIONS = [
-    ("--version", "-V", "Show the installed version and note if a newer one exists."),
-    ("--update", "", "Update to the latest release via uv."),
-    ("--uninstall", "", "Remove the spectra command from this machine."),
-    ("--yes", "-y", "Skip the confirmation prompt (for --uninstall)."),
-    ("--no-update-check", "", "Skip the check for a newer version."),
+    ("--yes", "-y", "Answer yes to prompts (installing, uninstalling)."),
+    ("--no-update-check", "", "Skip the check for a newer spectra command."),
     ("--help", "-h", "Show this message and exit."),
 ]
 
-COMMANDS = [
+PROJECT_COMMANDS = [
     ("install", "Install Spectra into the Spec Kit project in this folder. Installs the "
                 "Spec Kit CLI and initializes the project first if needed."),
     ("check", "Report whether Spectra is installed in this project, and offer to install it "
               "when it is not."),
     ("version", "Compare the agents installed here against the published version."),
     ("update", "Update the agents installed here to the published version, via Spec Kit."),
+    ("uninstall", "Remove Spectra's agents from this project. Leaves the spectra command "
+                  "installed on this machine."),
     ("agent-list", "List every agent Spectra offers, grouped by SDLC phase. Reads the published "
                    "roster, so it works from anywhere."),
 ]
+
+TOOL_COMMANDS = [
+    ("cli version", "Show the installed spectra version, and note if a newer one exists."),
+    ("cli update", "Update the spectra command itself to the latest release, via uv."),
+    ("cli uninstall", "Remove the spectra command from this machine. Extensions in your projects "
+                      "are left untouched."),
+]
+
+# Removed in 5.0.0. argparse cannot name a replacement for an argument it no longer defines — it emits
+# "unrecognized arguments" and stops — so these are matched in argv before parsing. Each names *both*
+# candidates, because the ambiguity between them is precisely why the flags were removed.
+REMOVED_FLAGS = {
+    "--version": ("spectra cli version", "spectra version"),
+    "-V": ("spectra cli version", "spectra version"),
+    "--update": ("spectra cli update", "spectra update"),
+    "--uninstall": ("spectra cli uninstall", "spectra uninstall"),
+}
+
+COMMANDS = PROJECT_COMMANDS  # kept for the subparser loop below
 
 # Exit codes. 0-4 and 130 are already the tool's conventions; 5 is new, and exists so a caller can
 # tell "I could not answer" from "the answer is no".
@@ -86,18 +114,21 @@ def _add_shared(parser, *, suppress: bool = False) -> None:
 def build_parser() -> argparse.ArgumentParser:
     ap = _Parser(
         prog="spectra",
-        description="Install and manage the Spectra catalog of Spec Kit extensions.",
+        description="Install and manage Spectra's agents in this project.",
         add_help=False,  # `--help` is handled in _dispatch so the banner prints above it.
     )
     _add_shared(ap)
-    ap.add_argument("--version", "-V", action="store_true")
-    ap.add_argument("--update", action="store_true")
-    ap.add_argument("--uninstall", action="store_true")
 
     subcommands = ap.add_subparsers(dest="command", metavar="COMMAND")
-    for name, _ in COMMANDS:
-        sub = subcommands.add_parser(name, add_help=False)
-        _add_shared(sub, suppress=True)
+    for name, _ in PROJECT_COMMANDS:
+        _add_shared(subcommands.add_parser(name, add_help=False), suppress=True)
+
+    # The tool's own management lives one level down, so no top-level verb can be mistaken for it.
+    group = subcommands.add_parser("cli", add_help=False)
+    _add_shared(group, suppress=True)
+    tool = group.add_subparsers(dest="cli_command", metavar="SUBCOMMAND")
+    for label, _ in TOOL_COMMANDS:
+        _add_shared(tool.add_parser(label.split()[1], add_help=False), suppress=True)
     return ap
 
 
@@ -113,16 +144,49 @@ def _option_label(long: str, short: str) -> str:
 
 
 def print_help() -> None:
-    """Render the help screen: usage line, then Options and Commands panels."""
+    """Render the help screen: usage line, then three panels.
+
+    The panels are the contract: **Project commands** act on the agents installed in the current
+    project, **Tool commands** act on the `spectra` command itself. Two panels rather than one is what
+    lets a first-time reader tell which is which without reading the descriptions.
+    """
     ui.plain(f"{ui.BOLD}Usage:{ui.RESET} {ui.BOLD}spectra{ui.RESET} [OPTIONS] COMMAND [ARGS]...")
     ui.plain()
-    ui.plain("  Install and manage the Spectra catalog of Spec Kit extensions.")
+    ui.plain("  Install and manage Spectra's agents in this project.")
     ui.plain()
+    ui.panel("Project commands — act on the agents in this project",
+             [(f"{ui.CYAN}{name}{ui.RESET}", desc) for name, desc in PROJECT_COMMANDS])
+    ui.panel("Tool commands — act on the spectra command itself",
+             [(f"{ui.CYAN}{name}{ui.RESET}", desc) for name, desc in TOOL_COMMANDS])
     ui.panel("Options", [(_option_label(lo, sh), desc) for lo, sh, desc in OPTIONS])
-    ui.panel("Commands", [(f"{ui.CYAN}{name}{ui.RESET}", desc) for name, desc in COMMANDS])
     ui.plain()
-    ui.plain(ui.dim("  Run `spectra install` from inside the project you want Spectra in —"))
-    ui.plain(ui.dim("  a folder containing .specify/. Not initialized yet? It offers to set one up."))
+    ui.plain(ui.dim("  Run project commands from inside the project — a folder containing .specify/."))
+    ui.plain(ui.dim("  Not initialized yet? `spectra install` offers to set one up."))
+
+
+def print_cli_group_help() -> None:
+    """`spectra cli` with no subcommand: say what lives here, and what does not."""
+    ui.plain(f"{ui.BOLD}Usage:{ui.RESET} {ui.BOLD}spectra cli{ui.RESET} SUBCOMMAND")
+    ui.plain()
+    ui.plain("  Manage the spectra command itself. To manage the agents in your project,")
+    ui.plain("  use the top-level commands instead (see `spectra --help`).")
+    ui.plain()
+    ui.panel("Tool commands",
+             [(f"{ui.CYAN}{label.split()[1]}{ui.RESET}", desc) for label, desc in TOOL_COMMANDS])
+    ui.plain()
+
+
+def _report_removed_flag(flag: str) -> int:
+    """Name the replacement rather than emitting a bare unrecognized-argument error."""
+    tool, project = REMOVED_FLAGS[flag]
+    ui.plain()
+    ui.fail(f"spectra: {flag} was removed in 5.0.0.")
+    ui.plain(f"  For the tool's own:      {ui.bold(tool)}")
+    ui.plain(f"  For your agents:         {ui.bold(project)}")
+    ui.plain()
+    ui.plain(ui.dim("  Top-level commands act on this project; `spectra cli …` acts on the tool."))
+    ui.plain()
+    return EXIT_USAGE
 
 
 def _update_check_disabled(args) -> bool:
@@ -145,14 +209,14 @@ def cmd_cli_version(args) -> int:
     newer = version.passive_check(timeout=2)  # best-effort, ~2s bound
     if newer:
         ui.info(f"A newer version ({ui.bold(newer)}) is available. "
-                "Update with: " + ui.bold("spectra --update"))
+                "Update with: " + ui.bold("spectra cli update"))
     return 0
 
 
 # --------------------------------------------------------------------------- #
 # cli update (the tool updates itself)
 # --------------------------------------------------------------------------- #
-def cmd_cli_update() -> int:
+def cmd_cli_update(args=None) -> int:
     result = version.check_update()
     installed = result["installed"] or "unknown"
     status = result["status"]
@@ -437,6 +501,60 @@ def cmd_update(args) -> int:
 
 
 # --------------------------------------------------------------------------- #
+# uninstall (the agents in this project)
+# --------------------------------------------------------------------------- #
+def cmd_uninstall(args) -> int:
+    """Remove Spectra's agents from this project, leaving the machine's `spectra` command alone.
+
+    The confirmation prompt is **Spec Kit's**, not ours. `specify extension remove` already prompts and
+    already accepts `--force`, so adding a second gate would make the user confirm one action twice —
+    and would put the safety check in the outer tool while the inner one stayed unguarded for anyone
+    calling it directly. `--yes` passes `--force` through.
+
+    Exits 0 when Spectra is already absent: the requested end state holds, and `spectra cli uninstall`
+    already treats an absent tool the same way.
+    """
+    state = project.classify()
+    if state.state == project.NOT_A_PROJECT:
+        return _say_not_a_project()
+    if state.state == project.NOT_INSTALLED:
+        ui.info(f"Spectra is not installed in this project ({state.project_root}), so there is "
+                "nothing to remove.")
+        return EXIT_OK
+
+    if state.state == project.INCOMPLETE:
+        ui.warn("Spectra's extension folder is here but unusable; removing it anyway.")
+    else:
+        ui.info(f"Removing Spectra's agents from {state.project_root} "
+                f"(extension {ui.bold(state.installed_version)}).")
+    ui.plain(ui.dim("  The spectra command stays installed on this machine."))
+    ui.plain()
+
+    try:
+        code = extension.delegate_remove(force=bool(args.yes))
+    except extension.DelegationError as e:
+        ui.fail("Could not remove the extension.")
+        for line in str(e).splitlines():
+            ui.plain(f"  {line}")
+        return EXIT_DELEGATION
+    if code == EXIT_INTERRUPTED:
+        return EXIT_INTERRUPTED
+
+    ui.plain()
+    after = project.classify()
+    if after.state == project.NOT_INSTALLED:
+        ui.ok("Spectra's agents were removed from this project.")
+        ui.plain(ui.dim("  Restart your AI agent so it drops the commands."))
+        return EXIT_OK
+    if code != 0:
+        ui.info(f"Spec Kit's extension removal exited with code {code}; nothing was removed.")
+        return EXIT_DECLINED if code == 1 else EXIT_DELEGATION
+    ui.fail("Spec Kit reported success, but the extension folder is still present.")
+    ui.plain(ui.dim(f"  Folder: {after.extension_dir}"))
+    return EXIT_DELEGATION
+
+
+# --------------------------------------------------------------------------- #
 # agent-list
 # --------------------------------------------------------------------------- #
 def cmd_agent_list(args) -> int:
@@ -492,26 +610,51 @@ def cmd_overview() -> int:
 # --------------------------------------------------------------------------- #
 # Dispatch
 # --------------------------------------------------------------------------- #
+PROJECT_DISPATCH = {
+    "install": cmd_install,
+    "check": cmd_check,
+    "version": cmd_version,
+    "update": cmd_update,
+    "uninstall": cmd_uninstall,
+    "agent-list": cmd_agent_list,
+}
+
+# Handlers are looked up here rather than branched on, so adding a subcommand means adding a row.
+# All three take `args`, which is what lets the table hold plain references instead of wrappers.
+TOOL_DISPATCH = {
+    "version": cmd_cli_version,
+    "update": cmd_cli_update,
+    "uninstall": cmd_cli_uninstall,
+}
+
+
 def _dispatch(argv) -> int:
+    if argv is None:
+        argv = sys.argv[1:]
+
+    # Before parsing: argparse would report a removed flag as "unrecognized arguments", which tells
+    # the user what is wrong but not what to do instead.
+    for token in argv:
+        if token in REMOVED_FLAGS:
+            return _report_removed_flag(token)
+
     args = build_parser().parse_args(argv)
     if getattr(args, "help", False):
         ui.splash(version.read_installed_version() or "unknown")
-        print_help()
-        return 0
-    if args.version:
-        return cmd_cli_version(args)
-    if args.update:
-        return cmd_cli_update()
-    if args.uninstall:
-        return cmd_cli_uninstall(args)
-    dispatch = {
-        "install": cmd_install,
-        "check": cmd_check,
-        "version": cmd_version,
-        "update": cmd_update,
-        "agent-list": cmd_agent_list,
-    }
-    handler = dispatch.get(args.command)
+        if args.command == "cli":
+            print_cli_group_help()
+        else:
+            print_help()
+        return EXIT_OK
+
+    if args.command == "cli":
+        subcommand = getattr(args, "cli_command", None)
+        if subcommand is None:
+            print_cli_group_help()
+            return EXIT_USAGE
+        return TOOL_DISPATCH[subcommand](args)
+
+    handler = PROJECT_DISPATCH.get(args.command)
     if handler is not None:
         return handler(args)
     return cmd_overview()

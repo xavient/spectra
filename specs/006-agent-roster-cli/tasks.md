@@ -149,13 +149,13 @@ confirm it exits 2 naming its replacement.
 **⚠️ Land T042 and T044 together.** Removing the flags breaks the CI assertion that runs
 `spectra --version`; separating them turns `main` red.
 
-- [ ] T041 [US5] Add the `cli` subcommand group to `spectra_cli/cli.py` wrapping the existing `cmd_version`, `cmd_update`, and `cmd_uninstall` unchanged, keeping the bare version on the first line of `cli version` output (FR-036)
-- [ ] T042 [US5] Remove `--version`/`-V`, `--update`, and `--uninstall` from the parser in `spectra_cli/cli.py` — not as hidden aliases — and detect them in `argv` before parsing to emit a message naming the replacement command, exiting 2. `--version` names both `spectra cli version` and `spectra version`, since it was the ambiguous one (FR-038, FR-039)
-- [ ] T043 [US5] Rebuild the help surface in `spectra_cli/cli.py` as three panels — Project commands, Tool commands, Options — driven from module-level lists so the rendered table and the parser keep reading from one source (FR-037, FR-043, SC-008)
-- [ ] T044 [US5] Move the version-parity assertion in `.github/workflows/ci.yml` from `spectra --version` to `spectra cli version | head -1`, keeping the comparison against the committed `VERSION`
-- [ ] T045 [US5] Bump `VERSION` from `4.0.0` to `5.0.0` (FR-049)
-- [ ] T046 [P] [US5] Create `tests/test_cli_surface.py`: each removed flag exits 2 with its replacement named, each `cli` subcommand dispatches to the tool-scoped function, bare `spectra` exits 0 and writes nothing to the working directory, and the help output contains all three panel titles (FR-047)
-- [ ] T047 [US5] Run step 10 of `specs/006-agent-roster-cli/quickstart.md`, including the `VERSION` parity check and the bare-command no-op assertion
+- [X] T041 [US5] Add the `cli` subcommand group to `spectra_cli/cli.py` wrapping the existing `cmd_version`, `cmd_update`, and `cmd_uninstall` unchanged, keeping the bare version on the first line of `cli version` output (FR-036)
+- [X] T042 [US5] Remove `--version`/`-V`, `--update`, and `--uninstall` from the parser in `spectra_cli/cli.py` — not as hidden aliases — and detect them in `argv` before parsing to emit a message naming the replacement command, exiting 2. `--version` names both `spectra cli version` and `spectra version`, since it was the ambiguous one (FR-038, FR-039)
+- [X] T043 [US5] Rebuild the help surface in `spectra_cli/cli.py` as three panels — Project commands, Tool commands, Options — driven from module-level lists so the rendered table and the parser keep reading from one source (FR-037, FR-043, SC-008)
+- [X] T044 [US5] Move the version-parity assertion in `.github/workflows/ci.yml` from `spectra --version` to `spectra cli version | head -1`, keeping the comparison against the committed `VERSION`
+- [X] T045 [US5] Bump `VERSION` from `4.0.0` to `5.0.0` (FR-049)
+- [X] T046 [P] [US5] Create `tests/test_cli_surface.py`: each removed flag exits 2 with its replacement named, each `cli` subcommand dispatches to the tool-scoped function, bare `spectra` exits 0 and writes nothing to the working directory, and the help output contains all three panel titles (FR-047)
+- [X] T047 [US5] Run step 10 of `specs/006-agent-roster-cli/quickstart.md`, including the `VERSION` parity check and the bare-command no-op assertion
 
 **Checkpoint**: The command surface is final. This is the breaking change; everything after it is additive.
 
@@ -168,9 +168,9 @@ confirm it exits 2 naming its replacement.
 **Independent Test**: Run it in a project with Spectra installed, confirm the extension is gone and
 `spectra cli version` still works; run it again and confirm it reports absence and changes nothing.
 
-- [ ] T048 [US6] Add the `uninstall` subcommand to `spectra_cli/cli.py`: confirm state first, delegate to `extension.delegate_remove()` letting Spec Kit own the prompt and passing `--force` only with `--yes`, exit 0 when Spectra is already absent because the requested end state holds, and exit 5 when the folder is not a Spec Kit project (FR-034, FR-035). Depends on T007
-- [ ] T049 [P] [US6] Create `tests/test_uninstall.py`: installed delegates with the right argv, `--yes` adds `--force` and bare does not, absent exits 0 with no subprocess call, not-a-project exits 5, and no code path touches uv or the installed distribution
-- [ ] T050 [US6] Run step 11 of `specs/006-agent-roster-cli/quickstart.md`
+- [X] T048 [US6] Add the `uninstall` subcommand to `spectra_cli/cli.py`: confirm state first, delegate to `extension.delegate_remove()` letting Spec Kit own the prompt and passing `--force` only with `--yes`, exit 0 when Spectra is already absent because the requested end state holds, and exit 5 when the folder is not a Spec Kit project (FR-034, FR-035). Depends on T007
+- [X] T049 [P] [US6] Create `tests/test_uninstall.py`: installed delegates with the right argv, `--yes` adds `--force` and bare does not, absent exits 0 with no subprocess call, not-a-project exits 5, and no code path touches uv or the installed distribution
+- [X] T050 [US6] Run step 11 of `specs/006-agent-roster-cli/quickstart.md`
 
 **Checkpoint**: The full project-scoped lifecycle works — discover, check, version, update, uninstall.
 
