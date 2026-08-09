@@ -1,0 +1,56 @@
+name: Release
+
+# Publish a GitHub Release whenever a CLI version tag is pushed.
+#
+# Tags and Releases on this repo belong to the **CLI channel only** (constitution Principle VI).
+# The extension catalog ships continuously from `main` over raw URLs and is never tagged, which is
+# what keeps `/releases/latest` an unambiguous answer to "what is the newest spectra CLI" for both
+# `spectra --version` and the landing page badge.
+#
+# The committed VERSION file is the single source of truth for the CLI version; this workflow
+# refuses to publish unless the pushed tag equals VERSION. No build artifact is uploaded — the tool
+# is installed with uv directly from the git source (`uv tool install spectra-cli --from git+<repo>`).
+
+on:
+  push:
+    tags:
+      # Bare semver only. The legacy `vX.Y.Z` tags (the retired spectra-setup.py installer channel)
+      # deliberately do not match, so they can never trigger a CLI release.
+      - '[0-9]+.[0-9]+.[0-9]+'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify VERSION matches the release tag
+        # VERSION is the single source of truth. Bump it in a PR before tagging (see
+        # CONTRIBUTING.md); this gate fails the release if the tag and VERSION disagree,
+        # so the committed version, the git tag, and the installed version can never drift.
+        run: |
+          set -euo pipefail
+          TAG="${GITHUB_REF_NAME}"
+          FILE_VERSION="$(tr -d '[:space:]' < VERSION)"
+          if [ "$TAG" != "$FILE_VERSION" ]; then
+            echo "::error::Release tag '$TAG' does not match VERSION file ('$FILE_VERSION'). Bump VERSION in a PR before tagging." >&2
+            exit 1
+          fi
+          echo "VERSION ($FILE_VERSION) matches tag ($TAG)."
+
+      - name: Publish GitHub Release
+        # Creates the Release object for this tag (no assets). The CLI's version check and the
+        # landing page badge both rely on a published Release existing so /releases/latest resolves.
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Spectra CLI ${{ github.ref_name }}
+          generate_release_notes: true
+          # Claim "Latest" explicitly rather than letting GitHub infer it. Left to the default,
+          # /releases/latest is resolved by created_at with published_at as the tie-breaker — which
+          # means backfilling or re-publishing an OLD release can steal the "Latest" slot and point
+          # `spectra --update` and the landing page's version pill at an ancient version. That is not
+          # hypothetical: it happened when the historical v1.0.x releases were backfilled.
+          make_latest: true

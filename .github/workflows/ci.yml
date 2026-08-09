@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  cli:
+    name: CLI installs and runs
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # The floor declared in pyproject (locked-down machines) and a current release.
+        python-version: ['3.9', '3.12']
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install the package
+        run: python -m pip install .
+      - name: The command runs and reports the committed version
+        # SPECTRA_NO_UPDATE_CHECK keeps this offline and deterministic — no GitHub round trip.
+        env:
+          SPECTRA_NO_UPDATE_CHECK: '1'
+        run: |
+          set -euo pipefail
+          spectra --help > /dev/null
+          REPORTED="$(spectra --version)"
+          FILE_VERSION="$(tr -d '[:space:]' < VERSION)"
+          if [ "$REPORTED" != "$FILE_VERSION" ]; then
+            echo "::error::spectra --version reported '$REPORTED' but VERSION says '$FILE_VERSION'." >&2
+            exit 1
+          fi
+          echo "spectra --version reports $REPORTED."
+
+  catalog:
+    name: Catalog and package stay in sync
+    # Constitution Principle V: catalog.json, extension.yml and the published zip must never drift.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: extension.yml, catalog.json and the zip agree
+        run: |
+          set -euo pipefail
+          EXT_VERSION="$(sed -n 's/^  version: "\(.*\)"$/\1/p' spectra/extension.yml | head -1)"
+          CAT_VERSION="$(python3 -c 'import json;print(json.load(open("catalog.json"))["extensions"]["spectra"]["version"])')"
+          if [ "$EXT_VERSION" != "$CAT_VERSION" ]; then
+            echo "::error::extension.yml is $EXT_VERSION but catalog.json says $CAT_VERSION." >&2
+            exit 1
+          fi
+          CAT_COMMANDS="$(python3 -c 'import json;print(json.load(open("catalog.json"))["extensions"]["spectra"]["provides"]["commands"])')"
+          EXT_COMMANDS="$(grep -c '^    - name: "speckit\.' spectra/extension.yml)"
+          if [ "$EXT_COMMANDS" != "$CAT_COMMANDS" ]; then
+            echo "::error::extension.yml declares $EXT_COMMANDS commands but catalog.json says $CAT_COMMANDS." >&2
+            exit 1
+          fi
+          echo "Extension $EXT_VERSION with $EXT_COMMANDS commands; catalog agrees."
+      - name: The published zip matches the spectra/ folder
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/unzipped
+          unzip -q docs/packages/spectra.zip -d /tmp/unzipped
+          if ! diff -r spectra /tmp/unzipped/spectra; then
+            echo "::error::docs/packages/spectra.zip has drifted from the spectra/ folder. Rebuild it." >&2
+            exit 1
+          fi
+          echo "docs/packages/spectra.zip matches spectra/."

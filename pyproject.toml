@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=77.0.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "spectra-cli"
+description = "Install and manage the Spectra catalog of Spec Kit extensions"
+readme = "README.md"
+requires-python = ">=3.9"
+license = "Apache-2.0"
+authors = [{ name = "TELUS Digital" }]
+keywords = ["spec-kit", "specify", "sdlc", "agentic", "extensions", "spectra"]
+# Deliberately dependency-free: the CLI shells out to `uv` and `specify` and uses only the
+# standard library, so it installs on a locked-down machine with nothing to resolve.
+dependencies = []
+dynamic = ["version"]
+
+[project.scripts]
+spectra = "spectra_cli.cli:main"
+
+[project.urls]
+Homepage = "https://xavient.github.io/spectra/"
+Repository = "https://github.com/xavient/spectra"
+
+# The committed VERSION file is the single source of truth for the CLI channel's version
+# (constitution Principle VI). setuptools reads its raw contents here and the tool reports it at
+# runtime via importlib.metadata, so the committed version, the git tag, and the installed version
+# can never drift. `.github/workflows/release.yml` refuses to publish when tag != VERSION.
+[tool.setuptools.dynamic]
+version = { file = "VERSION" }
+
+# Listed explicitly, NOT auto-discovered. The repo root also holds `spectra/` — the Spec Kit
+# extension payload (constitution Principle II fixes that name) — which is Markdown/YAML, not a
+# Python package. Naming the one real package here keeps setuptools away from it.
+[tool.setuptools]
+packages = ["spectra_cli"]

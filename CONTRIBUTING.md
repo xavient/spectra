@@ -19,6 +19,14 @@ for the authoritative manifest and command-naming rules.
 ```
 spectra/
 ├── catalog.json                   # THE catalog — single source of truth; install points here
+├── VERSION                        # THE CLI version — single source of truth; the release tag must match
+├── pyproject.toml                 # packaging for the `spectra-cli` uv tool
+├── spectra_cli/                   # THE CLI (installed as `spectra`; NOT the extension)
+│   ├── cli.py                     #   argparse entry point: install / --version / --update / --uninstall
+│   ├── install.py                 #   the 3-step flow: specify CLI → project → catalog + extensions
+│   ├── version.py                 #   version reporting and uv-delegated update/uninstall
+│   └── ui.py                      #   colors, splash, prompts, subprocess helpers
+├── .github/workflows/             # CI + the tag-triggered CLI release
 ├── assets/                         # shared images (committed)
 │   ├── TELUS_Digital_logo.png      #   the one logo (used by the README + landing page)
 │   ├── SDD.png                     #   Spec-Driven Development diagram
@@ -45,13 +53,17 @@ spectra/
     └── NOTICE                     #   attribution notice (ships inside the zip)
 ```
 
-The [`spectra/`](spectra/) folder is the extension; new capabilities are added as command files under
-`spectra/commands/`, not as new top-level folders. The repo is **public**; clients fetch the catalog
-and package over **direct `raw.githubusercontent.com` links** to `xavient/spectra` (GitHub Pages is
-disabled), so anyone installs by name with no authentication. There is no build
-script: when you add or change a command you update `catalog.json` and `docs/packages/spectra.zip` by
-hand (see [Publish](#publish-the-catalog-and-package)). `catalog.json` is the single source of truth
-for the catalog.
+Two things live here, and it matters which one you are touching. [`spectra/`](spectra/) is **the
+extension** — the agents, shipped over raw links and versioned in `extension.yml`. `spectra_cli/` is
+**the CLI** — the `spectra` command that sets a project up, shipped as a uv tool and versioned in
+`VERSION`. They release independently; see [Two release channels](#release-the-cli-spectra-cli).
+
+New capabilities are added as command files under `spectra/commands/`, not as new top-level folders
+and not as CLI code. The repo is **public**; clients fetch the catalog and package over **direct
+`raw.githubusercontent.com` links** to `xavient/spectra`, so anyone installs by name with no
+authentication. There is no build script: when you add or change a command you update `catalog.json`
+and `docs/packages/spectra.zip` by hand (see [Publish](#publish-the-catalog-and-package)).
+`catalog.json` is the single source of truth for the catalog.
 
 ## Anatomy of an extension
 
@@ -214,17 +226,18 @@ You don't need to publish to try the extension — install it straight from your
 
 ## Publish the catalog and package
 
-Spectra has **one** distribution channel: the `xavient/spectra` repo itself, fetched over direct
+The extension is distributed from the `xavient/spectra` repo itself, fetched over direct
 `raw.githubusercontent.com` links. The repo is **public**, so clients fetch the catalog and download
-packages with **no authentication** — the raw URLs resolve anonymously. For the catalog and packages
-there is no GitHub Pages and no catalog server — only the raw links. (The standalone installer is the
-one artifact distributed via a GitHub Release; see
-[Release the installer](#release-the-installer-spectra-setuppy).)
+packages with **no authentication** — the raw URLs resolve anonymously. There is no catalog server;
+only the raw links. (The `spectra` CLI is the other channel, published as a GitHub Release; see
+[Release the CLI](#release-the-cli-spectra-cli).)
 
-> GitHub Pages is **disabled** for this repo. Clients reach the catalog at
-> `https://raw.githubusercontent.com/xavient/spectra/main/catalog.json` and the package at
-> `https://raw.githubusercontent.com/xavient/spectra/main/docs/packages/spectra.zip`. If the repo is ever
-> renamed or moved, update those URLs (and the links in this file and the README) together.
+> Clients reach the catalog at `https://raw.githubusercontent.com/xavient/spectra/main/catalog.json`
+> and the package at `https://raw.githubusercontent.com/xavient/spectra/main/docs/packages/spectra.zip`
+> — **raw links, not Pages**. GitHub Pages *is* enabled (serving `main` `/docs` at
+> <https://xavient.github.io/spectra/>), but it publishes the landing page only; nothing in the install
+> path depends on it. If the repo is ever renamed or moved, update those URLs (and the links in this
+> file and the README) together.
 
 ### What ships
 
@@ -245,7 +258,7 @@ the README, must all use the `raw.githubusercontent.com/xavient/spectra/main/...
 
 ### Test, then publish
 
-1. **Test** the built extension locally with `--dev` (see [above](#test-an-extension-locally)) — the
+1. **Test** the built extension locally with `--dev` (see [above](#test-the-extension-locally)) — the
    raw `--from` URLs are not live until you push.
 2. **Commit `catalog.json` and `docs/`** (plus any extension changes) and push to `main`.
 3. The catalog and packages are live immediately at their raw URLs.
@@ -279,76 +292,109 @@ works against it. To release an update: bump `version` in `spectra/extension.yml
 `catalog.json`, and commit. Users run `specify extension update spectra` (or re-install with
 `--force`) to pull the new version.
 
-## Release the installer (`spectra-setup.py`)
+## Release the CLI (`spectra-cli`)
 
-The catalog and packages are one channel (raw links, above). The **installer** is a *separate*
-channel: [`spectra-setup.py`](spectra-setup.py) ships as an asset on a **GitHub Release**, tagged with
-[Semantic Versioning](https://semver.org/) (`vX.Y.Z`). This is what consumers download — the README's
-[Installation](README.md#installation) flow points them at the releases page to grab the latest one.
-Everything else in the repo (extensions, catalog, `docs/`) is internal to contributors; the only thing
-a consumer needs is this single file.
+The catalog and packages are one channel (raw links, above). The **CLI** is a *separate* channel:
+the `spectra_cli/` package, installed by consumers as a [`uv`](https://docs.astral.sh/uv/) tool
+straight from this repo's git URL.
 
-**Why a release, not a raw link.** A tagged release gives the installer a stable, versioned artifact
-plus auto-generated notes, and a clean `gh release download` command. Because `xavient/spectra` is
-**public**, the download needs no authentication — `gh release download` (or a direct link) works
-anonymously. The repo never needs to be cloned.
+```bash
+uv tool install spectra-cli --from git+https://github.com/xavient/spectra
+```
+
+There is **no build artifact and no release asset** — uv builds the wheel from source at install time.
+A GitHub Release is still published for every version, because that Release object is what
+`spectra --version` / `spectra --update` and the landing page's version pill read via
+`/releases/latest`.
+
+### Tags and Releases belong to the CLI
+
+Git tags and GitHub Releases on this repo mean **the CLI, and only the CLI**. The extension channel
+has nothing to tag — merging to `main` *is* its release, since clients fetch `catalog.json` and the
+zip from `main` over raw links.
+
+Keeping tags single-purpose is what makes `/releases/latest` a reliable answer to *"what is the newest
+`spectra` command"*. If the extension also cut releases, the CLI's update check would sometimes
+resolve to an extension release and try to install it as a version of itself.
+
+So that a reader can never mistake one for the other:
+
+- name Releases **"Spectra CLI X.Y.Z"**, never "Spectra X.Y.Z" — `release.yml` does this automatically;
+- tag with **bare semver** (`3.0.0`), not `vX.Y.Z`. The legacy `v1.0.0`…`v2.0.0` tags are the retired
+  `spectra-setup.py` installer channel; the release workflow's tag filter deliberately does not match
+  them, so they can never trigger a CLI release.
+
+### VERSION is the single source of truth
+
+[`VERSION`](VERSION) at the repo root holds the CLI version. `pyproject.toml` reads it
+(`[tool.setuptools.dynamic] version = { file = "VERSION" }`) and the tool reports it at runtime via
+`importlib.metadata`, so the committed version, the git tag, and the installed version cannot drift.
+`release.yml` **fails the release** if the pushed tag and `VERSION` disagree.
 
 ### When to cut a release
 
-Cut a new release **whenever [`spectra-setup.py`](spectra-setup.py) changes** in a way consumers should
-pick up (new prompts, fixed auth flow, changed steps). Editing the file on `main` does **not** update
-what consumers download — they pull the release asset, not the file on `main`, so the two drift until
-you tag. Bump the version per SemVer:
+Cut one **whenever the `spectra_cli/` package changes** in a way consumers should pick up (new
+prompts, changed steps, a fixed flow). Bump per SemVer:
 
-- **patch** (`v1.0.1`) — bug fix, wording, no behavior change to the flow.
-- **minor** (`v1.1.0`) — new optional step or capability, backward-compatible.
-- **major** (`v2.0.0`) — the install flow or prerequisites change in a breaking way.
+- **patch** (`3.0.1`) — bug fix, wording, no behavior change to the flow.
+- **minor** (`3.1.0`) — new optional step, flag, or capability, backward-compatible.
+- **major** (`4.0.0`) — the install flow, the command surface, or the prerequisites change in a
+  breaking way.
+
+**Adding or changing an agent is not a CLI release.** The command reads `catalog.json` at run time and
+installs whatever it advertises, so a new extension reaches every existing install with no CLI change
+at all. Bump the extension, not this. See [Publish the catalog and package](#publish-the-catalog-and-package).
 
 ### How to cut a release
 
-1. **Land the installer change first.** Make sure the updated `spectra-setup.py` is committed and
-   pushed to `main` (the tag should point at a commit that contains the version you're shipping).
-2. **Tag and publish in one step** with the GitHub CLI, attaching the script as the asset:
+1. **Bump `VERSION` in a PR** and land it on `main`, together with the code change it describes.
+2. **Tag the merge commit and push the tag:**
    ```bash
-   gh release create v1.1.0 \
-     spectra-setup.py \
-     -R xavient/spectra \
-     --title "Spectra v1.1.0" \
-     --notes "What changed in this installer release, plus the download-and-run instructions."
+   git checkout main && git pull
+   git tag 3.0.0 && git push origin 3.0.0
    ```
-   The release notes are the consumer-facing instructions — include the download command and a one-line
-   summary of what changed (see the [v1.0.0 notes](https://github.com/xavient/spectra/releases/tag/v1.0.0)
-   for the template).
-3. **Verify the asset attached:**
+3. **`release.yml` does the rest** — it verifies the tag matches `VERSION`, then publishes
+   "Spectra CLI 3.0.0" with auto-generated notes, explicitly marked **Latest**. Watch it with
+   `gh run watch`.
+
+   > **Never publish or re-publish an old release without re-checking `/releases/latest`.** Left to
+   > GitHub's default, "Latest" is resolved by `created_at` with `published_at` as the tie-breaker, so
+   > touching an older release can steal the slot and point `spectra --update` and the landing page's
+   > version pill at an ancient version. `make_latest: true` in the workflow protects new releases;
+   > for anything done by hand, verify afterwards:
+   > ```bash
+   > gh api repos/xavient/spectra/releases/latest --jq '{tag: .tag_name, name: .name}'
+   > ```
+   > and fix with `gh release edit <newest-tag> -R xavient/spectra --latest`.
+4. **Smoke-test what a consumer gets**, from any directory:
    ```bash
-   gh release view v1.1.0 -R xavient/spectra --json tagName,assets \
-     --jq '{tag: .tagName, assets: [.assets[].name]}'
+   uv tool install spectra-cli --from git+https://github.com/xavient/spectra --force
+   spectra --version
    ```
-4. **Smoke-test the download** the way a consumer will (from any directory — the repo is public, so
-   no `gh` login is needed):
-   ```bash
-   gh release download -R xavient/spectra --pattern spectra-setup.py -O /tmp/spectra-setup.py
-   ```
+   For a full clean-room run (no uv, no `specify`, no `.specify/`), use [`test/run.sh`](test/run.sh).
 
 ### How consumers get it
 
 ```bash
-gh release download -R xavient/spectra --pattern spectra-setup.py -O spectra-setup.py
-python3 spectra-setup.py
+uv tool install spectra-cli --from git+https://github.com/xavient/spectra
+spectra
 ```
 
-`gh release download` fetches the **latest** release by default; a specific version is pinned by passing
-the tag (`gh release download v1.0.0 -R xavient/spectra ...`). Keep the README's
-[Installation](README.md#installation) section in sync if the download command ever changes.
+Unpinned, so new installs track `main`. Keep `main` releasable. A specific version is pinned by
+appending the tag (`--from git+https://github.com/xavient/spectra@3.0.0`), which is exactly what
+`spectra --update` does. Keep the README's [Installation](README.md#installation) section and the
+landing page in sync if the install command ever changes.
 
 > **Heads-up:** the `download_url`s inside `catalog.json` point at `raw.githubusercontent.com/.../main/...`,
-> **not** at release assets — extension packages are still distributed over raw links and are unaffected
-> by installer releases. The two channels version independently.
+> **not** at release assets — extension packages are distributed over raw links and are unaffected by
+> CLI releases. The two channels version independently.
 
 ## Conventions
 
-- **Versioning.** [Semantic Versioning](https://semver.org/). Every release gets a `CHANGELOG.md`
-  entry under the matching version heading.
+- **Versioning.** [Semantic Versioning](https://semver.org/), **per channel**. The extension's version
+  lives in `spectra/extension.yml` (mirrored into `catalog.json`) and gets a `spectra/CHANGELOG.md`
+  entry; the CLI's lives in `VERSION` and is released by tag. The two are independent — never bump one
+  just because the other moved.
 - **Command namespace.** Always `speckit.spectra.<command>` — a fixed `spectra` segment followed by
   a clear, descriptive command name (e.g. `adr`, `domain-analyzer`, `create-pr`).
 - **One source file, all agents.** Generic format plus `$ARGUMENTS`. Never hard-code an agent's syntax.
