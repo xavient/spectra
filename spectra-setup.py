@@ -42,7 +42,7 @@ from pathlib import Path
 # Constants
 # --------------------------------------------------------------------------- #
 
-__version__ = "1.1.0"
+__version__ = "2.0.0"
 
 CATALOG_URL = "https://raw.githubusercontent.com/xavient/spectra/main/catalog.json"
 SPECKIT_INSTALL_URL = "https://github.com/github/spec-kit"
