@@ -3,6 +3,12 @@
 Bare `spectra` is informational — it prints the banner and points at `--help`, the way the
 `specify` CLI does. `spectra install` runs the install flow; `--version`, `--update`, and
 `--uninstall` manage the tool itself, delegating to uv (see :mod:`spectra_cli.version`).
+
+The parser is built from subcommands rather than one flat argument list, so project-scoped verbs and
+tool-scoped ones can live in separate namespaces as they are added. Flags shared by more than one
+subcommand are declared once and attached to each, with `SUPPRESS` defaults on the subcommand copies
+so that `spectra --yes install` and `spectra install --yes` mean the same thing — without a
+subcommand's default silently overwriting a value the top level already parsed.
 """
 
 from __future__ import annotations
@@ -47,20 +53,35 @@ class _Parser(argparse.ArgumentParser):
         raise SystemExit(2)
 
 
+def _add_shared(parser, *, suppress: bool = False) -> None:
+    """Attach the flags that are meaningful both before and after a subcommand.
+
+    On a subcommand the defaults are suppressed rather than set. argparse writes a subparser's
+    defaults into the same namespace *after* the top level has parsed, so a plain `default=False`
+    here would make `spectra --yes install` lose its `--yes`.
+    """
+    default = argparse.SUPPRESS if suppress else False
+    parser.add_argument("--yes", "-y", dest="yes", action="store_true", default=default)
+    parser.add_argument("--no-update-check", dest="no_update_check", action="store_true",
+                        default=default)
+    parser.add_argument("--help", "-h", dest="help", action="store_true", default=default)
+
+
 def build_parser() -> argparse.ArgumentParser:
     ap = _Parser(
         prog="spectra",
         description="Install and manage the Spectra catalog of Spec Kit extensions.",
         add_help=False,  # `--help` is handled in _dispatch so the banner prints above it.
     )
-    ap.add_argument("command", nargs="?", metavar="COMMAND",
-                    choices=[name for name, _ in COMMANDS])
+    _add_shared(ap)
     ap.add_argument("--version", "-V", action="store_true")
     ap.add_argument("--update", action="store_true")
     ap.add_argument("--uninstall", action="store_true")
-    ap.add_argument("--yes", "-y", dest="yes", action="store_true")
-    ap.add_argument("--no-update-check", dest="no_update_check", action="store_true")
-    ap.add_argument("--help", "-h", action="store_true")
+
+    subcommands = ap.add_subparsers(dest="command", metavar="COMMAND")
+    for name, _ in COMMANDS:
+        sub = subcommands.add_parser(name, add_help=False)
+        _add_shared(sub, suppress=True)
     return ap
 
 
@@ -260,7 +281,7 @@ def cmd_overview() -> int:
 # --------------------------------------------------------------------------- #
 def _dispatch(argv) -> int:
     args = build_parser().parse_args(argv)
-    if args.help:
+    if getattr(args, "help", False):
         ui.splash(version.read_installed_version() or "unknown")
         print_help()
         return 0
