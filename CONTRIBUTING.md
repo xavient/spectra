@@ -34,7 +34,7 @@ spectra/
 │   └── AIDLC-mapping.png           #   per-phase AI-DLC mapping diagram
 ├── docs/                          # downloadable package + static landing assets (committed)
 │   ├── index.html                 #   landing page: the extension + its install command
-│   ├── onePager.html              #   static one-pager
+│   ├── capability-brief.html      #   static capability brief
 │   ├── packages/spectra.zip       #   the one downloadable package (top-level spectra/ folder)
 │   └── .nojekyll                  #   serve files as-is (no Jekyll processing)
 ├── README.md                      # user-facing: what Spectra is + how to install
