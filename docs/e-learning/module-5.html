@@ -3,32 +3,36 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Module 5 &mdash; Best Practices &amp; Pitfalls</title>
+<title>Module 5 &mdash; Best Practices &amp; Pitfalls &middot; SDD with SPECTRA</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,400;1,9..144,500&family=JetBrains+Mono:wght@400;500;600&family=Mona+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #FAF9F5;
-    --bg-elev: #F4F1E8;
-    --text: #1A1614;
-    --text-muted: #6B6357;
-    --text-subtle: #94897A;
-    --accent: #B45309;
-    --accent-soft: rgba(180, 83, 9, 0.09);
-    --accent-line: rgba(180, 83, 9, 0.25);
-    --border: #E8E2D4;
-    --border-strong: #D4CCB8;
-    --code-bg: #1A1614;
-    --code-text: #F0EAD8;
-    --code-comment: #94897A;
-    --code-accent: #F0B070;
-    --success: #166534;
-    --success-soft: rgba(22, 101, 52, 0.08);
-    --error: #991B1B;
-    --error-soft: rgba(153, 27, 27, 0.06);
-    --shadow-sm: 0 1px 2px rgba(26, 22, 20, 0.04);
-    --shadow-md: 0 4px 12px rgba(26, 22, 20, 0.06);
+    /* Palette shared with the SPECTRA landing page (docs/index.html). */
+    --bg: #0c0a16;
+    --bg-2: #120f22;
+    --bg-elev: rgba(255, 255, 255, 0.04);
+    --surface: rgba(8, 6, 18, 0.55);
+    --text: #e9e7f2;
+    --text-muted: #a3a0b5;
+    --text-subtle: #8b879e;
+    --accent: #a78bfa;
+    --accent-2: #c4b5fd;
+    --accent-soft: rgba(167, 139, 250, 0.10);
+    --accent-line: rgba(167, 139, 250, 0.35);
+    --border: rgba(167, 139, 250, 0.20);
+    --border-strong: rgba(167, 139, 250, 0.34);
+    --code-bg: #0d0b17;
+    --code-text: #ded7f5;
+    --code-comment: #8d88a8;
+    --code-accent: #c4b5fd;
+    --success: #34d399;
+    --success-soft: rgba(52, 211, 153, 0.10);
+    --error: #fb7185;
+    --error-soft: rgba(251, 113, 133, 0.10);
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+    --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.45);
     --max-w: 720px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -39,12 +43,28 @@
     font-size: 17px;
     line-height: 1.7;
     color: var(--text);
-    background: var(--bg);
+    background:
+      radial-gradient(1100px 520px at 78% -10%, rgba(167,139,250,0.18), transparent 60%),
+      radial-gradient(900px 480px at 10% 6%, rgba(124,92,222,0.12), transparent 55%),
+      linear-gradient(180deg, var(--bg-2), var(--bg));
+    background-attachment: fixed;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
   }
+  /* Faint grid overlay, matching the SPECTRA landing page. */
+  body::before {
+    content: "";
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(167,139,250,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(167,139,250,0.05) 1px, transparent 1px);
+    background-size: 46px 46px;
+    -webkit-mask-image: radial-gradient(circle at 50% 0%, #000 0%, transparent 75%);
+    mask-image: radial-gradient(circle at 50% 0%, #000 0%, transparent 75%);
+  }
   main {
+    position: relative; z-index: 1;
     max-width: var(--max-w);
     margin: 0 auto;
     padding: 64px 28px 120px;
@@ -119,12 +139,13 @@
     font-family: 'JetBrains Mono', ui-monospace, monospace;
     font-size: 0.86em; background: var(--bg-elev);
     border: 1px solid var(--border); padding: 1px 6px;
-    border-radius: 4px; color: var(--text); font-weight: 500;
+    border-radius: 4px; color: var(--code-text); font-weight: 500;
   }
   /* Code blocks */
   .code-block { position: relative; margin: 22px 0 26px; }
   pre {
     background: var(--code-bg); color: var(--code-text);
+    border: 1px solid var(--border);
     padding: 18px 20px; border-radius: 8px; overflow-x: auto;
     font-family: 'JetBrains Mono', ui-monospace, monospace;
     font-size: 14px; line-height: 1.6; box-shadow: var(--shadow-sm);
@@ -135,8 +156,8 @@
   }
   .copy-btn {
     position: absolute; top: 10px; right: 10px;
-    background: rgba(240, 234, 216, 0.08);
-    border: 1px solid rgba(240, 234, 216, 0.18);
+    background: rgba(167, 139, 250, 0.12);
+    border: 1px solid rgba(167, 139, 250, 0.26);
     color: var(--code-text); font-family: 'Mona Sans', sans-serif;
     font-size: 11px; font-weight: 500; letter-spacing: 0.04em;
     text-transform: uppercase; padding: 5px 10px;
@@ -144,8 +165,8 @@
     transition: all 0.15s ease;
   }
   .code-block:hover .copy-btn { opacity: 1; }
-  .copy-btn:hover { background: rgba(240, 234, 216, 0.18); }
-  .copy-btn.copied { background: rgba(34, 197, 94, 0.2); border-color: rgba(34, 197, 94, 0.4); }
+  .copy-btn:hover { background: rgba(167, 139, 250, 0.24); }
+  .copy-btn.copied { background: rgba(52, 211, 153, 0.20); border-color: rgba(52, 211, 153, 0.45); }
   /* Blockquotes & callouts */
   blockquote {
     margin: 24px 0; padding: 16px 22px;
@@ -185,7 +206,7 @@
     display: grid; grid-template-columns: 48px 1fr auto auto;
     gap: 18px; align-items: center;
     padding: 16px 22px; border-bottom: 1px solid var(--border);
-    background: var(--bg);
+    background: var(--surface);
   }
   .module-row:last-child { border-bottom: none; }
   .module-row.featured {
@@ -222,7 +243,7 @@
   .quiz-header {
     padding: 16px 22px;
     border-bottom: 1px solid var(--border);
-    background: var(--bg);
+    background: var(--surface);
     display: flex; align-items: center; justify-content: space-between;
   }
   .quiz-title {
@@ -238,7 +259,7 @@
     display: flex; align-items: flex-start; gap: 10px;
     padding: 11px 14px;
     border: 1px solid var(--border); border-radius: 6px;
-    background: var(--bg); cursor: pointer;
+    background: var(--surface); cursor: pointer;
     font-size: 15px; line-height: 1.45;
     transition: all 0.15s ease;
     text-align: left;
@@ -275,8 +296,8 @@
     display: none;
   }
   .quiz-feedback.show { display: block; }
-  .quiz-feedback.correct { background: var(--success-soft); border: 1px solid rgba(22, 101, 52, 0.25); }
-  .quiz-feedback.incorrect { background: var(--error-soft); border: 1px solid rgba(153, 27, 27, 0.18); }
+  .quiz-feedback.correct { background: var(--success-soft); border: 1px solid rgba(52, 211, 153, 0.30); }
+  .quiz-feedback.incorrect { background: var(--error-soft); border: 1px solid rgba(251, 113, 133, 0.30); }
   .quiz-feedback-title { font-weight: 600; margin-bottom: 4px; }
   .quiz-feedback.correct .quiz-feedback-title { color: var(--success); }
   .quiz-feedback.incorrect .quiz-feedback-title { color: var(--error); }
@@ -284,7 +305,7 @@
   .quiz-open-toggle {
     margin-top: 8px;
     padding: 9px 16px;
-    background: var(--bg); border: 1px solid var(--border);
+    background: var(--surface); border: 1px solid var(--border);
     border-radius: 6px; cursor: pointer;
     font-family: inherit; font-size: 14px; font-weight: 500;
     color: var(--text-muted);
@@ -332,7 +353,7 @@
     display: none;
     padding: 4px 22px 22px;
     border-top: 1px solid var(--border);
-    background: var(--bg);
+    background: var(--surface);
   }
   .reveal.open .reveal-content { display: block; }
   .reveal-content > *:first-child { margin-top: 18px; }
@@ -362,7 +383,7 @@
     text-decoration: none; border: none;
     transition: background 0.15s ease;
   }
-  .lab-card-link:hover { background: #92400E; border-bottom: none; }
+  .lab-card-link:hover { background: var(--accent-2); border-bottom: none; }
   .lab-card-link.placeholder {
     background: var(--bg-elev); color: var(--text-muted);
     border: 1px dashed var(--border-strong); cursor: not-allowed;
@@ -392,7 +413,7 @@
     content: ""; position: absolute; left: 0; top: 0.45em;
     width: 14px; height: 14px;
     border: 1.5px solid var(--border-strong); border-radius: 3px;
-    background: var(--bg);
+    background: var(--surface);
   }
   /* TOC at top of module pages (within-page only — no cross-page links) */
   .toc {
@@ -445,7 +466,7 @@
   /* Course navigation bar (shared) */
   .course-nav {
     position: sticky; top: 0; z-index: 50;
-    background: rgba(250, 249, 245, 0.85);
+    background: rgba(12, 10, 22, 0.82);
     -webkit-backdrop-filter: saturate(180%) blur(12px);
     backdrop-filter: saturate(180%) blur(12px);
     border-bottom: 1px solid var(--border);
@@ -481,7 +502,7 @@
     font-size: 13px; font-weight: 600;
     color: var(--text-muted); text-decoration: none;
     border: 1px solid var(--border); border-radius: 6px;
-    background: var(--bg);
+    background: var(--surface);
     transition: all 0.15s ease;
   }
   .course-nav-modules a:hover {
@@ -521,7 +542,7 @@
   }
   .mod-nav-next .mod-nav-label { color: var(--bg); opacity: 0.82; }
   .mod-nav-next .mod-nav-title { font-weight: 600; font-size: 15px; color: var(--bg); }
-  .mod-nav-next:hover { background: #92400E; }
+  .mod-nav-next:hover { background: var(--accent-2); }
   @media (max-width: 600px) {
     .course-nav-inner { padding: 10px 16px; }
     .course-nav-brand-text { display: none; }
@@ -532,14 +553,14 @@
 <nav class="course-nav">
   <div class="course-nav-inner">
     <a class="course-nav-brand" href="index.html">
-      <span class="course-nav-brand-mark">SDD</span>
-      <span class="course-nav-brand-text">Course handbook</span>
+      <span class="course-nav-brand-mark">SPECTRA</span>
+      <span class="course-nav-brand-text">SDD Learning</span>
     </a>
     <div class="course-nav-modules">
-      <a href="index.html" class="course-nav-home" title="Course handbook">Home</a>
+      <a href="index.html" class="course-nav-home" title="SDD with SPECTRA — Learning">Home</a>
       <a href="module-1.html" title="Module 1 — SDD Foundations">1</a>
       <a href="module-2.html" title="Module 2 — Anatomy of a Good Spec">2</a>
-      <a href="module-3.html" title="Module 3 — Greenfield Lab — Spec Kit from Scratch">3</a>
+      <a href="module-3.html" title="Module 3 — Greenfield Lab — SPECTRA from Scratch">3</a>
       <a href="module-4.html" title="Module 4 — Brownfield Lab — Add “Due Date” ★">4</a>
       <a href="module-5.html" title="Module 5 — Best Practices &amp; Pitfalls" class="is-active">5</a>
       <a href="module-6.html" title="Module 6 — Quality, Testing &amp; Team Collaboration">6</a>
@@ -654,7 +675,7 @@
 git commit -m "plan: &lt;feature&gt;"
 git commit -m "tasks: &lt;feature&gt;"
 git commit -m "feat: &lt;feature&gt; (spec-driven)"</code></pre>
-    <p>If the implementation goes sideways, you can <code>git reset --hard &lt;plan-commit&gt;</code> and re-run <code>/tasks</code> and <code>/implement</code> without losing the upstream work.</p>
+    <p>If the implementation goes sideways, you can <code>git reset --hard &lt;plan-commit&gt;</code> and re-run <code>/speckit.tasks</code> and <code>/speckit.implement</code> without losing the upstream work.</p>
 
     <h2><span class="h2-num">2.</span>Pitfalls that consistently sabotage SDD adoption</h2>
     <p>The labs probably surfaced one or two of these. The full list:</p>
@@ -680,7 +701,7 @@ git commit -m "feat: &lt;feature&gt; (spec-driven)"</code></pre>
     <p><strong>Cure:</strong> when bugs surface, classify them with the SpecOps loop (intent-to-spec vs spec-to-implementation). Intent-to-spec bugs mean your elicitation patterns need work; treat them as a higher-priority fix than the bug itself.</p>
 
     <h3>Pitfall 5 &mdash; Tooling cargo-culting</h3>
-    <p>You're applying full Spec Kit ceremony (Constitution + spec + plan + tasks + implement) to every change, including mechanical ones. The tool has become a religion.</p>
+    <p>You're applying the full SDD ceremony (Constitution + spec + plan + tasks + implement) to every change, including mechanical ones. The tool has become a religion.</p>
     <p><strong>Symptom:</strong> small bug fixes that take a day instead of an hour.</p>
     <p><strong>Cure:</strong> the &ldquo;skip the spec&rdquo; criteria from Module 1 are real. Mechanical, well-understood, quickly reviewable changes don't need ceremony. Empower engineers to choose.</p>
 
@@ -695,9 +716,9 @@ git commit -m "feat: &lt;feature&gt; (spec-driven)"</code></pre>
     <p><strong>Cure:</strong> never write the system spec. Spec changes incrementally. Frequently-touched areas accumulate spec coverage organically. Premature comprehensiveness is how SDD adoptions die.</p>
 
     <h3>Pitfall 8 &mdash; &ldquo;SpecFall&rdquo;</h3>
-    <p>You install Spec Kit, run a training, and don't change anything else about how product, architecture, and engineering collaborate. SDD becomes a technical artifact in an unchanged process. Krishnan calls this &ldquo;SpecFall&rdquo; &mdash; analogous to the classic &ldquo;Scrumerfall&rdquo; failure where teams adopt Scrum ceremonies on top of waterfall thinking and wonder why nothing changes.</p>
+    <p>You install SPECTRA, run a training, and don't change anything else about how product, architecture, and engineering collaborate. SDD becomes a technical artifact in an unchanged process. Krishnan calls this &ldquo;SpecFall&rdquo; &mdash; analogous to the classic &ldquo;Scrumerfall&rdquo; failure where teams adopt Scrum ceremonies on top of waterfall thinking and wonder why nothing changes.</p>
     <p><strong>Symptom:</strong> PMs still write Jira tickets exactly as before, engineers translate them into specs in isolation, nothing about cross-functional collaboration has changed.</p>
-    <p><strong>Cure:</strong> treat SDD adoption as a process change, not a tooling change. Specs become the shared interface where PM/architecture/engineering meet. Module 6 covers this in depth; for now, just notice that adopting Spec Kit without changing how your team collaborates produces almost no benefit.</p>
+    <p><strong>Cure:</strong> treat SDD adoption as a process change, not a tooling change. Specs become the shared interface where PM/architecture/engineering meet. Module 6 covers this in depth; for now, just notice that adopting SPECTRA without changing how your team collaborates produces almost no benefit.</p>
 
     <hr>
 
