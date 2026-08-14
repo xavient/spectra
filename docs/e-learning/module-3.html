@@ -3,32 +3,36 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Module 3 &mdash; Greenfield Lab</title>
+<title>Module 3 &mdash; Greenfield Lab &middot; SDD with SPECTRA</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,400;1,9..144,500&family=JetBrains+Mono:wght@400;500;600&family=Mona+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #FAF9F5;
-    --bg-elev: #F4F1E8;
-    --text: #1A1614;
-    --text-muted: #6B6357;
-    --text-subtle: #94897A;
-    --accent: #B45309;
-    --accent-soft: rgba(180, 83, 9, 0.09);
-    --accent-line: rgba(180, 83, 9, 0.25);
-    --border: #E8E2D4;
-    --border-strong: #D4CCB8;
-    --code-bg: #1A1614;
-    --code-text: #F0EAD8;
-    --code-comment: #94897A;
-    --code-accent: #F0B070;
-    --success: #166534;
-    --success-soft: rgba(22, 101, 52, 0.08);
-    --error: #991B1B;
-    --error-soft: rgba(153, 27, 27, 0.06);
-    --shadow-sm: 0 1px 2px rgba(26, 22, 20, 0.04);
-    --shadow-md: 0 4px 12px rgba(26, 22, 20, 0.06);
+    /* Palette shared with the SPECTRA landing page (docs/index.html). */
+    --bg: #0c0a16;
+    --bg-2: #120f22;
+    --bg-elev: rgba(255, 255, 255, 0.04);
+    --surface: rgba(8, 6, 18, 0.55);
+    --text: #e9e7f2;
+    --text-muted: #a3a0b5;
+    --text-subtle: #8b879e;
+    --accent: #a78bfa;
+    --accent-2: #c4b5fd;
+    --accent-soft: rgba(167, 139, 250, 0.10);
+    --accent-line: rgba(167, 139, 250, 0.35);
+    --border: rgba(167, 139, 250, 0.20);
+    --border-strong: rgba(167, 139, 250, 0.34);
+    --code-bg: #0d0b17;
+    --code-text: #ded7f5;
+    --code-comment: #8d88a8;
+    --code-accent: #c4b5fd;
+    --success: #34d399;
+    --success-soft: rgba(52, 211, 153, 0.10);
+    --error: #fb7185;
+    --error-soft: rgba(251, 113, 133, 0.10);
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+    --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.45);
     --max-w: 720px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -39,12 +43,28 @@
     font-size: 17px;
     line-height: 1.7;
     color: var(--text);
-    background: var(--bg);
+    background:
+      radial-gradient(1100px 520px at 78% -10%, rgba(167,139,250,0.18), transparent 60%),
+      radial-gradient(900px 480px at 10% 6%, rgba(124,92,222,0.12), transparent 55%),
+      linear-gradient(180deg, var(--bg-2), var(--bg));
+    background-attachment: fixed;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
   }
+  /* Faint grid overlay, matching the SPECTRA landing page. */
+  body::before {
+    content: "";
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(167,139,250,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(167,139,250,0.05) 1px, transparent 1px);
+    background-size: 46px 46px;
+    -webkit-mask-image: radial-gradient(circle at 50% 0%, #000 0%, transparent 75%);
+    mask-image: radial-gradient(circle at 50% 0%, #000 0%, transparent 75%);
+  }
   main {
+    position: relative; z-index: 1;
     max-width: var(--max-w);
     margin: 0 auto;
     padding: 64px 28px 120px;
@@ -119,12 +139,13 @@
     font-family: 'JetBrains Mono', ui-monospace, monospace;
     font-size: 0.86em; background: var(--bg-elev);
     border: 1px solid var(--border); padding: 1px 6px;
-    border-radius: 4px; color: var(--text); font-weight: 500;
+    border-radius: 4px; color: var(--code-text); font-weight: 500;
   }
   /* Code blocks */
   .code-block { position: relative; margin: 22px 0 26px; }
   pre {
     background: var(--code-bg); color: var(--code-text);
+    border: 1px solid var(--border);
     padding: 18px 20px; border-radius: 8px; overflow-x: auto;
     font-family: 'JetBrains Mono', ui-monospace, monospace;
     font-size: 14px; line-height: 1.6; box-shadow: var(--shadow-sm);
@@ -135,8 +156,8 @@
   }
   .copy-btn {
     position: absolute; top: 10px; right: 10px;
-    background: rgba(240, 234, 216, 0.08);
-    border: 1px solid rgba(240, 234, 216, 0.18);
+    background: rgba(167, 139, 250, 0.12);
+    border: 1px solid rgba(167, 139, 250, 0.26);
     color: var(--code-text); font-family: 'Mona Sans', sans-serif;
     font-size: 11px; font-weight: 500; letter-spacing: 0.04em;
     text-transform: uppercase; padding: 5px 10px;
@@ -144,8 +165,8 @@
     transition: all 0.15s ease;
   }
   .code-block:hover .copy-btn { opacity: 1; }
-  .copy-btn:hover { background: rgba(240, 234, 216, 0.18); }
-  .copy-btn.copied { background: rgba(34, 197, 94, 0.2); border-color: rgba(34, 197, 94, 0.4); }
+  .copy-btn:hover { background: rgba(167, 139, 250, 0.24); }
+  .copy-btn.copied { background: rgba(52, 211, 153, 0.20); border-color: rgba(52, 211, 153, 0.45); }
   /* Blockquotes & callouts */
   blockquote {
     margin: 24px 0; padding: 16px 22px;
@@ -185,7 +206,7 @@
     display: grid; grid-template-columns: 48px 1fr auto auto;
     gap: 18px; align-items: center;
     padding: 16px 22px; border-bottom: 1px solid var(--border);
-    background: var(--bg);
+    background: var(--surface);
   }
   .module-row:last-child { border-bottom: none; }
   .module-row.featured {
@@ -222,7 +243,7 @@
   .quiz-header {
     padding: 16px 22px;
     border-bottom: 1px solid var(--border);
-    background: var(--bg);
+    background: var(--surface);
     display: flex; align-items: center; justify-content: space-between;
   }
   .quiz-title {
@@ -238,7 +259,7 @@
     display: flex; align-items: flex-start; gap: 10px;
     padding: 11px 14px;
     border: 1px solid var(--border); border-radius: 6px;
-    background: var(--bg); cursor: pointer;
+    background: var(--surface); cursor: pointer;
     font-size: 15px; line-height: 1.45;
     transition: all 0.15s ease;
     text-align: left;
@@ -275,8 +296,8 @@
     display: none;
   }
   .quiz-feedback.show { display: block; }
-  .quiz-feedback.correct { background: var(--success-soft); border: 1px solid rgba(22, 101, 52, 0.25); }
-  .quiz-feedback.incorrect { background: var(--error-soft); border: 1px solid rgba(153, 27, 27, 0.18); }
+  .quiz-feedback.correct { background: var(--success-soft); border: 1px solid rgba(52, 211, 153, 0.30); }
+  .quiz-feedback.incorrect { background: var(--error-soft); border: 1px solid rgba(251, 113, 133, 0.30); }
   .quiz-feedback-title { font-weight: 600; margin-bottom: 4px; }
   .quiz-feedback.correct .quiz-feedback-title { color: var(--success); }
   .quiz-feedback.incorrect .quiz-feedback-title { color: var(--error); }
@@ -284,7 +305,7 @@
   .quiz-open-toggle {
     margin-top: 8px;
     padding: 9px 16px;
-    background: var(--bg); border: 1px solid var(--border);
+    background: var(--surface); border: 1px solid var(--border);
     border-radius: 6px; cursor: pointer;
     font-family: inherit; font-size: 14px; font-weight: 500;
     color: var(--text-muted);
@@ -332,7 +353,7 @@
     display: none;
     padding: 4px 22px 22px;
     border-top: 1px solid var(--border);
-    background: var(--bg);
+    background: var(--surface);
   }
   .reveal.open .reveal-content { display: block; }
   .reveal-content > *:first-child { margin-top: 18px; }
@@ -362,7 +383,7 @@
     text-decoration: none; border: none;
     transition: background 0.15s ease;
   }
-  .lab-card-link:hover { background: #92400E; border-bottom: none; }
+  .lab-card-link:hover { background: var(--accent-2); border-bottom: none; }
   .lab-card-link.placeholder {
     background: var(--bg-elev); color: var(--text-muted);
     border: 1px dashed var(--border-strong); cursor: not-allowed;
@@ -392,7 +413,7 @@
     content: ""; position: absolute; left: 0; top: 0.45em;
     width: 14px; height: 14px;
     border: 1.5px solid var(--border-strong); border-radius: 3px;
-    background: var(--bg);
+    background: var(--surface);
   }
   /* TOC at top of module pages (within-page only — no cross-page links) */
   .toc {
@@ -445,7 +466,7 @@
   /* Course navigation bar (shared) */
   .course-nav {
     position: sticky; top: 0; z-index: 50;
-    background: rgba(250, 249, 245, 0.85);
+    background: rgba(12, 10, 22, 0.82);
     -webkit-backdrop-filter: saturate(180%) blur(12px);
     backdrop-filter: saturate(180%) blur(12px);
     border-bottom: 1px solid var(--border);
@@ -481,7 +502,7 @@
     font-size: 13px; font-weight: 600;
     color: var(--text-muted); text-decoration: none;
     border: 1px solid var(--border); border-radius: 6px;
-    background: var(--bg);
+    background: var(--surface);
     transition: all 0.15s ease;
   }
   .course-nav-modules a:hover {
@@ -521,7 +542,7 @@
   }
   .mod-nav-next .mod-nav-label { color: var(--bg); opacity: 0.82; }
   .mod-nav-next .mod-nav-title { font-weight: 600; font-size: 15px; color: var(--bg); }
-  .mod-nav-next:hover { background: #92400E; }
+  .mod-nav-next:hover { background: var(--accent-2); }
   @media (max-width: 600px) {
     .course-nav-inner { padding: 10px 16px; }
     .course-nav-brand-text { display: none; }
@@ -532,14 +553,14 @@
 <nav class="course-nav">
   <div class="course-nav-inner">
     <a class="course-nav-brand" href="index.html">
-      <span class="course-nav-brand-mark">SDD</span>
-      <span class="course-nav-brand-text">Course handbook</span>
+      <span class="course-nav-brand-mark">SPECTRA</span>
+      <span class="course-nav-brand-text">SDD Learning</span>
     </a>
     <div class="course-nav-modules">
-      <a href="index.html" class="course-nav-home" title="Course handbook">Home</a>
+      <a href="index.html" class="course-nav-home" title="SDD with SPECTRA — Learning">Home</a>
       <a href="module-1.html" title="Module 1 — SDD Foundations">1</a>
       <a href="module-2.html" title="Module 2 — Anatomy of a Good Spec">2</a>
-      <a href="module-3.html" title="Module 3 — Greenfield Lab — Spec Kit from Scratch" class="is-active">3</a>
+      <a href="module-3.html" title="Module 3 — Greenfield Lab — SPECTRA from Scratch" class="is-active">3</a>
       <a href="module-4.html" title="Module 4 — Brownfield Lab — Add “Due Date” ★">4</a>
       <a href="module-5.html" title="Module 5 — Best Practices &amp; Pitfalls">5</a>
       <a href="module-6.html" title="Module 6 — Quality, Testing &amp; Team Collaboration">6</a>
@@ -550,8 +571,8 @@
 <main>
   <header class="hero">
     <div class="hero-eyebrow">Module 3</div>
-    <h1>Greenfield Lab &mdash; Spec Kit from Scratch</h1>
-    <p class="hero-lede">Install GitHub Spec Kit, walk through the four-phase workflow on a small to-do app, and feel the workflow in your hands before applying it to a real codebase.</p>
+    <h1>Greenfield Lab &mdash; SPECTRA from Scratch</h1>
+    <p class="hero-lede">Install SPECTRA, walk through the four-phase workflow on a small to-do app, and feel the workflow in your hands before applying it to a real codebase.</p>
     <div class="meta">
       <div class="meta-item">
         <span class="meta-label">Time</span>
@@ -563,7 +584,7 @@
       </div>
       <div class="meta-item">
         <span class="meta-label">Prerequisites</span>
-        <span class="meta-value">Modules 1, 2; an AI agent; Node 18+; Python 3.11+</span>
+        <span class="meta-value">Modules 1, 2; an AI agent; Node 18+; uv &amp; Git</span>
       </div>
     </div>
   </header>
@@ -573,8 +594,8 @@
     <h3>Learning objectives</h3>
     <p>By the end of this module, you will be able to:</p>
     <ol>
-      <li>Install GitHub Spec Kit and initialize a new project with a chosen AI agent.</li>
-      <li>Walk through the four-phase workflow (<code>/specify</code> &rarr; <code>/plan</code> &rarr; <code>/tasks</code> &rarr; <code>/implement</code>) end to end on a small greenfield feature.</li>
+      <li>Install SPECTRA and initialize a new project with a chosen AI agent.</li>
+      <li>Walk through the four-phase workflow (<code>/speckit.specify</code> &rarr; <code>/speckit.plan</code> &rarr; <code>/speckit.tasks</code> &rarr; <code>/speckit.implement</code>) end to end on a small greenfield feature.</li>
       <li>Identify the artifacts produced at each phase and review them critically.</li>
       <li>Recognize when the agent is making assumptions you should have specified explicitly.</li>
     </ol>
@@ -594,7 +615,7 @@
     <h2><span class="h2-num">1.</span>Setup (15 minutes)</h2>
 
     <h3>1.1 Pick your AI agent</h3>
-    <p>Spec Kit supports several. Pick whichever you have access to:</p>
+    <p>SPECTRA works with every agent Spec Kit supports. Pick whichever you have access to:</p>
     <ul>
       <li><strong>Claude Code</strong> (recommended for this lab &mdash; strongest spec-writing performance)</li>
       <li><strong>GitHub Copilot</strong> (in VS Code)</li>
@@ -612,31 +633,30 @@ cd todo-app</code></pre>
 <pre><code>npm run dev</code></pre>
     <p>Open <a href="http://localhost:3000">http://localhost:3000</a>. You should see the default Next.js welcome page. Stop the dev server with <code>Ctrl+C</code> when you've confirmed it works.</p>
 
-    <h3>1.3 Install Spec Kit</h3>
-    <p>Spec Kit ships as a Python package. The recommended install path uses <a href="https://docs.astral.sh/uv/"><code>uv</code></a> (a fast Python package manager), but <code>pipx</code> works too.</p>
-<pre><code># Option A: with uv (recommended)
-uv tool install specify-cli --from git+https://github.com/github/spec-kit.git
-
-# Option B: with pipx
-pipx install git+https://github.com/github/spec-kit.git</code></pre>
+    <h3>1.3 Install SPECTRA</h3>
+    <p>SPECTRA ships as a <a href="https://docs.astral.sh/uv/"><code>uv</code></a> tool. Install it once, from anywhere &mdash; there's no repository to clone.</p>
+<pre><code>uv tool install spectra-cli --from git+https://github.com/xavient/spectra</code></pre>
     <p>Verify:</p>
-<pre><code>specify --version</code></pre>
-    <p>If you hit issues, check the <a href="https://github.com/github/spec-kit#installation">Spec Kit installation docs</a>. The most common gotcha is Python version &mdash; you need 3.11 or newer.</p>
+<pre><code>spectra cli version</code></pre>
+    <div class="note"><span class="note-label">Don't have <code>uv</code> yet?</span>On macOS or Linux run <code>curl -LsSf https://astral.sh/uv/install.sh | sh</code>; on Windows (PowerShell) run <code>irm https://astral.sh/uv/install.ps1 | iex</code>. Open a new terminal afterwards so <code>uv</code> is on your <code>PATH</code>. You also need <strong>Git</strong>, which <code>uv</code> uses to fetch SPECTRA. Step-by-step instructions for all three operating systems are on the <a href="https://xavient.github.io/spectra/">SPECTRA install page</a>.</div>
+    <div class="note"><span class="note-label">What you just installed.</span><code>spectra</code> is a setup and lifecycle command, not a replacement for Spec Kit. In the next step it will install Spec Kit's <code>specify</code> CLI for you if you don't already have it &mdash; the four-phase workflow you're about to run is Spec Kit's, and SPECTRA is what puts it in place and adds agents on top.</div>
 
-    <h3>1.4 Initialize Spec Kit on the scaffolded project</h3>
+    <h3>1.4 Install SPECTRA into the scaffolded project</h3>
     <p>From the <code>todo-app/</code> directory:</p>
-<pre><code>specify init --here</code></pre>
-    <p>The CLI will ask which AI agent you're using. Pick the one you chose in 1.1.</p>
-    <p>After init, your directory will contain (in addition to the Next.js scaffold):</p>
-<pre><code>.specify/                # Spec Kit's internal state
+<pre><code>spectra install</code></pre>
+    <p>That one command does the whole setup: it installs Spec Kit's <code>specify</code> CLI if it's missing, offers to run <code>specify init</code> because this folder isn't a Spec Kit project yet, registers the public SPECTRA catalog, and installs SPECTRA's agents. When it asks which AI agent you're using, pick the one you chose in 1.1.</p>
+    <p>After it finishes, your directory will contain (in addition to the Next.js scaffold):</p>
+<pre><code>.specify/                # Spec Kit's state, plus the SPECTRA catalog
 memory/
 &#8594; constitution.md      # Project-wide context (initially a template)
 .claude/                 # Or .github/, .cursor/, etc., depending on agent</code></pre>
-    <p>The slash commands (<code>/specify</code>, <code>/plan</code>, <code>/tasks</code>, <code>/implement</code>) are now available inside your AI agent's chat interface for this directory.</p>
+    <div class="note"><span class="note-label">Restart your AI agent.</span>Commands are written to disk at install time, so an agent that was already running won't see them. Restart it before the next step.</div>
+    <p>The four-phase slash commands (<code>/speckit.specify</code>, <code>/speckit.plan</code>, <code>/speckit.tasks</code>, <code>/speckit.implement</code>) are now available inside your AI agent's chat interface for this directory &mdash; along with SPECTRA's own <code>speckit.spectra.*</code> agents. Run <code>spectra agent-list</code> to see those; they go beyond the four phases and are outside the scope of this lab, but they're worth knowing exist.</p>
+    <div class="note"><span class="note-label">The trigger form differs by agent.</span>Spec Kit translates each command into your agent's native format at install time, so what you actually type depends on your agent. <strong>Claude</strong> registers them as skills invoked with dashes &mdash; <code>/speckit-specify</code>, <code>/speckit-plan</code>, and so on. Other agents keep the dots &mdash; kiro-cli uses <code>/speckit.specify</code>. This course writes the dotted form throughout; swap in dashes if you're on Claude. Your agent's own command or skill list shows the exact trigger.</div>
 
     <h3>1.5 Sanity-check the agent</h3>
     <p>Open your AI agent in this directory and try a no-op:</p>
-<pre><code>/specify</code></pre>
+<pre><code>/speckit.specify</code></pre>
     <p>You should see a prompt asking what feature you want to specify. If you see that, setup is done. If you don't, the agent isn't seeing the slash commands &mdash; most often a fixable matter of restarting the agent or pointing it at the right directory.</p>
 
     <h2><span class="h2-num">2.</span>Author the Constitution (10 minutes)</h2>
@@ -678,9 +698,9 @@ memory/
     <p>This is short on purpose. The Constitution should hold <em>durable</em> conventions, not the world. If something here turns out to be wrong later, you'll change it once and every future spec inherits the change.</p>
     <div class="note"><span class="note-label">Why are some specifics here?</span>You'll notice the Constitution names <code>crypto.randomUUID()</code> and a single named constant for the storage key. These aren't ceremony for its own sake &mdash; they're decisions worth pinning at the project level so the agent doesn't reinvent them in every spec. Compare the brownfield lab in Module 4, where the starter codebase doesn't follow either of these and you'll see why having them in the Constitution matters.</div>
 
-    <h2><span class="h2-num">3.</span><code>/specify</code> (15 minutes)</h2>
+    <h2><span class="h2-num">3.</span><code>/speckit.specify</code> (15 minutes)</h2>
     <p>In your AI agent, run:</p>
-<pre><code>/specify
+<pre><code>/speckit.specify
 
 Build a single-page to-do web app. The user can add a task, see all
 tasks in a list, mark a task as done (and undo), and delete a task.
@@ -715,9 +735,9 @@ Tasks persist across page reloads via localStorage. The home page
     <h3>3.3 Stop when</h3>
     <p>You stop iterating on the spec when <strong>a new engineer could implement the app from your spec without asking you anything</strong>. Not before. If you'd still need to clarify something to write the code, the spec isn't done.</p>
 
-    <h2><span class="h2-num">4.</span><code>/plan</code> (15 minutes)</h2>
+    <h2><span class="h2-num">4.</span><code>/speckit.plan</code> (15 minutes)</h2>
     <p>In your agent:</p>
-<pre><code>/plan</code></pre>
+<pre><code>/speckit.plan</code></pre>
     <p>The agent generates a <code>plan.md</code> (and possibly supporting files) describing <em>how</em> to build what the spec describes. This is where you make implementation decisions: file layout, component structure, what state lives where, how localStorage is read and written.</p>
 
     <h3>4.1 Review checklist for the plan</h3>
@@ -732,19 +752,19 @@ Tasks persist across page reloads via localStorage. The home page
 
     <h3>4.2 What the plan should <em>not</em> contain</h3>
     <ul>
-      <li>Full component bodies (that's <code>/implement</code>'s job)</li>
+      <li>Full component bodies (that's <code>/speckit.implement</code>'s job)</li>
       <li>Specifics that contradict the Constitution (if it does, fix one or the other &mdash; both being authoritative is the point of having both)</li>
-      <li>Things that should have been in the spec (&ldquo;we should also support tags&rdquo; &mdash; no, that's a scope change, go back to <code>/specify</code>)</li>
+      <li>Things that should have been in the spec (&ldquo;we should also support tags&rdquo; &mdash; no, that's a scope change, go back to <code>/speckit.specify</code>)</li>
     </ul>
-    <p>If the plan is wrong, fix it before moving on. The cost of a wrong plan caught here is minutes. The cost of a wrong plan caught at <code>/implement</code> is potentially the whole afternoon.</p>
+    <p>If the plan is wrong, fix it before moving on. The cost of a wrong plan caught here is minutes. The cost of a wrong plan caught at <code>/speckit.implement</code> is potentially the whole afternoon.</p>
 
     <h3>4.3 SSR / hydration: the one gotcha to watch for</h3>
     <p>Next.js renders pages on the server first, then hydrates them in the browser. <code>localStorage</code> doesn't exist on the server. If the plan reads localStorage during the initial render, the client and server will produce different HTML and React will throw a hydration warning.</p>
     <p>The right pattern: the page renders an empty initial state on first paint, then a <code>useEffect</code> hook reads localStorage after mount and updates state. The plan should call this out explicitly. If it doesn't, push back: <em>&ldquo;How does this avoid hydration mismatch when localStorage is read?&rdquo;</em></p>
     <p>This is the kind of stack-specific issue the Constitution can't anticipate but the plan must.</p>
 
-    <h2><span class="h2-num">5.</span><code>/tasks</code> (10 minutes)</h2>
-<pre><code>/tasks</code></pre>
+    <h2><span class="h2-num">5.</span><code>/speckit.tasks</code> (10 minutes)</h2>
+<pre><code>/speckit.tasks</code></pre>
     <p>The agent breaks the plan into a list of discrete, ordered tasks in <code>tasks.md</code>. Each task should be small enough to implement and verify on its own.</p>
 
     <h3>5.1 Review checklist</h3>
@@ -762,8 +782,8 @@ Tasks persist across page reloads via localStorage. The home page
       <li><strong>No verification step</strong> &mdash; the last task should be &ldquo;manually verify against spec criteria&rdquo; or similar. If it's missing, add it.</li>
     </ul>
 
-    <h2><span class="h2-num">6.</span><code>/implement</code> (20 minutes)</h2>
-<pre><code>/implement</code></pre>
+    <h2><span class="h2-num">6.</span><code>/speckit.implement</code> (20 minutes)</h2>
+<pre><code>/speckit.implement</code></pre>
     <p>The agent works through the task list, generating code for each task. Depending on your agent, it may:</p>
     <ul>
       <li>Stop after each task and ask for confirmation (Claude Code default)</li>
@@ -780,7 +800,7 @@ Tasks persist across page reloads via localStorage. The home page
     </ul>
 
     <h3>6.2 Run the app</h3>
-    <p>Once <code>/implement</code> finishes:</p>
+    <p>Once <code>/speckit.implement</code> finishes:</p>
 <pre><code>npm run dev</code></pre>
     <p>Open <a href="http://localhost:3000">http://localhost:3000</a>. Try:</p>
     <ol>
@@ -801,8 +821,8 @@ Tasks persist across page reloads via localStorage. The home page
     <h2><span class="h2-num">7.</span>Reflection (10 minutes)</h2>
     <p>Spend 10 minutes writing answers to these in a <code>REFLECTION.md</code> file in your project root. You don't need to share these with anyone, but writing them down is the difference between learning the practice and just executing the steps.</p>
     <ol>
-      <li><strong>Where did you make decisions during <code>/specify</code> that the agent would have made wrongly if you'd left them implicit?</strong></li>
-      <li><strong>What got caught at <code>/plan</code> review that would have been more painful to fix at <code>/implement</code>?</strong> (The hydration handling is the obvious candidate &mdash; was there anything else?)</li>
+      <li><strong>Where did you make decisions during <code>/speckit.specify</code> that the agent would have made wrongly if you'd left them implicit?</strong></li>
+      <li><strong>What got caught at <code>/speckit.plan</code> review that would have been more painful to fix at <code>/speckit.implement</code>?</strong> (The hydration handling is the obvious candidate &mdash; was there anything else?)</li>
       <li><strong>Did the agent ever invent scope? How did you notice?</strong></li>
       <li><strong>How does this feel compared to &ldquo;just write a prompt and let the agent code&rdquo;? Faster? Slower? Different in kind?</strong></li>
       <li><strong>Of the conventions in your Constitution, which ones did the agent honor without prompting, and which did you have to reinforce?</strong></li>
@@ -825,8 +845,8 @@ Tasks persist across page reloads via localStorage. The home page
     <h3>&ldquo;The phases blur into each other&rdquo;</h3>
     <p>Especially common with Claude Code, which can helpfully (or annoyingly, depending on context) do all four phases in one pass when you give it a sufficiently specific request. To prevent this, run the slash commands one at a time and review the artifact between each. The whole point of the workflow is the review checkpoints.</p>
 
-    <h3>&ldquo;I want to skip /tasks&rdquo;</h3>
-    <p>You can. Some teams find <code>/specify</code> + <code>/plan</code> + direct implementation works fine for small features. The argument for keeping <code>/tasks</code> is that it forces explicit task-sizing decisions. The argument against is overhead.</p>
+    <h3>&ldquo;I want to skip /speckit.tasks&rdquo;</h3>
+    <p>You can. Some teams find <code>/speckit.specify</code> + <code>/speckit.plan</code> + direct implementation works fine for small features. The argument for keeping <code>/speckit.tasks</code> is that it forces explicit task-sizing decisions. The argument against is overhead.</p>
     <p>For this lab, do all four. After the lab, decide for your team.</p>
 
     <h3>&ldquo;The hydration warning won't go away&rdquo;</h3>

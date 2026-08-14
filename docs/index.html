@@ -57,6 +57,17 @@
   header.site img.logo { height: 30px; width: auto; opacity: .95; }
   header.site .nav a { color: var(--muted); font-size: 14px; margin-left: 20px; }
   header.site .nav a:hover { color: var(--text); }
+  /* The course handbook: a pill so it reads as a destination, not another anchor. */
+  header.site .nav a.nav-learn {
+    color: var(--accent-2); border: 1px solid var(--border);
+    border-radius: 999px; padding: 5px 13px;
+    transition: color .15s ease, border-color .15s ease, background .15s ease;
+  }
+  header.site .nav a.nav-learn:hover {
+    color: var(--text); border-color: var(--accent-2);
+    background: rgba(167,139,250,0.10); text-decoration: none;
+  }
+  header.site .nav a.nav-learn:focus-visible { outline: 2px solid var(--accent-2); outline-offset: 2px; }
 
   .hero { padding: 56px 0 34px; text-align: center; }
   .eyebrow {
@@ -250,6 +261,7 @@
       <a href="https://github.com/xavient/spectra">GitHub</a>
       <a href="#install">Install</a>
       <a href="#agents">Agents</a>
+      <a class="nav-learn" href="e-learning/index.html">E-Learning</a>
     </nav>
   </header>
 
@@ -529,7 +541,7 @@ spectra cli uninstall   # remove the command from this machine</code></pre>
       .then(function (data) {
         var ext = data && data.extensions && data.extensions.spectra;
         if (!ext || !ext.version) return;
-        label.textContent = "Extension v" + ext.version;
+        label.textContent = "Agents v" + ext.version;
         pill.classList.add("show");
         if (inline) inline.textContent = "v" + ext.version;
       })

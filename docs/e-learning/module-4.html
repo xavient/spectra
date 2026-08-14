@@ -3,32 +3,36 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Module 4 &mdash; Brownfield Lab</title>
+<title>Module 4 &mdash; Brownfield Lab &middot; SDD with SPECTRA</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,400;1,9..144,500&family=JetBrains+Mono:wght@400;500;600&family=Mona+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #FAF9F5;
-    --bg-elev: #F4F1E8;
-    --text: #1A1614;
-    --text-muted: #6B6357;
-    --text-subtle: #94897A;
-    --accent: #B45309;
-    --accent-soft: rgba(180, 83, 9, 0.09);
-    --accent-line: rgba(180, 83, 9, 0.25);
-    --border: #E8E2D4;
-    --border-strong: #D4CCB8;
-    --code-bg: #1A1614;
-    --code-text: #F0EAD8;
-    --code-comment: #94897A;
-    --code-accent: #F0B070;
-    --success: #166534;
-    --success-soft: rgba(22, 101, 52, 0.08);
-    --error: #991B1B;
-    --error-soft: rgba(153, 27, 27, 0.06);
-    --shadow-sm: 0 1px 2px rgba(26, 22, 20, 0.04);
-    --shadow-md: 0 4px 12px rgba(26, 22, 20, 0.06);
+    /* Palette shared with the SPECTRA landing page (docs/index.html). */
+    --bg: #0c0a16;
+    --bg-2: #120f22;
+    --bg-elev: rgba(255, 255, 255, 0.04);
+    --surface: rgba(8, 6, 18, 0.55);
+    --text: #e9e7f2;
+    --text-muted: #a3a0b5;
+    --text-subtle: #8b879e;
+    --accent: #a78bfa;
+    --accent-2: #c4b5fd;
+    --accent-soft: rgba(167, 139, 250, 0.10);
+    --accent-line: rgba(167, 139, 250, 0.35);
+    --border: rgba(167, 139, 250, 0.20);
+    --border-strong: rgba(167, 139, 250, 0.34);
+    --code-bg: #0d0b17;
+    --code-text: #ded7f5;
+    --code-comment: #8d88a8;
+    --code-accent: #c4b5fd;
+    --success: #34d399;
+    --success-soft: rgba(52, 211, 153, 0.10);
+    --error: #fb7185;
+    --error-soft: rgba(251, 113, 133, 0.10);
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+    --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.45);
     --max-w: 720px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -39,12 +43,28 @@
     font-size: 17px;
     line-height: 1.7;
     color: var(--text);
-    background: var(--bg);
+    background:
+      radial-gradient(1100px 520px at 78% -10%, rgba(167,139,250,0.18), transparent 60%),
+      radial-gradient(900px 480px at 10% 6%, rgba(124,92,222,0.12), transparent 55%),
+      linear-gradient(180deg, var(--bg-2), var(--bg));
+    background-attachment: fixed;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
   }
+  /* Faint grid overlay, matching the SPECTRA landing page. */
+  body::before {
+    content: "";
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(167,139,250,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(167,139,250,0.05) 1px, transparent 1px);
+    background-size: 46px 46px;
+    -webkit-mask-image: radial-gradient(circle at 50% 0%, #000 0%, transparent 75%);
+    mask-image: radial-gradient(circle at 50% 0%, #000 0%, transparent 75%);
+  }
   main {
+    position: relative; z-index: 1;
     max-width: var(--max-w);
     margin: 0 auto;
     padding: 64px 28px 120px;
@@ -119,12 +139,13 @@
     font-family: 'JetBrains Mono', ui-monospace, monospace;
     font-size: 0.86em; background: var(--bg-elev);
     border: 1px solid var(--border); padding: 1px 6px;
-    border-radius: 4px; color: var(--text); font-weight: 500;
+    border-radius: 4px; color: var(--code-text); font-weight: 500;
   }
   /* Code blocks */
   .code-block { position: relative; margin: 22px 0 26px; }
   pre {
     background: var(--code-bg); color: var(--code-text);
+    border: 1px solid var(--border);
     padding: 18px 20px; border-radius: 8px; overflow-x: auto;
     font-family: 'JetBrains Mono', ui-monospace, monospace;
     font-size: 14px; line-height: 1.6; box-shadow: var(--shadow-sm);
@@ -135,8 +156,8 @@
   }
   .copy-btn {
     position: absolute; top: 10px; right: 10px;
-    background: rgba(240, 234, 216, 0.08);
-    border: 1px solid rgba(240, 234, 216, 0.18);
+    background: rgba(167, 139, 250, 0.12);
+    border: 1px solid rgba(167, 139, 250, 0.26);
     color: var(--code-text); font-family: 'Mona Sans', sans-serif;
     font-size: 11px; font-weight: 500; letter-spacing: 0.04em;
     text-transform: uppercase; padding: 5px 10px;
@@ -144,8 +165,8 @@
     transition: all 0.15s ease;
   }
   .code-block:hover .copy-btn { opacity: 1; }
-  .copy-btn:hover { background: rgba(240, 234, 216, 0.18); }
-  .copy-btn.copied { background: rgba(34, 197, 94, 0.2); border-color: rgba(34, 197, 94, 0.4); }
+  .copy-btn:hover { background: rgba(167, 139, 250, 0.24); }
+  .copy-btn.copied { background: rgba(52, 211, 153, 0.20); border-color: rgba(52, 211, 153, 0.45); }
   /* Blockquotes & callouts */
   blockquote {
     margin: 24px 0; padding: 16px 22px;
@@ -185,7 +206,7 @@
     display: grid; grid-template-columns: 48px 1fr auto auto;
     gap: 18px; align-items: center;
     padding: 16px 22px; border-bottom: 1px solid var(--border);
-    background: var(--bg);
+    background: var(--surface);
   }
   .module-row:last-child { border-bottom: none; }
   .module-row.featured {
@@ -222,7 +243,7 @@
   .quiz-header {
     padding: 16px 22px;
     border-bottom: 1px solid var(--border);
-    background: var(--bg);
+    background: var(--surface);
     display: flex; align-items: center; justify-content: space-between;
   }
   .quiz-title {
@@ -238,7 +259,7 @@
     display: flex; align-items: flex-start; gap: 10px;
     padding: 11px 14px;
     border: 1px solid var(--border); border-radius: 6px;
-    background: var(--bg); cursor: pointer;
+    background: var(--surface); cursor: pointer;
     font-size: 15px; line-height: 1.45;
     transition: all 0.15s ease;
     text-align: left;
@@ -275,8 +296,8 @@
     display: none;
   }
   .quiz-feedback.show { display: block; }
-  .quiz-feedback.correct { background: var(--success-soft); border: 1px solid rgba(22, 101, 52, 0.25); }
-  .quiz-feedback.incorrect { background: var(--error-soft); border: 1px solid rgba(153, 27, 27, 0.18); }
+  .quiz-feedback.correct { background: var(--success-soft); border: 1px solid rgba(52, 211, 153, 0.30); }
+  .quiz-feedback.incorrect { background: var(--error-soft); border: 1px solid rgba(251, 113, 133, 0.30); }
   .quiz-feedback-title { font-weight: 600; margin-bottom: 4px; }
   .quiz-feedback.correct .quiz-feedback-title { color: var(--success); }
   .quiz-feedback.incorrect .quiz-feedback-title { color: var(--error); }
@@ -284,7 +305,7 @@
   .quiz-open-toggle {
     margin-top: 8px;
     padding: 9px 16px;
-    background: var(--bg); border: 1px solid var(--border);
+    background: var(--surface); border: 1px solid var(--border);
     border-radius: 6px; cursor: pointer;
     font-family: inherit; font-size: 14px; font-weight: 500;
     color: var(--text-muted);
@@ -332,7 +353,7 @@
     display: none;
     padding: 4px 22px 22px;
     border-top: 1px solid var(--border);
-    background: var(--bg);
+    background: var(--surface);
   }
   .reveal.open .reveal-content { display: block; }
   .reveal-content > *:first-child { margin-top: 18px; }
@@ -362,7 +383,7 @@
     text-decoration: none; border: none;
     transition: background 0.15s ease;
   }
-  .lab-card-link:hover { background: #92400E; border-bottom: none; }
+  .lab-card-link:hover { background: var(--accent-2); border-bottom: none; }
   .lab-card-link.placeholder {
     background: var(--bg-elev); color: var(--text-muted);
     border: 1px dashed var(--border-strong); cursor: not-allowed;
@@ -392,7 +413,7 @@
     content: ""; position: absolute; left: 0; top: 0.45em;
     width: 14px; height: 14px;
     border: 1.5px solid var(--border-strong); border-radius: 3px;
-    background: var(--bg);
+    background: var(--surface);
   }
   /* TOC at top of module pages (within-page only — no cross-page links) */
   .toc {
@@ -445,7 +466,7 @@
   /* Course navigation bar (shared) */
   .course-nav {
     position: sticky; top: 0; z-index: 50;
-    background: rgba(250, 249, 245, 0.85);
+    background: rgba(12, 10, 22, 0.82);
     -webkit-backdrop-filter: saturate(180%) blur(12px);
     backdrop-filter: saturate(180%) blur(12px);
     border-bottom: 1px solid var(--border);
@@ -481,7 +502,7 @@
     font-size: 13px; font-weight: 600;
     color: var(--text-muted); text-decoration: none;
     border: 1px solid var(--border); border-radius: 6px;
-    background: var(--bg);
+    background: var(--surface);
     transition: all 0.15s ease;
   }
   .course-nav-modules a:hover {
@@ -521,7 +542,7 @@
   }
   .mod-nav-next .mod-nav-label { color: var(--bg); opacity: 0.82; }
   .mod-nav-next .mod-nav-title { font-weight: 600; font-size: 15px; color: var(--bg); }
-  .mod-nav-next:hover { background: #92400E; }
+  .mod-nav-next:hover { background: var(--accent-2); }
   @media (max-width: 600px) {
     .course-nav-inner { padding: 10px 16px; }
     .course-nav-brand-text { display: none; }
@@ -532,14 +553,14 @@
 <nav class="course-nav">
   <div class="course-nav-inner">
     <a class="course-nav-brand" href="index.html">
-      <span class="course-nav-brand-mark">SDD</span>
-      <span class="course-nav-brand-text">Course handbook</span>
+      <span class="course-nav-brand-mark">SPECTRA</span>
+      <span class="course-nav-brand-text">SDD Learning</span>
     </a>
     <div class="course-nav-modules">
-      <a href="index.html" class="course-nav-home" title="Course handbook">Home</a>
+      <a href="index.html" class="course-nav-home" title="SDD with SPECTRA — Learning">Home</a>
       <a href="module-1.html" title="Module 1 — SDD Foundations">1</a>
       <a href="module-2.html" title="Module 2 — Anatomy of a Good Spec">2</a>
-      <a href="module-3.html" title="Module 3 — Greenfield Lab — Spec Kit from Scratch">3</a>
+      <a href="module-3.html" title="Module 3 — Greenfield Lab — SPECTRA from Scratch">3</a>
       <a href="module-4.html" title="Module 4 — Brownfield Lab — Add “Due Date” ★" class="is-active">4</a>
       <a href="module-5.html" title="Module 5 — Best Practices &amp; Pitfalls">5</a>
       <a href="module-6.html" title="Module 6 — Quality, Testing &amp; Team Collaboration">6</a>
@@ -551,7 +572,7 @@
   <header class="hero">
     <div class="hero-eyebrow">Module 4 &middot; the centerpiece</div>
     <h1>Brownfield Lab &mdash; Add &ldquo;Due Date&rdquo; to the To-Do App</h1>
-    <p class="hero-lede">Apply Spec Kit to an existing codebase using the incremental-spec pattern. Author a Constitution by reading code, distinguish convention from cruft, and spec only the area of change &mdash; never the whole system.</p>
+    <p class="hero-lede">Apply SPECTRA to an existing codebase using the incremental-spec pattern. Author a Constitution by reading code, distinguish convention from cruft, and spec only the area of change &mdash; never the whole system.</p>
     <div class="meta">
       <div class="meta-item">
         <span class="meta-label">Time</span>
@@ -563,7 +584,7 @@
       </div>
       <div class="meta-item">
         <span class="meta-label">Prerequisites</span>
-        <span class="meta-value">Modules 1&ndash;3; Spec Kit installed</span>
+        <span class="meta-value">Modules 1&ndash;3; SPECTRA installed</span>
       </div>
     </div>
   </header>
@@ -631,13 +652,13 @@ npm run dev</code></pre>
     <p>This list is the heart of the brownfield work. Your Constitution will encode the conventions. The cruft you'll either tolerate (out of scope), fix during the work (in scope), or note for later (a follow-up spec). But you have to <em>decide</em>, which means you have to name them first.</p>
     <blockquote><strong>A hint, not a spoiler.</strong> The codebase is small but it does have at least three pieces of intentional cruft. If you find none, you're skimming. If you &ldquo;find&rdquo; ten, you may be classifying conventions as cruft. The right number is small.</blockquote>
 
-    <h2><span class="h2-num">2.</span>Initialize Spec Kit on the brownfield repo (10 min)</h2>
+    <h2><span class="h2-num">2.</span>Install SPECTRA on the brownfield repo (10 min)</h2>
     <p>Now the brownfield friction starts. Spec Kit was designed greenfield-first, so initializing it on an existing repo requires care.</p>
 
     <h3>2.1 Initialize</h3>
-<pre><code>specify init --here</code></pre>
-    <p>When prompted for an AI agent, pick the same one you used in Module 3.</p>
-    <p>Spec Kit creates <code>.specify/</code>, <code>memory/constitution.md</code>, and the agent config directory. Verify your existing files (<code>app/</code>, <code>lib/</code>, <code>package.json</code>, etc.) are untouched.</p>
+<pre><code>spectra install</code></pre>
+    <p>Same command as Module 3. When prompted for an AI agent, pick the same one you used there, and restart the agent afterwards so it picks up the commands.</p>
+    <p>This creates <code>.specify/</code>, <code>memory/constitution.md</code>, and the agent config directory. Verify your existing files (<code>app/</code>, <code>lib/</code>, <code>package.json</code>, etc.) are untouched &mdash; nothing in the setup rewrites your source.</p>
 
     <h3>2.2 The known limitation</h3>
     <p>A heads-up that's worth internalizing now rather than discovering at a bad moment:</p>
@@ -731,11 +752,11 @@ that appears in only one place. Aim for under 30 lines.</code></pre>
     </ul>
     <p>You don't have to be right. The point is to <em>decide</em>, then revise as you learn more. A Constitution is a living document.</p>
 
-    <h2><span class="h2-num">4.</span><code>/specify</code> &mdash; but only for the area of change (30 min)</h2>
+    <h2><span class="h2-num">4.</span><code>/speckit.specify</code> &mdash; but only for the area of change (30 min)</h2>
     <p>This is where brownfield SDD diverges most from greenfield. <strong>You are not specifying the whole to-do app.</strong> You are specifying <em>the due-date addition</em>. The existing app is context, not subject.</p>
 
-    <h3>4.1 Run /specify</h3>
-<pre><code>/specify
+    <h3>4.1 Run /speckit.specify</h3>
+<pre><code>/speckit.specify
 
 Add a "due date" field to to-do items. The field is required when
 creating a task: the user picks a date that must be in the future
@@ -795,8 +816,8 @@ Build on the existing patterns documented in the Constitution.</code></pre>
     <h3>4.3 The spec smell to watch for</h3>
     <p>If your spec mentions specific component file names, function signatures, or Tailwind class strings, you've drifted into the plan. Pull those out. The spec describes behavior; the plan describes implementation. The Module 2 worked example shows the difference if you need a refresher.</p>
 
-    <h2><span class="h2-num">5.</span><code>/plan</code> (20 min)</h2>
-<pre><code>/plan</code></pre>
+    <h2><span class="h2-num">5.</span><code>/speckit.plan</code> (20 min)</h2>
+<pre><code>/speckit.plan</code></pre>
     <p>Now you make implementation decisions, anchored to the existing codebase.</p>
 
     <h3>5.1 What the plan should describe</h3>
@@ -819,8 +840,8 @@ Build on the existing patterns documented in the Constitution.</code></pre>
       <li><strong>Custom date pickers or libraries.</strong> Anything that introduces a new dependency (<code>react-datepicker</code>, <code>date-fns</code>, etc.) is overkill. Native <code>&lt;input type="date"&gt;</code> and string math are enough.</li>
     </ul>
 
-    <h2><span class="h2-num">6.</span><code>/tasks</code> (10 min)</h2>
-<pre><code>/tasks</code></pre>
+    <h2><span class="h2-num">6.</span><code>/speckit.tasks</code> (10 min)</h2>
+<pre><code>/speckit.tasks</code></pre>
     <p>The agent breaks the plan into discrete tasks. A reasonable task list might look like:</p>
     <ol>
       <li>Extend the <code>Todo</code> type in <code>lib/storage.ts</code> to include an optional <code>dueDate</code> field.</li>
@@ -834,8 +855,8 @@ Build on the existing patterns documented in the Constitution.</code></pre>
     </ol>
     <p>That's about 8 tasks for an afternoon's work. If your agent produces 4 mega-tasks or 25 micro-tasks, ask it to re-decompose.</p>
 
-    <h2><span class="h2-num">7.</span><code>/implement</code> (45&ndash;60 min)</h2>
-<pre><code>/implement</code></pre>
+    <h2><span class="h2-num">7.</span><code>/speckit.implement</code> (45&ndash;60 min)</h2>
+<pre><code>/speckit.implement</code></pre>
     <p>The longest phase. The agent works through tasks, generating code. Watch for the same pitfalls as in Module 3, plus brownfield-specific ones.</p>
 
     <h3>7.1 Brownfield-specific things to watch for</h3>
@@ -901,7 +922,7 @@ Build on the existing patterns documented in the Constitution.</code></pre>
       <li>The cruft list &mdash; did you find the three pieces planted in the codebase? Did you find others that turned out to be conventions on closer inspection?</li>
       <li>How tempted were you to spec the <em>entire</em> app? How did you push back against that temptation?</li>
       <li>The agent's first-draft spec &mdash; what did it over-include? What did it miss?</li>
-      <li>The first time during <code>/implement</code> that you had to choose between &ldquo;fix the code&rdquo; and &ldquo;fix the spec&rdquo; &mdash; what was the situation, and which did you pick? Why?</li>
+      <li>The first time during <code>/speckit.implement</code> that you had to choose between &ldquo;fix the code&rdquo; and &ldquo;fix the spec&rdquo; &mdash; what was the situation, and which did you pick? Why?</li>
       <li>What would have happened to this feature if you'd skipped the spec entirely and just told the agent &ldquo;add a due date field&rdquo;? What problems would you have caught at code review instead of spec review?</li>
       <li>What's the smallest change to your team's current workflow that would let you do this kind of brownfield SDD on a real Jira ticket next week?</li>
     </ol>
