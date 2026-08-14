@@ -11,7 +11,7 @@
 | Version           | 0.1.0                                                                                                   |
 | Created           | 2026-06-24                                                                                              |
 | Last updated      | 2026-06-24                                                                                              |
-| Related documents | `docs/onePager.html` (SDLC Phase 00 — Foundation agents), `.specify/memory/constitution.md`, `/speckit-constitution` |
+| Related documents | `docs/capability-brief.html` (SDLC Phase 00 — Foundation agents), `.specify/memory/constitution.md`, `/speckit-constitution` |
 
 ## 1. Executive Summary
 
