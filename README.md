@@ -140,6 +140,70 @@ Spec Kit's own core commands — Spectra layers on top of them.
 Full details for every agent — what it does, its arguments, and how to run it — live in
 **[AGENTS_LIST.md](AGENTS_LIST.md)**.
 
+## Security, policy, and compliance
+
+**Spectra introduces no new trust boundary.** It is not another AI vendor, not another model, and not
+another data path. Spectra ships as *instructions* — Markdown command files that Spec Kit registers
+with the AI coding agent your organization has already approved. Those instructions are executed **by
+that agent**, inside your existing environment. Whatever governs the agent therefore already governs
+Spectra.
+
+### Your controls, inherited unchanged
+
+| Your existing control | How it applies to Spectra |
+|---|---|
+| Approved AI vendor and model | Unchanged — Spectra adds no model and makes no inference calls of its own. |
+| Data handling, residency, and retention | Unchanged — prompts and source travel the agent's existing path, never a Spectra one. |
+| Identity, SSO, and access control | Unchanged — Spectra holds no credentials of its own. `create-pr` uses your existing `git` / `gh` login, and confirms before any push. |
+| Network egress, proxy, and DLP | Unchanged — Spectra opens no channel the agent does not already use. |
+| Audit and logging | Unchanged — agent activity is captured exactly as it was before. |
+
+Because those controls sit on the *tool* rather than on Spectra, **they cascade automatically**. There
+is no second policy to author, no second vendor assessment to run, and no path by which Spectra can
+operate outside the boundary the agent is already held to.
+
+### The same holds for any agent
+
+The model is deliberately tool-agnostic. A team standardized on **Claude** gets agentic SDLC coverage
+under the rules already approved for Claude. A client running **Kiro**, **Gemini**, **Copilot**,
+**Cursor**, or any other agent Spec Kit supports gets the same capabilities under *their* approvals.
+
+Commands are authored once in Spec Kit's generic format and translated into each agent's native form
+at install time, so the governing tool changes while Spectra does not. Governance travels with the
+tool the organization chose — which is precisely why adopting Spectra does not reopen a compliance
+review.
+
+### What Spectra adds on top
+
+Inheriting the perimeter is the floor, not the ceiling. Spectra is also built to make policy
+*enforceable* rather than aspirational:
+
+- **Standards encoded once.** The Guardrails agent writes your coding, security, and architecture
+  standards into the project constitution, and every downstream agent inherits them — so a standard
+  is applied by construction instead of by memory.
+- **A human gate at every phase.** No phase advances without explicit approval. AI drafts and builds;
+  people decide.
+- **Traceability by default.** Spec, plan, tasks, and code stay linked in one shared context, so any
+  change can be traced back to the intent that authorized it.
+- **Dedicated compliance agents.** The roster covers GDPR, HIPAA, SOC 2, PCI-DSS, ISO 27001/27701,
+  SOX, the EU AI Act, Canadian privacy (PIPEDA / PHIPA / Law 25), FDA 21 CFR Part 11 / IEC 62304, and
+  WCAG. **Most are still under development** — check the [status column](#agents) before depending on
+  one.
+
+### Supply chain
+
+- **Markdown only.** The published extension is four command files, one template, and its licence,
+  notice, and changelog. No scripts, no binaries, no post-install hooks. Read it yourself at
+  [`spectra/`](spectra/) or inside [`docs/packages/spectra.zip`](docs/packages/spectra.zip).
+- **No telemetry.** The `spectra` command reports nothing about you, your code, or your project. Its
+  only network calls are bodyless `GET` requests to `api.github.com` and `raw.githubusercontent.com`,
+  reading the published catalog, agent roster, and latest release number. Set
+  `SPECTRA_NO_UPDATE_CHECK=1` (or pass `--no-update-check`) to switch the release check off entirely.
+- **No credentials to grant.** The catalog is public — no GitHub login, no token, no `gh` setup.
+- **Auditable and pinnable.** Apache-2.0 with the source in the open, and every extension pins the
+  Spec Kit version it was tested against (`requires.speckit_version`). Commit
+  `.specify/extension-catalogs.yml` and the resolved source travels with the repository.
+
 ## Installation
 
 Spectra installs **into** a Spec Kit project, and its catalog is **public** — there's no GitHub login

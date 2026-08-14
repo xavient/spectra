@@ -101,6 +101,52 @@
     header.site .nav .nav-sep{display:none}
   }
 
+  /* ---------- sticky top stack: site bar + section rail ---------- */
+  /* Both bars ride in one sticky container so the rail always sits directly
+     under the site bar without having to hard-code the site bar's height —
+     which changes when the header wraps at 720px. .sitebar keeps its own
+     sticky declaration untouched (it's a no-op inside a sticky parent) so the
+     header CSS stays a straight copy of the landing page's. */
+  .topstack{position:sticky;top:0;z-index:60}
+
+  /* ---------- section rail ---------- */
+  .secnav{
+    background:rgba(15,10,22,0.90);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line-soft);
+  }
+  /* Same measure as the site bar above it, so the first item lines up with the logo. */
+  .secnav .wrap{max-width:960px;padding:0 22px}
+  .secnav-track{
+    display:flex;align-items:stretch;gap:2px;
+    overflow-x:auto;overflow-y:hidden;
+    scrollbar-width:none;-ms-overflow-style:none;scroll-behavior:smooth;
+  }
+  .secnav-track::-webkit-scrollbar{display:none}
+  .secnav a.sn{
+    display:inline-flex;align-items:center;gap:8px;flex:none;
+    padding:11px 12px 9px;white-space:nowrap;text-decoration:none;
+    color:var(--text-faint);border-bottom:2px solid transparent;
+    transition:color .18s ease,border-color .18s ease;
+  }
+  .secnav a.sn .sn-num{
+    font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;
+    color:var(--text-faint);transition:color .18s ease;
+  }
+  .secnav a.sn .sn-label{font-size:13.5px}
+  .secnav a.sn:hover{color:var(--text)}
+  .secnav a.sn:hover .sn-num{color:var(--purple)}
+  .secnav a.sn[aria-current="true"]{color:var(--text);border-bottom-color:var(--purple)}
+  .secnav a.sn[aria-current="true"] .sn-num{color:var(--purple)}
+  .secnav a.sn:focus-visible{outline:2px solid var(--purple);outline-offset:-3px;border-radius:7px}
+  /* Anchor jumps land below both sticky bars rather than behind them.
+     --stack-h is measured and kept current by the script at the end of the file. */
+  section[id]{scroll-margin-top:calc(var(--stack-h, 96px) + 14px)}
+  @media(max-width:560px){
+    .secnav a.sn{padding:10px 10px 8px;gap:6px}
+    .secnav a.sn .sn-label{font-size:12.5px}
+  }
+
   /* ---------- hero ---------- */
   .hero{position:relative;padding:68px 0 0;overflow:hidden}
   .hero::before{
@@ -503,12 +549,14 @@
   }
   @media(prefers-reduced-motion:reduce){
     .reveal{opacity:1;transform:none;transition:none}
+    html,.secnav-track{scroll-behavior:auto}
   }
 </style>
 </head>
 <body>
 
-<!-- TOP BAR -->
+<!-- TOP BAR + SECTION RAIL (one sticky stack) -->
+<div class="topstack">
 <div class="sitebar">
   <div class="wrap">
     <header class="site">
@@ -526,6 +574,20 @@
       </nav>
     </header>
   </div>
+</div>
+
+<nav class="secnav" aria-label="Brief sections">
+  <div class="wrap">
+    <div class="secnav-track">
+      <a class="sn" href="#problem"><span class="sn-num">01</span><span class="sn-label">Problem</span></a>
+      <a class="sn" href="#solution"><span class="sn-num">02</span><span class="sn-label">Solution</span></a>
+      <a class="sn" href="#value"><span class="sn-num">03</span><span class="sn-label">Value</span></a>
+      <a class="sn" href="#differentiators"><span class="sn-num">04</span><span class="sn-label">How it works</span></a>
+      <a class="sn" href="#ai-dlc"><span class="sn-num">05</span><span class="sn-label">AI-DLC</span></a>
+      <a class="sn" href="#security"><span class="sn-num">06</span><span class="sn-label">Security</span></a>
+    </div>
+  </div>
+</nav>
 </div>
 
 <!-- HERO -->
@@ -548,7 +610,7 @@
 </header>
 
 <!-- 01 PROBLEM -->
-<section class="alt reveal">
+<section class="alt reveal" id="problem">
   <div class="wrap">
     <div class="sec-head"><span class="sec-num">01</span><span class="sec-kicker">Problem statement</span></div>
     <h2 class="title">AI-assisted isn't AI-native. The difference is context</h2>
@@ -592,7 +654,7 @@
 </section>
 
 <!-- 02 VALUE -->
-<section class="reveal">
+<section class="reveal" id="solution">
   <div class="wrap">
     <div class="sec-head"><span class="sec-num">02</span><span class="sec-kicker">The solution</span></div>
     <h2 class="title">SPECTRA keeps the context intact &mdash; end-to-end</h2>
@@ -623,7 +685,7 @@
 </section>
 
 <!-- 03 VALUE PROPOSITION -->
-<section class="alt reveal">
+<section class="alt reveal" id="value">
   <div class="wrap">
     <div class="sec-head"><span class="sec-num">03</span><span class="sec-kicker">Value proposition</span></div>
 
@@ -678,7 +740,7 @@
 </section>
 
 <!-- 04 DIFFERENTIATORS -->
-<section class="reveal">
+<section class="reveal" id="differentiators">
   <div class="wrap">
     <div class="sec-head"><span class="sec-num">04</span><span class="sec-kicker">How it works & DIFFERENTIATORS</span></div>
     <h2 class="title">Spec-Driven Development</h2>
@@ -961,7 +1023,7 @@
 </section>
 
 <!-- 05 AI-DLC PROCESS COMPATIBLE -->
-<section class="alt reveal">
+<section class="alt reveal" id="ai-dlc">
   <div class="wrap">
     <div class="sec-head"><span class="sec-num">05</span><span class="sec-kicker">AI-DLC process compatible</span></div>
     <h2 class="title">Built to move teams from SDLC to AI-DLC</h2>
@@ -1077,6 +1139,70 @@
   </div>
 </section>
 
+<!-- 06 SECURITY, POLICY & COMPLIANCE -->
+<section class="reveal" id="security">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">06</span><span class="sec-kicker">Security, policy &amp; compliance</span></div>
+    <h2 class="title">No new trust boundary</h2>
+    <p class="lead">SPECTRA is not another AI vendor, another model, or another data path. It ships as <b>instructions</b> &mdash; command files that Spec Kit registers with the AI coding agent your organization has <b>already approved</b>, executed by that agent inside your existing environment. Whatever governs the agent therefore already governs SPECTRA.</p>
+
+    <div class="reframe">
+      <span class="q">&ldquo;</span>
+      <p>Because those controls sit on the <b>tool</b> rather than on SPECTRA, they <b>cascade automatically</b>. There is no second policy to author, no second vendor assessment to run, and no path by which SPECTRA can operate outside the boundary the agent is already held to.</p>
+    </div>
+
+    <div class="subsec-head"><h3>Your controls, inherited unchanged</h3><span class="rule"></span></div>
+    <div class="cap-grid">
+      <div class="cap">
+        <div class="ci">VENDOR &amp; MODEL</div>
+        <h4>Unchanged</h4>
+        <p>SPECTRA adds no model and makes no inference calls of its own. The approved vendor remains the only vendor in the loop.</p>
+      </div>
+      <div class="cap">
+        <div class="ci">DATA &amp; RESIDENCY</div>
+        <h4>Unchanged</h4>
+        <p>Prompts and source travel the agent's existing path &mdash; never a SPECTRA one. Handling, residency, and retention rules apply exactly as written.</p>
+      </div>
+      <div class="cap">
+        <div class="ci">IDENTITY &amp; ACCESS</div>
+        <h4>Unchanged</h4>
+        <p>SPECTRA holds no credentials of its own. PR delivery uses your existing Git and GitHub login, and confirms before any push.</p>
+      </div>
+      <div class="cap">
+        <div class="ci">EGRESS &amp; DLP</div>
+        <h4>Unchanged</h4>
+        <p>SPECTRA opens no network channel the agent does not already use, so proxy, egress, and data-loss controls keep their coverage.</p>
+      </div>
+      <div class="cap">
+        <div class="ci">AUDIT &amp; LOGGING</div>
+        <h4>Unchanged</h4>
+        <p>Agent activity is captured exactly as it was before. Nothing moves outside the surface your logging already watches.</p>
+      </div>
+      <div class="cap">
+        <div class="ci">ANY AGENT</div>
+        <h4>Same pattern</h4>
+        <p>Standardized on Claude internally? You get agentic SDLC coverage under the rules already approved for Claude. A client on Kiro, Gemini, Copilot, or Cursor gets the same capabilities under <i>their</i> approvals. Governance travels with the tool the organization chose.</p>
+      </div>
+    </div>
+
+    <div class="subsec-head"><h3>What SPECTRA adds on top</h3><span class="rule"></span></div>
+    <p class="lead" style="margin-top:16px">Inheriting the perimeter is the floor, not the ceiling. SPECTRA is also built to make policy <b>enforceable</b> rather than aspirational.</p>
+    <ul class="biz-list">
+      <li><b>Standards encoded once.</b> The Guardrails agent writes your coding, security, and architecture standards into the project constitution, and every downstream agent inherits them &mdash; so a standard is applied by construction instead of by memory.</li>
+      <li><b>A human gate at every phase.</b> No phase advances without explicit approval. AI drafts and builds; people decide.</li>
+      <li><b>Traceability by default.</b> Spec, plan, tasks, and code stay linked in one shared context, so any change traces back to the intent that authorized it.</li>
+      <li><b>Dedicated compliance agents.</b> The roster covers GDPR, HIPAA, SOC 2, PCI-DSS, ISO 27001/27701, SOX, the EU AI Act, Canadian privacy (PIPEDA / PHIPA / Law 25), FDA 21 CFR Part 11 / IEC 62304, and WCAG &mdash; though most remain <b>under development</b>, as marked in the roster above.</li>
+    </ul>
+
+    <div class="cap-foot">
+      <p><span class="cf-label">Markdown only</span>The published extension is four command files, one template, and its licence, notice, and changelog. No scripts, no binaries, no post-install hooks &mdash; it can be read end to end before anyone installs it.</p>
+      <p><span class="cf-label">No telemetry</span>The <span class="mono">spectra</span> command reports nothing about you, your code, or your project. Its only network calls are read-only requests that fetch the published catalog, agent roster, and latest release number &mdash; and the release check can be switched off entirely.</p>
+      <p><span class="cf-label">Nothing to grant</span>The catalog is public: no vendor login, no access token, no elevated permissions requested at install.</p>
+      <p><span class="cf-label">Auditable &amp; pinnable</span>Apache-2.0 with the source in the open, and every extension pins the Spec Kit version it was tested against. Commit the catalog file and the resolved source travels with the repository.</p>
+    </div>
+  </div>
+</section>
+
 <!-- CLOSE -->
 <section class="close">
   <div class="wrap">
@@ -1181,6 +1307,70 @@
     function loop(now){ draw(now-start); requestAnimationFrame(loop); }
     requestAnimationFrame(loop);
   }
+})();
+
+/* ---- section rail: sticky offset + scroll-spy ---- */
+(function(){
+  var stack = document.querySelector('.topstack');
+  var track = document.querySelector('.secnav-track');
+  var links = Array.prototype.slice.call(document.querySelectorAll('.secnav a.sn'));
+  if(!stack || !track || !links.length) return;
+
+  var targets = links.map(function(a){
+    return document.getElementById(a.getAttribute('href').slice(1));
+  });
+
+  /* Keep --stack-h in step with the real stack height so anchor jumps clear
+     both bars. The site bar changes height when it wraps at 720px. */
+  function measure(){
+    document.documentElement.style.setProperty('--stack-h', stack.offsetHeight + 'px');
+  }
+  measure();
+
+  var current = -1;
+  function activate(i){
+    if(i === current) return;
+    current = i;
+    for(var k=0;k<links.length;k++){
+      if(k === i) links[k].setAttribute('aria-current','true');
+      else links[k].removeAttribute('aria-current');
+    }
+    /* When the rail scrolls horizontally (narrow viewports), pull the active
+       item into view so the highlight is never off-screen. */
+    if(i > -1 && track.scrollWidth > track.clientWidth + 1){
+      var a = links[i];
+      var left = Math.max(0, a.offsetLeft - (track.clientWidth - a.offsetWidth) / 2);
+      if(typeof track.scrollTo === 'function'){ track.scrollTo({left:left, behavior:'smooth'}); }
+      else { track.scrollLeft = left; }
+    }
+  }
+
+  function spy(){
+    /* The section that has most recently passed just under the sticky stack. */
+    var line = stack.offsetHeight + 24;
+    var idx = -1;
+    for(var i=0;i<targets.length;i++){
+      if(targets[i] && targets[i].getBoundingClientRect().top <= line) idx = i;
+    }
+    /* At the very bottom of the page the last section's top may sit above the
+       line while the closing block fills the viewport — keep 06 lit there. */
+    var atEnd = (window.innerHeight + window.pageYOffset) >=
+                (document.documentElement.scrollHeight - 2);
+    if(atEnd) idx = targets.length - 1;
+    activate(idx);
+  }
+
+  var queued = false;
+  function schedule(){
+    if(queued) return;
+    queued = true;
+    requestAnimationFrame(function(){ queued = false; spy(); });
+  }
+
+  window.addEventListener('scroll', schedule, {passive:true});
+  window.addEventListener('resize', function(){ measure(); schedule(); });
+  window.addEventListener('load', function(){ measure(); spy(); });
+  spy();
 })();
 </script>
 
