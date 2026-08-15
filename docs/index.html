@@ -358,19 +358,22 @@
           <div class="tool-group">
             <span class="tool-label">uv</span>
             <span class="step-label"><span class="n">1</span>Check if uv is already installed
-              <small>In the Terminal app. Prints a version number if it's there; says “command not found” if it isn't.</small></span>
+              <small>In the Terminal app. Prints a version number if it’s there; says “command not found” if it isn’t.</small></span>
             <pre><code>uv --version</code></pre>
             <span class="step-label"><span class="n">2</span>Not installed? Install it
               <small>Official standalone installer — no admin rights needed.</small></span>
             <pre><code>curl -LsSf https://astral.sh/uv/install.sh | sh</code></pre>
-            <p class="more">Prefer Homebrew? <code>brew install uv</code>. Afterwards, open a new terminal and re-run <code>uv --version</code> to confirm.</p>
+            <p class="more">Alternatives: <code>brew install uv</code> (Homebrew) · <code>sudo port install uv</code> (MacPorts) · <code>pipx install uv</code> (PyPI). Afterwards, open a new terminal and re-run <code>uv --version</code> to confirm. See the <a href="https://docs.astral.sh/uv/getting-started/installation/">full uv install guide</a> for more options.</p>
           </div>
           <div class="tool-group">
             <span class="tool-label">Git</span>
             <span class="step-label"><span class="n">1</span>Check if Git is already installed
-              <small>In the Terminal app. Prints a version number if it's there; if it isn't, macOS itself offers to install the Xcode Command Line Tools (which include Git) — accept that prompt.</small></span>
+              <small>In the Terminal app. If Git isn’t there, macOS itself prompts you to install the Xcode Command Line Tools (which include Git) — accept that prompt and you’re done.</small></span>
             <pre><code>git --version</code></pre>
-            <p class="more">Prefer Homebrew? <code>brew install git</code>. Afterwards, open a new terminal and re-run <code>git --version</code> to confirm.</p>
+            <span class="step-label"><span class="n">2</span>Not installed and didn’t get the Xcode prompt?
+              <small>Install the Command Line Tools explicitly.</small></span>
+            <pre><code>xcode-select --install</code></pre>
+            <p class="more">Alternatives: <code>brew install git</code> (Homebrew) · download the macOS installer from <a href="https://git-scm.com/download/mac">git-scm.com</a>. Afterwards, open a new terminal and re-run <code>git --version</code> to confirm. See the <a href="https://git-scm.com/book/en/v2/Getting-Started-Installing-Git">official Git install guide</a> for details.</p>
           </div>
         </div>
 
@@ -379,22 +382,22 @@
           <div class="tool-group">
             <span class="tool-label">uv</span>
             <span class="step-label"><span class="n">1</span>Check if uv is already installed
-              <small>In PowerShell. Prints a version number if it's there; errors if it isn't.</small></span>
+              <small>In PowerShell. Prints a version number if it’s there; errors if it isn’t.</small></span>
             <pre><code>uv --version</code></pre>
             <span class="step-label"><span class="n">2</span>Not installed? Install it
               <small>Official standalone installer, run in PowerShell.</small></span>
             <pre><code>powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"</code></pre>
-            <p class="more">Prefer a package manager? <code>winget install --id=astral-sh.uv -e</code> or <code>scoop install main/uv</code>. Afterwards, open a new terminal and re-run <code>uv --version</code> to confirm.</p>
+            <p class="more">Alternatives: <code>winget install --id=astral-sh.uv -e</code> (WinGet) · <code>scoop install main/uv</code> (Scoop) · <code>pipx install uv</code> (PyPI). Afterwards, open a new terminal and re-run <code>uv --version</code> to confirm. See the <a href="https://docs.astral.sh/uv/getting-started/installation/">full uv install guide</a> for more options.</p>
           </div>
           <div class="tool-group">
             <span class="tool-label">Git</span>
             <span class="step-label"><span class="n">1</span>Check if Git is already installed
-              <small>In PowerShell. Prints a version number if it's there; errors if it isn't.</small></span>
+              <small>In PowerShell. Prints a version number if it’s there; errors if it isn’t.</small></span>
             <pre><code>git --version</code></pre>
             <span class="step-label"><span class="n">2</span>Not installed? Install it
-              <small>Official installer via winget.</small></span>
+              <small>Use one of the following options:</small></span>
             <pre><code>winget install --id Git.Git -e</code></pre>
-            <p class="more">No winget? Download it from <a href="https://git-scm.com/download/win">git-scm.com</a>. Afterwards, open a new terminal and re-run <code>git --version</code> to confirm.</p>
+            <p class="more">Alternatives: download the official installer from <a href="https://git-scm.com/download/win">git-scm.com</a> (starts automatically) · <code>choco install git</code> (Chocolatey). Afterwards, open a new terminal and re-run <code>git --version</code> to confirm. See the <a href="https://git-scm.com/book/en/v2/Getting-Started-Installing-Git">official Git install guide</a> for details.</p>
           </div>
         </div>
 
@@ -403,21 +406,22 @@
           <div class="tool-group">
             <span class="tool-label">uv</span>
             <span class="step-label"><span class="n">1</span>Check if uv is already installed
-              <small>Prints a version number if it's there; says “command not found” if it isn't.</small></span>
+              <small>Prints a version number if it’s there; says “command not found” if it isn’t.</small></span>
             <pre><code>uv --version</code></pre>
             <span class="step-label"><span class="n">2</span>Not installed? Install it
               <small>Official standalone installer — installs to <code>~/.local/bin</code>, no root needed.</small></span>
             <pre><code>curl -LsSf https://astral.sh/uv/install.sh | sh</code></pre>
-            <p class="more">Afterwards, open a new terminal and re-run <code>uv --version</code> to confirm.</p>
+            <p class="more">No <code>curl</code>? Use <code>wget -qO- https://astral.sh/uv/install.sh | sh</code>. Alternative: <code>pipx install uv</code> (PyPI). Afterwards, open a new terminal and re-run <code>uv --version</code> to confirm. See the <a href="https://docs.astral.sh/uv/getting-started/installation/">full uv install guide</a> for more options.</p>
           </div>
           <div class="tool-group">
             <span class="tool-label">Git</span>
             <span class="step-label"><span class="n">1</span>Check if Git is already installed
-              <small>Prints a version number if it's there; says “command not found” if it isn't.</small></span>
+              <small>Prints a version number if it’s there; says “command not found” if it isn’t.</small></span>
             <pre><code>git --version</code></pre>
-            <span class="step-label"><span class="n">2</span>Not installed? Install it
-              <small>Debian/Ubuntu. On Fedora use <code>sudo dnf install git</code>; on Arch, <code>sudo pacman -S git</code>.</small></span>
-            <pre><code>sudo apt update &amp;&amp; sudo apt install -y git</code></pre>
+            <span class="step-label"><span class="n">2</span>Not installed? Install it with your package manager
+              <small>Pick the command for your distribution:</small></span>
+            <pre><code>sudo apt install git-all</code></pre>
+            <p class="more">Fedora / RHEL / CentOS: <code>sudo dnf install git-all</code> · Arch: <code>sudo pacman -S git</code> · openSUSE: <code>sudo zypper install git</code>. Afterwards, open a new terminal and re-run <code>git --version</code> to confirm. See the <a href="https://git-scm.com/book/en/v2/Getting-Started-Installing-Git">official Git install guide</a> for details.</p>
           </div>
         </div>
       </div>
@@ -426,62 +430,80 @@
 
   <section class="block" id="install">
     <h2><span class="num">02</span>Install &amp; use</h2>
-    <div class="panel">
-      <ol class="steps">
-        <li>
-          <b>Install Spectra.</b> <span class="os">Run once, from anywhere — this installs the <code>spectra</code> command itself.</span>
-          <pre><code>uv tool install spectra-cli --from git+https://github.com/xavient/spectra</code></pre>
-        </li>
-        <li>
-          <b>Run the install inside your project.</b> <span class="os"><code>cd</code> into the project you want Spectra in, then:</span>
-          <pre><code>spectra install</code></pre>
-          <p class="more">It checks for the Spec Kit CLI (installing it if missing), confirms you're in a Spec Kit project (offering <code>specify init</code> if not), registers the public Spectra catalog, and installs every extension the catalog advertises. Bare <code>spectra</code> just prints the banner and points at <code>--help</code> — <code>install</code> is the verb that changes anything.</p>
-          <div class="callout">When it finishes, <b>restart your AI agent</b> so it picks up the new commands. Then see <a href="#agents">Agents</a> below.</div>
-        </li>
-        <li>
-          <b>Work with your agents.</b> <span class="os">Top-level commands act on the project you're standing in.</span>
-          <pre><code>spectra agent-list   # every agent Spectra offers, from anywhere
-spectra check        # is Spectra installed here?
-spectra version      # are my agents current?
-spectra update       # bring them up to the published version
-spectra uninstall    # remove them from this project</code></pre>
-          <p class="more"><code>spectra agent-list</code> reads the published roster at run time, so a newly published agent shows up without you updating anything.</p>
-        </li>
-        <li>
-          <b>Manage the command itself.</b> <span class="os">Tool operations live under <code>spectra cli</code>, so they can never be confused with your agents.</span>
-          <pre><code>spectra cli version     # the command's own version
-spectra cli update      # update the command via uv
-spectra cli uninstall   # remove the command from this machine</code></pre>
-          <p class="more">The <b>command</b> and the <b>extensions</b> update separately and on their own schedule — you do not need a new <code>spectra</code> version to get new agents. <span class="os">Changed in 5.0.0: <code>--version</code>, <code>--update</code> and <code>--uninstall</code> were removed; run one and it names its replacement.</span></p>
-        </li>
-      </ol>
+    <div class="tabs" data-tabs>
+      <div class="tablist" role="tablist" aria-label="Installation method">
+        <button class="tab" type="button" role="tab" id="tab-installer" aria-controls="panel-installer" aria-selected="true">Installer (recommended)</button>
+        <button class="tab" type="button" role="tab" id="tab-manual" aria-controls="panel-manual" aria-selected="false" tabindex="-1">Manual</button>
+      </div>
+
+      <!-- Installer (recommended) -->
+      <div class="tabpanel" role="tabpanel" id="panel-installer" aria-labelledby="tab-installer">
+        <div class="panel">
+          <ol class="steps" style="counter-reset:s -1">
+            <li>
+              <b>Prerequisites.</b> <span class="os">Make sure you have <b>uv</b> and <b>Git</b> installed. Not sure? <a href="#prereqs">Check the Before you start section</a>.</span>
+            </li>
+            <li>
+              <b>Install Spectra.</b> <span class="os">Run once, from anywhere — this installs the <code>spectra</code> command itself.</span>
+              <pre><code>uv tool install spectra-cli --from git+https://github.com/xavient/spectra</code></pre>
+            </li>
+            <li>
+              <b>Run the install inside your project.</b> <span class="os"><code>cd</code> into the project you want Spectra in, then:</span>
+              <pre><code>spectra install</code></pre>
+              <p class="more">It checks for the Spec Kit CLI (installing it if missing), confirms you’re in a Spec Kit project (offering <code>specify init</code> if not), registers the public Spectra catalog, and installs every extension the catalog advertises. Bare <code>spectra</code> just prints the banner and points at <code>--help</code> — <code>install</code> is the verb that changes anything.</p>
+              <div class="callout">When it finishes, <b>restart your AI agent</b> so it picks up the new commands. Then see <a href="#agents">Agents</a> below.</div>
+            </li>
+            <li>
+                      <b>Work with your agents.</b> <span class="os">Top-level commands act on the project you're standing in.</span>
+                      <pre><code>spectra agent-list   # every agent Spectra offers, from anywhere</code></pre>
+                      <pre><code>spectra check        # is Spectra installed here?</code></pre>
+                      <pre><code>spectra version      # are my agents current?</code></pre>
+                      <pre><code>spectra update       # bring them up to the published version</code></pre>
+                      <pre><code>spectra uninstall    # remove them from this project</code></pre>
+                      <p class="more"><code>spectra agent-list</code> reads the published roster at run time, so a newly published agent shows up without you updating anything.</p>
+                    </li>
+                    <li>
+                      <b>Manage the command itself.</b> <span class="os">Tool operations live under <code>spectra cli</code>, so they can never be confused with your agents.</span>
+                      <pre><code>spectra cli version     # the command's own version</code></pre>
+                      <pre><code>spectra cli update      # update the command via uv</code></pre>
+                      <pre><code>spectra cli uninstall   # remove the command from this machine</code></pre>
+                      <p class="more">The <b>command</b> and the <b>extensions</b> update separately and on their own schedule — you do not need a new <code>spectra</code> version to get new agents. <span class="os">Changed in 5.0.0: <code>--version</code>, <code>--update</code> and <code>--uninstall</code> were removed; run one and it names its replacement.</span></p>
+                    </li>
+          </ol>
+        </div>
+      </div>
+
+      <!-- Manual -->
+      <div class="tabpanel" role="tabpanel" id="panel-manual" aria-labelledby="tab-manual" hidden>
+        <div class="panel">
+          <p class="muted" style="margin:0 0 18px">Prefer copy-paste, or can’t install a tool? Register the public catalog once per project (this marks it install-allowed, so installs resolve by name with no “untrusted source” prompt), then install the extension and restart your agent.</p>
+          <ol class="steps" style="counter-reset:s -1">
+            <li>
+              <b>Prerequisites.</b> <span class="os">Make sure you have <b>uv</b> and <b>Git</b> installed. Not sure? <a href="#prereqs">Check the Before you start section</a>.</span>
+            </li>
+            <li>
+              <b>Install the Spec Kit CLI.</b> <span class="os">Spectra installs into a Spec Kit project, so you need Spec Kit first.</span>
+              <pre><code>uv tool install specify-cli --from git+https://github.com/github/spec-kit.git</code></pre>
+            </li>
+            <li>
+              <b>Register the Spectra catalog.</b> <span class="os">Run inside a Spec Kit project.</span>
+              <pre><code>specify extension catalog add https://raw.githubusercontent.com/xavient/spectra/main/catalog.json --name spectra --priority 5 --install-allowed</code></pre>
+              <p class="more"><code>--install-allowed</code> is required — catalogs are discovery-only by default. Commit the resulting <code>.specify/extension-catalogs.yml</code> so everyone who clones the project inherits the catalog.</p>
+            </li>
+            <li>
+              <b>Install the extension, then restart your agent.</b>
+              <pre><code>specify extension add spectra</code></pre>
+            </li>
+          </ol>
+        </div>
+      </div>
     </div>
   </section>
 
-  <section class="block" id="manual">
-    <h2><span class="num">03</span>Manual setup</h2>
-    <p class="muted">Prefer copy-paste, or can't install a tool? Register the public catalog once per project (this marks it install-allowed, so installs resolve by name with no “untrusted source” prompt), then install the extension and restart your agent.</p>
-    <div class="panel">
-      <ol class="steps">
-        <li>
-          <b>Install the Spec Kit CLI.</b> <span class="os">Spectra installs into a Spec Kit project, so you need Spec Kit first.</span>
-          <pre><code>uv tool install specify-cli --from git+https://github.com/github/spec-kit.git</code></pre>
-        </li>
-        <li>
-          <b>Register the Spectra catalog.</b> <span class="os">Run inside a Spec Kit project.</span>
-          <pre><code>specify extension catalog add https://raw.githubusercontent.com/xavient/spectra/main/catalog.json --name spectra --priority 5 --install-allowed</code></pre>
-          <p class="more"><code>--install-allowed</code> is required — catalogs are discovery-only by default. Commit the resulting <code>.specify/extension-catalogs.yml</code> so everyone who clones the project inherits the catalog.</p>
-        </li>
-        <li>
-          <b>Install the extension, then restart your agent.</b>
-          <pre><code>specify extension add spectra</code></pre>
-        </li>
-      </ol>
-    </div>
-  </section>
+
 
   <section class="block" id="agents">
-    <h2><span class="num">04</span>Agents</h2>
+    <h2><span class="num">03</span>Agents</h2>
     <p class="muted">Spectra ships as a <b>single extension</b> under the unified <code>speckit.spectra.*</code> namespace — install once and get every command. <b>Examples use Claude's trigger form</b> — a leading slash with dashes, like <code>/speckit-spectra-adr</code>. Other agents differ (kiro-cli uses <code>/speckit.spectra.adr</code>); your agent's own command list shows the exact trigger.</p>
     <div class="panel ext">
       <header>
@@ -604,6 +626,20 @@ spectra cli uninstall   # remove the command from this machine</code></pre>
       var codeEl = pre.querySelector("code") || pre;
       var text = codeEl.textContent;
 
+      // Strip trailing shell comments (everything from " #" or leading "# " onward on each line)
+      // so the user copies only the runnable command.
+      var copyable = text.split("\n").map(function (line) {
+        // Match a " #" that is preceded by a non-comment token (i.e. not the first char).
+        // This preserves lines that ARE a comment (like "# heading"), but for command blocks
+        // those don't exist here.
+        var idx = line.indexOf("  #");
+        if (idx > 0) return line.substring(0, idx).trimEnd();
+        // Also handle single-space " #" at end
+        var idx2 = line.indexOf(" #");
+        if (idx2 > 0) return line.substring(0, idx2).trimEnd();
+        return line;
+      }).join("\n").trim();
+
       var wrap = document.createElement("div");
       wrap.className = "codewrap";
       pre.parentNode.insertBefore(wrap, pre);
@@ -618,7 +654,7 @@ spectra cli uninstall   # remove the command from this machine</code></pre>
 
       var timer;
       btn.addEventListener("click", function () {
-        copyText(text).then(function () {
+        copyText(copyable).then(function () {
           clearTimeout(timer);
           btn.classList.add("copied");
           btn.innerHTML = TICK + "<span>Copied</span>";
