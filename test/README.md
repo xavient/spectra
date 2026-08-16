@@ -90,6 +90,90 @@ shell (`spectra install`, inspect, `exit`, re-launch for a fresh machine):
 
 ---
 
+## 1a. The stack: `spectra version` / `spectra update` against stale components
+
+`test/run.sh stack` is a different starting point from the bootstrap track above. Instead of a bare
+machine, it hands you a **working project** — Spec Kit installed, `specify init` run, Spectra agents
+installed — and a set of helpers for putting each component genuinely out of date.
+
+```bash
+test/run.sh stack              # ready project + helpers, then a shell
+test/run.sh stack --as 4.0.0   # same, but the CLI starts out reporting itself behind
+```
+
+Type `scenarios` in the container for the menu.
+
+**Nothing here is mocked.** Each helper creates a real out-of-date state, so the same detection paths
+run as would in front of a user:
+
+| Helper | What it really does | Expected report |
+|---|---|---|
+| `stale_specify [tag]` | installs an older `specify-cli` (default `v0.16.0`) | **two** rows stale — the integration version tracks the CLI, so a behind CLI drags Core agents with it |
+| `stale_integration [ver]` | rewrites `version` in `.specify/integration.json` | Core agents stale; other three unchanged |
+| `stale_agents [ver]` | rewrites the version in **both** the extension manifest and Spec Kit's `.registry` | Spectra agents stale, and `spectra update` genuinely repairs it |
+| `stale_cli [ver]` | rebuilds your working copy carrying a lower `VERSION` | Spectra CLI stale against the live release feed |
+| `stack_reset` | restores all four to current | everything up to date |
+| `stack_show` | `spectra version` plus its exit code | — |
+| `stack_truth` | reads each version from source, bypassing the CLI | lets you check the CLI's verdict against ground truth |
+
+### Two things worth understanding before you start
+
+**Why `stale_cli` rebuilds instead of installing an old release.** You cannot test "my CLI is behind" by
+installing an old Spectra CLI, because an old CLI has no four-component report to test. So the helper
+installs *your* code with a lower version number; the comparison it then makes against the real GitHub
+release feed is genuine.
+
+Related: on an unreleased working copy, the baseline reads
+`Spectra CLI: ✓ ahead of published (6.0.0 -> 5.0.0)`. That is correct — your tree is ahead of the newest
+published release — and it is why `stale_cli` exists.
+
+**Why `stale_agents` edits two files.** Spec Kit records an extension's installed version in
+`.specify/extensions/.registry`; Spectra scans the manifest. Editing only the manifest creates a state
+Spectra calls stale and Spec Kit calls current, so its updater exits 0 having changed nothing. Both are
+rewritten by default so the state is one `spectra update` can repair.
+
+Pass `--manifest-only` to reproduce that disagreement deliberately:
+
+```bash
+stale_agents --manifest-only 1.0.0
+spectra update --yes     # must NOT claim success
+```
+
+Expected: `! reported success, but the version is unchanged (1.0.0)` and **exit 4**. `spectra update`
+re-reads every component after the walk rather than trusting exit codes, so a delegate that reports a
+win without moving anything is caught rather than echoed.
+
+### Degraded environments
+
+| Command | Expected |
+|---|---|
+| `no_specify spectra version` | first two rows `unknown`, other two normal, **exit 0** |
+| `no_specify spectra update` | those two skipped, never attempted; exit reflects only what was tried |
+| `no_network spectra version` | four `unknown` rows, installed versions still shown, **exit 0** |
+| `no_network spectra update` | "Nothing could be checked, so nothing was updated" — never a currency claim |
+| `spectra version --no-update-check` | suppresses **only** the Spectra CLI release lookup |
+| `rm .specify/integration.json` then `spectra version` | one row `unknown`, rest fine |
+
+`no_specify` moves the `specify` shim aside rather than editing `PATH`, because uv installs `specify`
+and `spectra` into the same directory — dropping it from `PATH` would take the command under test with
+it.
+
+### The surface, after 6.0.0
+
+| Command | Expected |
+|---|---|
+| `spectra cli version` | exit 2, names `spectra version` |
+| `spectra cli update` | exit 2, names `spectra update` |
+| `spectra cli uninstall` | unchanged |
+| `spectra --help` | Tool commands panel has **one** row |
+| `cd /tmp && spectra version` | exit 5 — it needs a project, by design |
+| `cd /tmp && spectra` | the banner's `cli vX.Y.Z`, from anywhere, touching nothing |
+
+That last row is a constitutional requirement (Principle VI), not a nicety: CI's `VERSION` parity check,
+the release smoke test, and clean-room row 10 all read it.
+
+---
+
 # 2. The extension package (local zip)
 
 This track tests the **built package** — `docs/packages/spectra.zip`, the exact artifact the catalog

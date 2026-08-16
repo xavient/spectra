@@ -492,16 +492,17 @@ def _update_spectra_cli(component: ComponentStatus) -> int:
     return 0
 
 
-def _update_spectra_extension() -> int:
-    return extension.delegate_update()
+def _update_spectra_extension(assume_yes: bool = False) -> int:
+    return extension.delegate_update(assume_yes=assume_yes)
 
 
-# Keyed by component, in no particular order — ORDER is what sequences the walk.
+# Keyed by component. Each takes the component plus whether the user has already consented, so the one
+# delegate that faces an unskippable downstream prompt can answer it. ORDER sequences the walk.
 _ACTIONS = {
-    SPECIFY_CLI: lambda component: _update_specify_cli(),
-    INTEGRATION: lambda component: _update_integration(),
-    SPECTRA_CLI: _update_spectra_cli,
-    SPECTRA_EXTENSION: lambda component: _update_spectra_extension(),
+    SPECIFY_CLI: lambda component, assume_yes=False: _update_specify_cli(),
+    INTEGRATION: lambda component, assume_yes=False: _update_integration(),
+    SPECTRA_CLI: lambda component, assume_yes=False: _update_spectra_cli(component),
+    SPECTRA_EXTENSION: lambda component, assume_yes=False: _update_spectra_extension(assume_yes),
 }
 
 INTERRUPTED = 130
@@ -519,7 +520,7 @@ def _skip_reason(component: ComponentStatus) -> str:
     return "status could not be determined"
 
 
-def apply_updates(report: HealthReport, *, announce=None):
+def apply_updates(report: HealthReport, *, announce=None, assume_yes: bool = False):
     """Update every component that needs it, in canonical order. Returns one result per component.
 
     Three properties, each required by the spec rather than chosen:
@@ -533,6 +534,10 @@ def apply_updates(report: HealthReport, *, announce=None):
 
     `announce` is an optional callback invoked with each component about to be attempted, so the caller
     can narrate progress without this function knowing anything about presentation.
+
+    `assume_yes` is passed to the delegates that face a prompt of their own. `specify extension update`
+    asks for confirmation and offers no flag to skip it, so without this a non-interactive run would
+    abort on that step alone.
     """
     results = []
     # Walk `report.components` rather than ORDER. Both are canonical order — `check_all` builds the
@@ -552,7 +557,7 @@ def apply_updates(report: HealthReport, *, announce=None):
             results.append(UpdateResult(key, SKIPPED, detail="no update action for this component"))
             continue
         try:
-            code = action(component)
+            code = action(component, assume_yes)
         except extension.DelegationError as exc:
             results.append(UpdateResult(key, FAILED, detail=str(exc)))
             continue

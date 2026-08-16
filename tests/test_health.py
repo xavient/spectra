@@ -326,7 +326,7 @@ class Results(unittest.TestCase):
 
     def test_a_failure_always_carries_an_actionable_detail(self):
         results = _walk_with(
-            {health.SPECTRA_EXTENSION: lambda component: 7},
+            {health.SPECTRA_EXTENSION: lambda component, assume_yes=False: 7},
             outdated=[health.SPECTRA_EXTENSION])
         failure = [r for r in results if r.failed][0]
         self.assertTrue(failure.detail)
@@ -356,7 +356,7 @@ def _walk_with(actions, outdated, report=None):
     """Run `apply_updates` with `_ACTIONS` replaced by `actions`, recording nothing else."""
     original = dict(health._ACTIONS)
     for key in health.ORDER:
-        health._ACTIONS[key] = actions.get(key, lambda component: 0)
+        health._ACTIONS[key] = actions.get(key, lambda component, assume_yes=False: 0)
     try:
         return health.apply_updates(report or _report_where(outdated))
     finally:
@@ -369,7 +369,7 @@ class TheWalkOrder(unittest.TestCase):
         calls = []
 
         def record(key):
-            return lambda component: calls.append(key) or 0
+            return lambda component, assume_yes=False: calls.append(key) or 0
 
         _walk_with({k: record(k) for k in health.ORDER}, outdated=set(health.ORDER))
         self.assertEqual(calls, list(health.ORDER))
@@ -378,7 +378,7 @@ class TheWalkOrder(unittest.TestCase):
         calls = []
 
         def record(key):
-            return lambda component: calls.append(key) or 0
+            return lambda component, assume_yes=False: calls.append(key) or 0
 
         subset = {health.SPECTRA_CLI, health.SPECTRA_EXTENSION}
         _walk_with({k: record(k) for k in health.ORDER}, outdated=subset)
@@ -388,7 +388,7 @@ class TheWalkOrder(unittest.TestCase):
         calls = []
 
         def record(key, code=0):
-            def action(component):
+            def action(component, assume_yes=False):
                 calls.append(key)
                 return code
             return action
@@ -409,7 +409,7 @@ class PartialFailure(unittest.TestCase):
         attempted = []
 
         def action(key, code=0):
-            def run(component):
+            def run(component, assume_yes=False):
                 attempted.append(key)
                 return code
             return run
@@ -424,13 +424,13 @@ class PartialFailure(unittest.TestCase):
         self.assertEqual(by_key[health.SPECTRA_CLI].outcome, health.UPDATED)
 
     def test_a_delegation_error_is_recorded_and_the_walk_continues(self):
-        def explode(component):
+        def explode(component, assume_yes=False):
             raise extension.DelegationError("specify was not found on PATH")
 
         attempted = []
         results = _walk_with({
             health.SPECIFY_CLI: explode,
-            health.SPECTRA_CLI: lambda component: attempted.append("x") or 0,
+            health.SPECTRA_CLI: lambda component, assume_yes=False: attempted.append("x") or 0,
         }, outdated={health.SPECIFY_CLI, health.SPECTRA_CLI})
         by_key = {r.key: r for r in results}
         self.assertEqual(by_key[health.SPECIFY_CLI].outcome, health.FAILED)
@@ -438,7 +438,7 @@ class PartialFailure(unittest.TestCase):
         self.assertEqual(attempted, ["x"])
 
     def test_an_update_error_from_the_uv_reinstall_is_recorded_not_raised(self):
-        def explode(component):
+        def explode(component, assume_yes=False):
             raise cli_version.UpdateError("uv exited with code 1")
 
         results = _walk_with({health.SPECTRA_CLI: explode}, outdated={health.SPECTRA_CLI})
@@ -464,7 +464,7 @@ class Skipping(unittest.TestCase):
             _status(health.SPECTRA_EXTENSION, health.UP_TO_DATE, "1.3.1", "1.3.1"),
         ])
         results = _walk_with(
-            {k: (lambda key: lambda component: attempted.append(key) or 0)(k)
+            {k: (lambda key: lambda component, assume_yes=False: attempted.append(key) or 0)(k)
              for k in health.ORDER},
             outdated=None, report=report)
         self.assertEqual(attempted, [health.SPECTRA_CLI])
@@ -498,11 +498,11 @@ class Interruption(unittest.TestCase):
     def test_exit_130_aborts_rather_than_continuing(self):
         attempted = []
 
-        def interrupt(component):
+        def interrupt(component, assume_yes=False):
             attempted.append("specify")
             return 130
 
-        def later(component):
+        def later(component, assume_yes=False):
             attempted.append("later")
             return 0
 
@@ -514,10 +514,10 @@ class Interruption(unittest.TestCase):
     def test_a_keyboard_interrupt_aborts_rather_than_continuing(self):
         attempted = []
 
-        def interrupt(component):
+        def interrupt(component, assume_yes=False):
             raise KeyboardInterrupt
 
-        def later(component):
+        def later(component, assume_yes=False):
             attempted.append("later")
             return 0
 

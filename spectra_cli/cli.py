@@ -500,9 +500,24 @@ def cmd_version(args) -> int:
 # --------------------------------------------------------------------------- #
 # update (the whole stack)
 # --------------------------------------------------------------------------- #
-def _outcome_row(result):
-    """One `(label, glyph, phrase)` row describing what an update attempt did."""
+def _outcome_row(result, before=None, after=None):
+    """One `(label, glyph, phrase)` row describing what an update attempt did.
+
+    `before` and `after` are the component's status from the checks either side of the walk. A
+    delegated command reporting success is **not** proof that anything moved: Spec Kit tracks an
+    extension's installed version in its own registry, so a manifest that disagrees can produce a
+    cheerful exit 0 with nothing changed. Reporting the re-read version — and saying so plainly when it
+    did not move — is the difference between telling the user what happened and telling them what we
+    asked for.
+    """
     if result.outcome == health.UPDATED:
+        now = after.installed if after is not None else None
+        was = before.installed if before is not None else None
+        if now and was and now == was:
+            return (result.label, ui.GLYPH_WARN,
+                    f"reported success, but the version is unchanged ({ui.bold(now)})")
+        if now:
+            return (result.label, ui.GLYPH_OK, f"updated ({ui.bold(now)})")
         return (result.label, ui.GLYPH_OK, "updated")
     if result.outcome == health.FAILED:
         return (result.label, ui.GLYPH_FAIL, f"failed ({result.detail})")
@@ -570,20 +585,43 @@ def cmd_update(args) -> int:
         ui.info(f"Updating {component.label} …")
 
     try:
-        results = health.apply_updates(report, announce=announce)
+        results = health.apply_updates(report, announce=announce, assume_yes=bool(args.yes))
     except health.Interrupted:
         ui.plain()
         ui.fail("Interrupted; the remaining components were left alone.")
         return EXIT_INTERRUPTED
 
     ui.plain()
-    ui.health_table([_outcome_row(r) for r in results])
+    # Re-check rather than trust the walk's exit codes. A delegated command can report success without
+    # changing anything — Spec Kit keeps an extension's installed version in its own registry, so a
+    # manifest that disagrees yields a cheerful no-op. Re-reading is what turns "we ran the update" into
+    # "here is what you now have".
+    after = health.check_all(project.classify(), skip_network=_skip_network(args))
+    ui.health_table([
+        _outcome_row(result, before=report.get(result.key), after=after.get(result.key))
+        for result in results
+    ])
     ui.plain()
 
     failed = [r for r in results if r.failed]
+    stalled = [r for r in results
+               if r.outcome == health.UPDATED
+               and (b := report.get(r.key)) is not None
+               and (a := after.get(r.key)) is not None
+               and b.installed and a.installed and b.installed == a.installed]
+
     if failed:
         ui.fail(f"{len(failed)} of {len(report.outdated)} updates failed.")
         ui.plain(ui.dim("  The components that succeeded were still updated."))
+        ui.plain()
+        return EXIT_DELEGATION
+
+    if stalled:
+        names = ", ".join(r.label for r in stalled)
+        ui.warn(f"Reported success without changing anything: {names}.")
+        ui.plain(ui.dim("  The underlying command exited 0 but the version did not move. This usually "
+                        "means it"))
+        ui.plain(ui.dim("  disagrees with us about what is installed — check the component by hand."))
         ui.plain()
         return EXIT_DELEGATION
 

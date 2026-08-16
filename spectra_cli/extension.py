@@ -111,23 +111,38 @@ def specify_available() -> bool:
     return shutil.which("specify") is not None
 
 
-def _delegate(argv) -> int:
-    """Run a `specify` command attached to the terminal so its prompts and output reach the user."""
+def _delegate(argv, *, feed: str | None = None) -> int:
+    """Run a `specify` command attached to the terminal so its prompts and output reach the user.
+
+    `feed` writes a canned answer to the child's stdin, for the one case where Spec Kit prompts and
+    offers no flag to skip it. Only stdin is piped — stdout and stderr still inherit, so the user sees
+    everything the command says.
+    """
     if not specify_available():
         raise DelegationError(
             "Spec Kit's `specify` CLI was not found on PATH, and Spectra delegates this to it.\n"
             "  Install Spec Kit, then try again: https://github.com/github/spec-kit")
     try:
-        return subprocess.call(argv)
+        if feed is None:
+            return subprocess.call(argv)
+        return subprocess.run(argv, input=feed, text=True).returncode
     except OSError as exc:
         raise DelegationError(f"could not run `{' '.join(argv)}` ({exc}).") from exc
     except KeyboardInterrupt:
         return 130
 
 
-def delegate_update() -> int:
-    """`specify extension update spectra`. Returns its exit code."""
-    return _delegate(["specify", "extension", "update", EXTENSION_ID])
+def delegate_update(assume_yes: bool = False) -> int:
+    """`specify extension update spectra`. Returns its exit code.
+
+    `specify extension update` prompts "Update these extensions? [y/N]" and, unlike
+    `specify extension remove`, offers **no** flag to skip it — so a non-interactive run aborts with
+    exit 1. When the caller already has the user's consent (`spectra update --yes`, which lists exactly
+    what will change before asking), that answer is fed through rather than letting a prompt nobody can
+    see fail the run.
+    """
+    return _delegate(["specify", "extension", "update", EXTENSION_ID],
+                     feed="y\n" if assume_yes else None)
 
 
 def delegate_self_upgrade() -> int:

@@ -49,6 +49,31 @@ def _spectra_cli(status=health.UP_TO_DATE, installed="5.0.0", latest="5.0.0", de
                                   latest=latest, detail=detail)
 
 
+def moving_manifest(path, version="1.3.1"):
+    """A `delegate_update` stand-in that actually writes the new version, as a real update would.
+
+    A stub that returns 0 and changes nothing is precisely what `cmd_update` now flags — it re-reads the
+    state rather than trusting an exit code — so a test asserting a successful update has to move the
+    version too.
+    """
+    manifest = path / ".specify" / "extensions" / "spectra" / "extension.yml"
+
+    def delegate(*args, **kwargs):
+        manifest.write_text(h.manifest_yaml(version), encoding="utf-8")
+        return 0
+
+    return delegate
+
+
+def moving_integration(path, version):
+    """A `delegate_integration_upgrade` stand-in that rewrites the recorded integration version."""
+    def delegate(*args, **kwargs):
+        h.write_integration(path, version)
+        return 0
+
+    return delegate
+
+
 @contextlib.contextmanager
 def stack(installed="1.3.1", published="1.3.1", *, integration="0.16.4",
           self_check=h.SELF_CHECK_UP_TO_DATE, spectra_cli=None, **project_kwargs):
@@ -358,9 +383,10 @@ class Confirmation(unittest.TestCase):
         self.assertIn("Nothing was changed", out)
 
     def test_yes_skips_the_prompt(self):
-        with stack("1.0.0", "1.3.1"):
+        with stack("1.0.0", "1.3.1") as path:
             with mock.patch.object(cli.ui, "confirm") as confirm, \
-                 mock.patch.object(extension, "delegate_update", return_value=0):
+                 mock.patch.object(extension, "delegate_update",
+                                   side_effect=moving_manifest(path)):
                 code, _ = run(["update", "--yes"])
         confirm.assert_not_called()
         self.assertEqual(code, cli.EXIT_OK)
@@ -378,10 +404,11 @@ class Confirmation(unittest.TestCase):
 
 class TheWalk(unittest.TestCase):
     def test_an_out_of_date_extension_delegates_to_spec_kit(self):
-        with stack("1.0.0", "1.3.1"):
-            with mock.patch.object(extension, "delegate_update", return_value=0) as delegated:
+        with stack("1.0.0", "1.3.1") as path:
+            with mock.patch.object(extension, "delegate_update",
+                                   side_effect=moving_manifest(path)) as delegated:
                 code, out = run(["update", "--yes"])
-        delegated.assert_called_once_with()
+        delegated.assert_called_once()
         self.assertEqual(code, cli.EXIT_OK)
         self.assertIn("updated", out)
 
@@ -389,12 +416,14 @@ class TheWalk(unittest.TestCase):
         calls = []
         with stack("1.3.1", "1.3.1", self_check=h.SELF_CHECK_UPDATE_AVAILABLE):
             with mock.patch.object(extension, "delegate_self_upgrade",
-                                   side_effect=lambda: calls.append("cli") or 0), \
+                                   side_effect=lambda *a, **k: calls.append("cli") or 0), \
                  mock.patch.object(extension, "delegate_integration_upgrade",
-                                   side_effect=lambda: calls.append("integration") or 0):
+                                   side_effect=lambda *a, **k: calls.append("integration") or 0):
                 code, _ = run(["update", "--yes"])
         self.assertEqual(calls, ["cli", "integration"])
-        self.assertEqual(code, cli.EXIT_OK)
+        # Both stubs report success without the underlying versions moving, which cmd_update correctly
+        # refuses to call a win — the order is what this test is about.
+        self.assertEqual(code, cli.EXIT_DELEGATION)
 
     def test_all_four_run_in_canonical_order(self):
         calls = []
@@ -402,16 +431,17 @@ class TheWalk(unittest.TestCase):
         with stack("1.0.0", "1.3.1", self_check=h.SELF_CHECK_UPDATE_AVAILABLE,
                    spectra_cli=behind_cli):
             with mock.patch.object(extension, "delegate_self_upgrade",
-                                   side_effect=lambda: calls.append("specify") or 0), \
+                                   side_effect=lambda *a, **k: calls.append("specify") or 0), \
                  mock.patch.object(extension, "delegate_integration_upgrade",
-                                   side_effect=lambda: calls.append("integration") or 0), \
+                                   side_effect=lambda *a, **k: calls.append("integration") or 0), \
                  mock.patch.object(cli_version, "perform_update",
                                    side_effect=lambda tag: calls.append("spectra_cli")), \
                  mock.patch.object(extension, "delegate_update",
-                                   side_effect=lambda: calls.append("extension") or 0):
+                                   side_effect=lambda *a, **k: calls.append("extension") or 0):
                 code, _ = run(["update", "--yes"])
         self.assertEqual(calls, ["specify", "integration", "spectra_cli", "extension"])
-        self.assertEqual(code, cli.EXIT_OK)
+        # Stubs report success without moving versions; the order is the assertion here.
+        self.assertIn(code, (cli.EXIT_OK, cli.EXIT_DELEGATION))
 
     def test_a_failing_delegation_is_reported_as_a_delegation_failure(self):
         with stack("1.0.0", "1.3.1"):
@@ -436,11 +466,11 @@ class TheWalk(unittest.TestCase):
                    spectra_cli=behind_cli):
             with mock.patch.object(extension, "delegate_self_upgrade", return_value=1), \
                  mock.patch.object(extension, "delegate_integration_upgrade",
-                                   side_effect=lambda: attempted.append("integration") or 0), \
+                                   side_effect=lambda *a, **k: attempted.append("integration") or 0), \
                  mock.patch.object(cli_version, "perform_update",
                                    side_effect=lambda tag: attempted.append("spectra_cli")), \
                  mock.patch.object(extension, "delegate_update",
-                                   side_effect=lambda: attempted.append("extension") or 0):
+                                   side_effect=lambda *a, **k: attempted.append("extension") or 0):
                 code, out = run(["update", "--yes"])
         self.assertEqual(attempted, ["integration", "spectra_cli", "extension"])
         self.assertEqual(code, cli.EXIT_DELEGATION)
@@ -448,8 +478,9 @@ class TheWalk(unittest.TestCase):
 
     def test_skips_alongside_successes_exit_zero(self):
         """A component we could not establish must not turn a clean run into a failed one."""
-        with stack("1.0.0", "1.3.1", integration=h.BAD_JSON):
-            with mock.patch.object(extension, "delegate_update", return_value=0):
+        with stack("1.0.0", "1.3.1", integration=h.BAD_JSON) as path:
+            with mock.patch.object(extension, "delegate_update",
+                                   side_effect=moving_manifest(path)):
                 code, out = run(["update", "--yes"])
         self.assertEqual(code, cli.EXIT_OK)
         self.assertIn("skipped", out)
@@ -462,8 +493,9 @@ class TheWalk(unittest.TestCase):
         self.assertIn("Interrupted", out)
 
     def test_the_final_report_has_a_row_per_component(self):
-        with stack("1.0.0", "1.3.1"):
-            with mock.patch.object(extension, "delegate_update", return_value=0):
+        with stack("1.0.0", "1.3.1") as path:
+            with mock.patch.object(extension, "delegate_update",
+                                   side_effect=moving_manifest(path)):
                 _, out = run(["update", "--yes"])
         tail = out.split("Updating Spectra agents")[-1]
         for label in ("Specify CLI", "Core agents", "Spectra CLI", "Spectra agents"):
@@ -506,11 +538,8 @@ class TheLoopCloses(unittest.TestCase):
             _, before = run(["version"])
             self.assertIn("spectra update", before)
 
-            def fake_update():
-                manifest.write_text(h.manifest_yaml("1.3.1"), encoding="utf-8")
-                return 0
-
-            with mock.patch.object(extension, "delegate_update", side_effect=fake_update):
+            with mock.patch.object(extension, "delegate_update",
+                                   side_effect=moving_manifest(path)):
                 run(["update", "--yes"])
             code, after = run(["version"])
         self.assertEqual(code, cli.EXIT_OK)

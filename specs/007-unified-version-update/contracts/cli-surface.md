@@ -184,7 +184,8 @@ Proceed? [Y/n]
 
 `--yes` skips the prompt. Declining exits **1** (`EXIT_DECLINED`) having changed nothing.
 
-Final report — four rows, matching the status table's shape:
+Final report — four rows, matching the status table's shape, with each version **re-read after** the
+walk rather than inferred from an exit code:
 
 ```text
 Specify CLI:     ✓ updated (0.16.4)
@@ -195,6 +196,25 @@ Spectra agents:  – skipped (already up to date)
 ```
 
 A `skipped` row never causes a non-zero exit; a `failed` row always does.
+
+**A delegate reporting success is not proof anything moved.** Spec Kit records an extension's installed
+version in its own registry, so a manifest that disagrees produces a cheerful exit 0 with nothing
+changed. `spectra update` re-checks every component after the walk and says so plainly rather than
+echoing the claim:
+
+```text
+Spectra agents:  ! reported success, but the version is unchanged (1.0.0)
+
+! Reported success without changing anything: Spectra agents.
+  The underlying command exited 0 but the version did not move. This usually means it
+  disagrees with us about what is installed — check the component by hand.
+                                                                    exit 4
+```
+
+**`--yes` is honoured all the way down.** `specify extension update` prompts for confirmation and offers
+no flag to skip it, so a non-interactive run would otherwise abort on that step alone with exit 1. When
+the user has already been shown exactly what will change and answered yes, that answer is fed to the
+delegate rather than letting an invisible prompt fail the run.
 
 ## Exit codes
 
