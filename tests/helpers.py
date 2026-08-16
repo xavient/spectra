@@ -77,18 +77,27 @@ def manifest_yaml(version: str = "1.3.1", *, commands=("adr", "domain-analyzer",
 
 @contextlib.contextmanager
 def temp_project(installed_version: str | None = "1.3.1", *, is_project: bool = True,
-                 incomplete: bool = False, subdir: str | None = None):
+                 incomplete: bool = False, subdir: str | None = None,
+                 integration_version=None):
     """Yield the path a project-scoped command should be run from.
 
     The four states the CLI must distinguish map onto the arguments:
 
     * ``is_project=False``            -> NOT_A_PROJECT
     * ``installed_version=None``      -> NOT_INSTALLED
-    * ``incomplete=True``             -> INCOMPLETE (folder present, no readable version)
-    * ``installed_version="1.3.1"``   -> INSTALLED
+    * ``incomplete=True``            -> INCOMPLETE (folder present, no readable version)
+    * ``installed_version="1.3.1"``  -> INSTALLED
 
     Pass ``subdir="a/b/c"`` to be handed a nested directory instead of the project root, which is how
     the "works from a subdirectory" requirement is exercised.
+
+    ``integration_version`` writes ``.specify/integration.json``, which the stack health check reads for
+    the Core agents component. Four cases, because all four are states the check has to survive:
+
+    * ``None``          -> no file at all (the default, so existing tests are unaffected)
+    * a version string  -> a well-formed file recording it
+    * :data:`BAD_JSON`  -> a file that is not valid JSON
+    * :data:`NO_VERSION`-> valid JSON with the ``version`` key missing
     """
     with tempfile.TemporaryDirectory() as tmp:
         root = Path(tmp)
@@ -101,11 +110,121 @@ def temp_project(installed_version: str | None = "1.3.1", *, is_project: bool = 
             ext = root / ".specify" / "extensions" / "spectra"
             ext.mkdir(parents=True)
             (ext / "extension.yml").write_text(manifest_yaml(installed_version), encoding="utf-8")
+        if is_project and integration_version is not None:
+            write_integration(root, integration_version)
         target = root
         if subdir:
             target = root / subdir
             target.mkdir(parents=True)
         yield target
+
+
+# --------------------------------------------------------------------------- #
+# The Spec Kit integration file
+# --------------------------------------------------------------------------- #
+
+# Sentinels for `temp_project(integration_version=...)`. Distinct objects rather than magic strings so a
+# real version string can never be mistaken for a directive.
+BAD_JSON = object()     # write something that is not JSON
+NO_VERSION = object()   # write valid JSON with no `version` key
+
+
+def integration_json(version: str = "0.16.4") -> str:
+    """An `.specify/integration.json` with the shape the health check reads.
+
+    Mirrors the real file Spec Kit writes, including the keys we ignore, so a fixture that happened to
+    contain only `version` could not let a too-eager reader pass.
+    """
+    return json.dumps({
+        "version": version,
+        "integration_state_schema": 1,
+        "installed_integrations": ["claude"],
+        "integration_settings": {"claude": {"script": "sh", "invoke_separator": "-"}},
+        "integration": "claude",
+        "default_integration": "claude",
+    }, indent=2) + "\n"
+
+
+def write_integration(project_root, version) -> None:
+    """Write (or deliberately corrupt) `.specify/integration.json` under `project_root`."""
+    path = Path(project_root) / ".specify" / "integration.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if version is BAD_JSON:
+        path.write_text("{ this is not json", encoding="utf-8")
+    elif version is NO_VERSION:
+        path.write_text(json.dumps({"integration": "claude"}, indent=2) + "\n", encoding="utf-8")
+    else:
+        path.write_text(integration_json(version), encoding="utf-8")
+
+
+# --------------------------------------------------------------------------- #
+# A stand-in `specify` on PATH
+# --------------------------------------------------------------------------- #
+
+# The five branches `specify self check` can print, copied from specify_cli/_version.py::self_check.
+# Held as literals rather than generated, because the parser's whole job is to survive this exact text —
+# a fixture derived from the parser would prove nothing.
+SELF_CHECK_UP_TO_DATE = "Up to date: 0.16.4\n"
+SELF_CHECK_UPDATE_AVAILABLE = (
+    "Update available: 0.16.4 \u2192 v0.16.5\n"
+    "\nTo upgrade:\n  specify self upgrade\n"
+)
+SELF_CHECK_FETCH_FAILED = (
+    "Installed: 0.16.4\n"
+    "Could not check latest release: network unreachable\n"
+)
+SELF_CHECK_TAG_INVALID = (
+    "Installed: 0.16.4\n"
+    "Latest release: (unknown)\n"
+    "Could not validate latest release tag from GitHub.\n"
+)
+SELF_CHECK_NO_LOCAL_VERSION = (
+    "Current version could not be determined.\n"
+    "Latest release: v0.16.5\n"
+)
+SELF_CHECK_GIBBERISH = "something entirely unexpected\n"
+
+
+@contextlib.contextmanager
+def fake_specify(output: str = SELF_CHECK_UP_TO_DATE, *, exit_code: int = 0):
+    """Put a stub `specify` on PATH that prints `output` for `self check`.
+
+    Exercises the real subprocess path rather than only `parse_self_check`, so a mistake in how the
+    child is invoked or decoded is caught too. `exit_code` defaults to 0 deliberately: the real command
+    exits 0 on every branch, and a test that let us succeed only because of a non-zero code would be
+    testing something Spec Kit does not actually do.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        script = Path(tmp) / "specify"
+        script.write_text(
+            "#!/bin/sh\n"
+            f"cat <<'SPECTRA_EOF'\n{output}SPECTRA_EOF\n"
+            f"exit {exit_code}\n",
+            encoding="utf-8",
+        )
+        script.chmod(0o755)
+        previous = os.environ.get("PATH", "")
+        os.environ["PATH"] = f"{tmp}{os.pathsep}{previous}"
+        try:
+            yield script
+        finally:
+            os.environ["PATH"] = previous
+
+
+@contextlib.contextmanager
+def without_specify():
+    """Remove `specify` from PATH for the duration of the block.
+
+    Points PATH at an empty directory rather than editing it, so nothing that merely *looks* like
+    `specify` can be found by accident.
+    """
+    with tempfile.TemporaryDirectory() as empty:
+        previous = os.environ.get("PATH", "")
+        os.environ["PATH"] = empty
+        try:
+            yield
+        finally:
+            os.environ["PATH"] = previous
 
 
 @contextlib.contextmanager

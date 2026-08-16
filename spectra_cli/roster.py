@@ -144,7 +144,7 @@ def parse(data, *, strict=False) -> Roster:
     if major > SUPPORTED_SCHEMA_MAJOR:
         raise RosterError(
             f"the roster uses schema version {schema_version}, which needs a newer Spectra CLI.\n"
-            "  Update it with: spectra cli update")
+            "  Update it with: spectra update")
     newer_minor = major == SUPPORTED_SCHEMA_MAJOR and minor > _current_minor()
 
     raw_phases = data.get("phases")

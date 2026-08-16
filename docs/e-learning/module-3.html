@@ -637,7 +637,8 @@ cd todo-app</code></pre>
     <p>SPECTRA ships as a <a href="https://docs.astral.sh/uv/"><code>uv</code></a> tool. Install it once, from anywhere &mdash; there's no repository to clone.</p>
 <pre><code>uv tool install spectra-cli --from git+https://github.com/xavient/spectra</code></pre>
     <p>Verify:</p>
-<pre><code>spectra cli version</code></pre>
+<pre><code>spectra</code></pre>
+    <p>The banner prints a <code>cli vX.Y.Z</code> line &mdash; that's your installed version. Running <code>spectra</code> bare is informational only and never touches the current folder.</p>
     <div class="note"><span class="note-label">Don't have <code>uv</code> yet?</span>On macOS or Linux run <code>curl -LsSf https://astral.sh/uv/install.sh | sh</code>; on Windows (PowerShell) run <code>irm https://astral.sh/uv/install.ps1 | iex</code>. Open a new terminal afterwards so <code>uv</code> is on your <code>PATH</code>. You also need <strong>Git</strong>, which <code>uv</code> uses to fetch SPECTRA. Step-by-step instructions for all three operating systems are on the <a href="https://xavient.github.io/spectra/">SPECTRA install page</a>.</div>
     <div class="note"><span class="note-label">What you just installed.</span><code>spectra</code> is a setup and lifecycle command, not a replacement for Spec Kit. In the next step it will install Spec Kit's <code>specify</code> CLI for you if you don't already have it &mdash; the four-phase workflow you're about to run is Spec Kit's, and SPECTRA is what puts it in place and adds agents on top.</div>
 

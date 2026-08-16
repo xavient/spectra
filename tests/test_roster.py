@@ -73,7 +73,7 @@ class SchemaGate(unittest.TestCase):
             roster.parse(h.roster(schema_version="2.0"))
         message = str(caught.exception)
         self.assertIn("newer Spectra CLI", message)
-        self.assertIn("spectra cli update", message)
+        self.assertIn("spectra update", message)
 
     def test_unknown_fields_are_ignored_when_reading_published_data(self):
         data = h.roster()

@@ -1,6 +1,49 @@
 <!--
 SYNC IMPACT REPORT
 ==================
+Version: 1.4.0 → 1.5.0
+Bump type: MINOR — materially expanded guidance in Principle VI (one new MUST), plus a factual
+  correction in the same principle.
+Rationale: CLI 6.0.0 retired `spectra cli version` and `spectra cli update`, folding both into the
+  top-level `spectra version` / `spectra update`, which now report and update all four components of the
+  stack (Spec Kit's CLI, the core agents, the `spectra` command, and Spectra's agents).
+
+  That made one sentence in Principle VI false: it named `spectra cli update` as a consumer of
+  `/releases/latest`. Corrected to `spectra update`.
+
+  It also created a governance-relevant constraint that nothing previously recorded. Because
+  `spectra version` reports the whole stack, it requires a Spec Kit project with Spectra installed — so
+  it cannot answer "what version is this command?" in a bare directory. Three checks need exactly that
+  answer: CI's `VERSION`-parity assertion, the release smoke test, and the clean-room check that a
+  project uninstall leaves the command intact. All three now read the `cli vX.Y.Z` line from bare
+  `spectra`, and the last one runs precisely in the state where `spectra version` correctly refuses.
+  Principle VI now makes that line a MUST, so a future change cannot quietly remove it and break the
+  release procedure without failing loudly.
+
+Modified principles:
+  VI — `spectra cli update` → `spectra update` (the subcommand was retired in CLI 6.0.0); new MUST
+       requiring the CLI's own version to stay readable outside a Spec Kit project
+Added sections: (none)
+Removed sections: (none)
+
+Templates & docs in sync:
+  - .specify/templates/plan-template.md ✅ — Constitution Check gate is generic; no principle names cited
+  - .specify/templates/spec-template.md ✅ — no constitution references
+  - .specify/templates/tasks-template.md ✅ — no constitution references
+  - .kiro/prompts/speckit.*.md ✅ — none pin a constitution version or principle number
+  - README.md ✅ — "Keeping everything up to date" rewritten for the unified commands; 6.0.0 note added
+  - CONTRIBUTING.md ✅ — release smoke test now reads bare `spectra`; stale command references fixed
+  - docs/index.html ✅ — landing page advertises the two unified commands
+  - test/README.md ✅ — clean-room rows 1b, 5, 6b, 9, 10 rebuilt around the new surface
+  - .github/workflows/ci.yml ✅ — VERSION parity asserted via `importlib.metadata` plus the bare-`spectra`
+    banner; a new step covers the retired subcommands
+  - VERSION ✅ — 6.0.0 (CLI channel, MAJOR: the command surface lost two verbs)
+  - spectra/extension.yml, catalog.json ✅ — unchanged at 1.3.1; the channels stayed decoupled, as
+    Principle VI requires
+
+Follow-up TODOs: (none)
+
+--- Previous report ---
 Version: 1.3.0 → 1.4.0
 Bump type: MINOR — materially expanded guidance in Principle V.
 Rationale: Principle V asserted two things this repository no longer does. It said there is no build
@@ -223,9 +266,18 @@ Spectra ships through **two** distribution channels, and each carries its **own*
 **Git tags and GitHub Releases on this repository belong to the CLI channel, and only to it.** Tags MUST
 be bare semver (`X.Y.Z`); Releases MUST be titled `Spectra CLI X.Y.Z`. The catalog channel MUST NOT be
 tagged or released. Reserving tags for one channel is what makes `/releases/latest` an unambiguous
-answer to "what is the newest `spectra` command" — which both `spectra cli update` and the landing page
+answer to "what is the newest `spectra` command" — which both `spectra update` and the landing page
 depend on. If the catalog also cut releases, the CLI's update check could resolve to an extension
 release and attempt to install it as a version of itself.
+
+**The CLI's own version MUST remain readable outside a Spec Kit project.** `spectra version` reports the
+whole stack, so it legitimately requires a project with Spectra installed and cannot answer "what version
+is this command?" from an arbitrary directory. Bare `spectra` MUST therefore keep printing a `cli vX.Y.Z`
+line, and MUST keep working anywhere while changing nothing. Three things depend on exactly that: the CI
+assertion that the installed distribution matches the committed `VERSION`, the release smoke test, and the
+clean-room check that removing a project's agents leaves the command intact. None of them can use
+`spectra version` — the last one deliberately runs in the state where `spectra version` correctly
+refuses. A change that drops the banner's version line would break all three without failing loudly.
 
 The two version numbers MUST NOT be coupled: adding or changing a command (an agent/extension) bumps the
 catalog/extension version **without necessarily** touching the CLI, and changing `spectra_cli/` bumps the
@@ -345,4 +397,4 @@ and why, and MUST update this file together with any dependent templates and doc
 binding. Complexity that violates a principle MUST be justified or removed; unjustified violations
 block merge.
 
-**Version**: 1.4.0 | **Ratified**: 2026-07-12 | **Last Amended**: 2026-08-09
+**Version**: 1.5.0 | **Ratified**: 2026-07-12 | **Last Amended**: 2026-08-16

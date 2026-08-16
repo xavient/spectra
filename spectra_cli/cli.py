@@ -1,19 +1,24 @@
 """Command-line entry point for `spectra`.
 
-The command surface has one organizing rule: **a top-level verb acts on the agents installed in the
-current project; only `spectra cli …` acts on the tool itself.** A user should never have to wonder
-which of two things `spectra version` means.
+The command surface has one organizing rule: **a top-level verb acts on the stack you are standing in;
+only `spectra cli …` acts on the machine's copy of the tool.**
 
-    spectra install | check | version | update | uninstall | agent-list   the project's agents
-    spectra cli version | update | uninstall                              the spectra command
+    spectra install | check | version | update | uninstall | agent-list   the project's stack
+    spectra cli uninstall                                                 the spectra command
 
 Bare `spectra` stays informational — it prints the banner and points at `--help`, the way the
-`specify` CLI does, and never touches the current folder.
+`specify` CLI does, and never touches the current folder. Because the banner carries the CLI's own
+version, it is also the way to read that version from a directory that is not a Spec Kit project.
 
 `--version`, `--update`, and `--uninstall` were removed in 5.0.0. They reported on the *tool*, which
 is the number a user is least likely to care about, and they left the two independently-versioned
 channels competing for the same three words. They are detected before parsing so the error can name
 the replacement, which argparse cannot do for an argument it no longer defines.
+
+`spectra cli version` and `spectra cli update` were retired in 6.0.0 for the same reason, one level
+down: `spectra version` and `spectra update` now cover all four parts of the stack — Spec Kit's CLI, the
+core agents, this command, and Spectra's agents — so a separate tool-scoped pair had nothing left to
+mean. Both remain registered so typing one names its replacement.
 
 Flags shared by more than one subcommand are declared once and attached to each, with `SUPPRESS`
 defaults on the subcommand copies so that `spectra --yes install` and `spectra install --yes` mean the
@@ -26,7 +31,7 @@ import argparse
 import os
 import sys
 
-from spectra_cli import extension, install, net, project, roster, ui, version
+from spectra_cli import extension, health, install, net, project, roster, ui, version
 
 # The help surface, rendered by `print_help()` into Spectra-purple panels rather than by argparse's
 # plain formatter. Keeping the copy here (not in `add_argument(help=...)`) keeps the rendered table and
@@ -43,8 +48,10 @@ PROJECT_COMMANDS = [
                 "Spec Kit CLI and initializes the project first if needed."),
     ("check", "Report whether Spectra is installed in this project, and offer to install it "
               "when it is not."),
-    ("version", "Compare the agents installed here against the published version."),
-    ("update", "Update the agents installed here to the published version, via Spec Kit."),
+    ("version", "Check every part of the Spectra stack: the Spec Kit CLI, the core agents, the "
+                "spectra command, and the agents installed here."),
+    ("update", "Bring every out-of-date part of the Spectra stack current, after one "
+               "confirmation."),
     ("uninstall", "Remove Spectra's agents from this project. Leaves the spectra command "
                   "installed on this machine."),
     ("agent-list", "List every agent Spectra offers, grouped by SDLC phase. Reads the published "
@@ -52,20 +59,27 @@ PROJECT_COMMANDS = [
 ]
 
 TOOL_COMMANDS = [
-    ("cli version", "Show the installed spectra version, and note if a newer one exists."),
-    ("cli update", "Update the spectra command itself to the latest release, via uv."),
     ("cli uninstall", "Remove the spectra command from this machine. Extensions in your projects "
                       "are left untouched."),
 ]
 
+# Registered with the parser but retired: dispatching to a handler that names the replacement is more
+# useful than argparse's "invalid choice". Kept out of TOOL_COMMANDS so they vanish from help.
+RETIRED_TOOL_SUBCOMMAND_NAMES = ("version", "update")
+
 # Removed in 5.0.0. argparse cannot name a replacement for an argument it no longer defines — it emits
-# "unrecognized arguments" and stops — so these are matched in argv before parsing. Each names *both*
-# candidates, because the ambiguity between them is precisely why the flags were removed.
+# "unrecognized arguments" and stops — so these are matched in argv before parsing.
+#
+# In 5.0.0 each named *two* candidates, because the ambiguity between a tool-scoped and a project-scoped
+# reading was precisely why the flags went. 6.0.0 resolved that ambiguity by retiring the tool-scoped
+# pair, so `--version` and `--update` now have exactly one answer each. `--uninstall` still has two,
+# because removing the agents from a project and removing the command from the machine remain genuinely
+# different actions.
 REMOVED_FLAGS = {
-    "--version": ("spectra cli version", "spectra version"),
-    "-V": ("spectra cli version", "spectra version"),
-    "--update": ("spectra cli update", "spectra update"),
-    "--uninstall": ("spectra cli uninstall", "spectra uninstall"),
+    "--version": ("spectra version",),
+    "-V": ("spectra version",),
+    "--update": ("spectra update",),
+    "--uninstall": ("spectra uninstall", "spectra cli uninstall"),
 }
 
 COMMANDS = PROJECT_COMMANDS  # kept for the subparser loop below
@@ -129,6 +143,9 @@ def build_parser() -> argparse.ArgumentParser:
     tool = group.add_subparsers(dest="cli_command", metavar="SUBCOMMAND")
     for label, _ in TOOL_COMMANDS:
         _add_shared(tool.add_parser(label.split()[1], add_help=False), suppress=True)
+    # Retired, but still registered: a named replacement beats "invalid choice".
+    for name in RETIRED_TOOL_SUBCOMMAND_NAMES:
+        _add_shared(tool.add_parser(name, add_help=False), suppress=True)
     return ap
 
 
@@ -154,7 +171,7 @@ def print_help() -> None:
     ui.plain()
     ui.plain("  Install and manage Spectra's agents in this project.")
     ui.plain()
-    ui.panel("Project commands — act on the agents in this project",
+    ui.panel("Project commands — act on the Spectra stack you are standing in",
              [(f"{ui.CYAN}{name}{ui.RESET}", desc) for name, desc in PROJECT_COMMANDS])
     ui.panel("Tool commands — act on the spectra command itself",
              [(f"{ui.CYAN}{name}{ui.RESET}", desc) for name, desc in TOOL_COMMANDS])
@@ -165,11 +182,16 @@ def print_help() -> None:
 
 
 def print_cli_group_help() -> None:
-    """`spectra cli` with no subcommand: say what lives here, and what does not."""
+    """`spectra cli` with no subcommand: say what lives here, and what does not.
+
+    One row now. `version` and `update` moved up to the top level in 6.0.0, where they cover the whole
+    stack instead of just the tool — so this group is down to the one action that is genuinely about the
+    machine's copy of the command rather than about any project.
+    """
     ui.plain(f"{ui.BOLD}Usage:{ui.RESET} {ui.BOLD}spectra cli{ui.RESET} SUBCOMMAND")
     ui.plain()
-    ui.plain("  Manage the spectra command itself. To manage the agents in your project,")
-    ui.plain("  use the top-level commands instead (see `spectra --help`).")
+    ui.plain("  Manage the spectra command itself. To check or update your stack — including this")
+    ui.plain("  command's own version — use the top-level commands instead (see `spectra --help`).")
     ui.plain()
     ui.panel("Tool commands",
              [(f"{ui.CYAN}{label.split()[1]}{ui.RESET}", desc) for label, desc in TOOL_COMMANDS])
@@ -178,13 +200,17 @@ def print_cli_group_help() -> None:
 
 def _report_removed_flag(flag: str) -> int:
     """Name the replacement rather than emitting a bare unrecognized-argument error."""
-    tool, project = REMOVED_FLAGS[flag]
+    replacements = REMOVED_FLAGS[flag]
     ui.plain()
     ui.fail(f"spectra: {flag} was removed in 5.0.0.")
-    ui.plain(f"  For the tool's own:      {ui.bold(tool)}")
-    ui.plain(f"  For your agents:         {ui.bold(project)}")
+    if len(replacements) == 1:
+        ui.plain(f"  Use instead:             {ui.bold(replacements[0])}")
+    else:
+        ui.plain(f"  For your agents:         {ui.bold(replacements[0])}")
+        ui.plain(f"  For the command itself:  {ui.bold(replacements[1])}")
     ui.plain()
-    ui.plain(ui.dim("  Top-level commands act on this project; `spectra cli …` acts on the tool."))
+    ui.plain(ui.dim("  Top-level commands act on the stack you are standing in; "
+                    "`spectra cli …` acts on the tool."))
     ui.plain()
     return EXIT_USAGE
 
@@ -199,53 +225,38 @@ def _update_check_disabled(args) -> bool:
 
 
 # --------------------------------------------------------------------------- #
-# cli version (the tool's own version)
+# Retired tool subcommands
 # --------------------------------------------------------------------------- #
-def cmd_cli_version(args) -> int:
-    installed = version.read_installed_version() or "unknown"
-    ui.plain(installed)
-    if _update_check_disabled(args):
-        return 0
-    newer = version.passive_check(timeout=2)  # best-effort, ~2s bound
-    if newer:
-        ui.info(f"A newer version ({ui.bold(newer)}) is available. "
-                "Update with: " + ui.bold("spectra cli update"))
-    return 0
+# Retired in 6.0.0. Their jobs were absorbed by the top-level commands: `spectra version` now reports
+# the CLI's own version alongside the other three components, and `spectra update` updates it alongside
+# them. Unlike the *flags* removed in 5.0.0 — which had to be caught in argv, because argparse cannot
+# name a replacement for an argument it no longer defines — these stay registered with the parser so
+# that typing one gets a message naming its replacement rather than a bare "invalid choice".
+RETIRED_TOOL_SUBCOMMANDS = {
+    "version": "spectra version",
+    "update": "spectra update",
+}
 
 
-# --------------------------------------------------------------------------- #
-# cli update (the tool updates itself)
-# --------------------------------------------------------------------------- #
+def _report_retired_subcommand(subcommand: str) -> int:
+    replacement = RETIRED_TOOL_SUBCOMMANDS[subcommand]
+    ui.plain()
+    ui.fail(f"`spectra cli {subcommand}` has been retired. Use `{replacement}` instead.")
+    ui.plain()
+    ui.plain(ui.dim(f"  {replacement} now covers the whole stack — the Spec Kit CLI, the core agents,"))
+    ui.plain(ui.dim("  the spectra command itself, and your agents."))
+    ui.plain()
+    return EXIT_USAGE
+
+
+def cmd_cli_version(args=None) -> int:
+    """Retired in 6.0.0; absorbed into `spectra version`."""
+    return _report_retired_subcommand("version")
+
+
 def cmd_cli_update(args=None) -> int:
-    result = version.check_update()
-    installed = result["installed"] or "unknown"
-    status = result["status"]
-
-    if status == "latest_unknown":
-        ui.fail("Could not determine the latest version (GitHub unreachable or rate-limited).")
-        ui.plain(ui.dim(f"Check your connection/proxy and try again. Installed: {installed}"))
-        return 3
-    if status == "up_to_date":
-        ui.ok(f"Already up to date ({installed}).")
-        return 0
-    if status == "ahead":
-        ui.ok(f"Installed {installed} is ahead of latest {result['latest']}; nothing to do.")
-        return 0
-
-    tag = result["latest"]
-    ui.info(f"Update available: {ui.bold(installed)} {ui.dim('->')} {ui.bold(tag)}")
-    try:
-        ui.info("Reinstalling via uv …")
-        version.perform_update(tag)
-    except version.UpdateError as e:
-        ui.fail(f"Update failed: {e}")
-        return 4
-    ui.ok(f"Updated to {ui.bold(tag)}.")
-    ui.plain(ui.dim(
-        "This updates the spectra command only. Extensions update separately with "
-        "`specify extension update spectra`."
-    ))
-    return 0
+    """Retired in 6.0.0; absorbed into `spectra update`."""
+    return _report_retired_subcommand("update")
 
 
 # --------------------------------------------------------------------------- #
@@ -400,14 +411,63 @@ def cmd_check(args) -> int:
 
 
 # --------------------------------------------------------------------------- #
-# version (the agents in this project)
+# Presenting stack health
+# --------------------------------------------------------------------------- #
+def _transition(component) -> str:
+    """`0.12.14 -> 0.16.4`, or just the one version when there is only one to show."""
+    if component.installed and component.latest:
+        return f"{ui.bold(component.installed)} {ui.dim('->')} {ui.bold(component.latest)}"
+    return ui.bold(component.installed or component.latest or "unknown")
+
+
+def _detail_phrase(component) -> str:
+    """The component's explanation, trimmed to sit inside parentheses.
+
+    Details are written as sentences so they read well on their own, but they get embedded in
+    `unknown (…)` here — so the trailing full stop would otherwise produce `(reason.)`.
+    """
+    detail = (component.detail or "status could not be determined").strip()
+    return detail[:-1] if detail.endswith(".") else detail
+
+
+def _status_row(component):
+    """One `(label, glyph, phrase)` row describing a component's health."""
+    if component.status == health.UP_TO_DATE:
+        return (component.label, ui.GLYPH_OK, f"up to date ({ui.bold(component.installed)})")
+    if component.status == health.NEEDS_UPDATING:
+        return (component.label, ui.GLYPH_WARN, f"needs updating ({_transition(component)})")
+    if component.status == health.AHEAD:
+        return (component.label, ui.GLYPH_OK,
+                f"ahead of published ({_transition(component)})")
+    # UNKNOWN always carries a detail, and keeps the installed version when it has one (FR-026).
+    detail = _detail_phrase(component)
+    if component.installed:
+        return (component.label, ui.GLYPH_NONE,
+                f"unknown (installed {ui.bold(component.installed)}; {detail})")
+    return (component.label, ui.GLYPH_NONE, f"unknown ({detail})")
+
+
+def _show_health(report) -> None:
+    ui.plain()
+    ui.health_table([_status_row(c) for c in report.components])
+    ui.plain()
+
+
+def _skip_network(args) -> bool:
+    return _update_check_disabled(args)
+
+
+# --------------------------------------------------------------------------- #
+# version (the whole stack)
 # --------------------------------------------------------------------------- #
 def cmd_version(args) -> int:
-    """Compare the installed agents against the published ones.
+    """Report the status of all four components of the Spectra stack.
 
-    Every verdict — current, behind, or ahead — exits 0, because the command was asked a question and
-    answered it. Non-zero is reserved for being unable to answer, so this is safe to drop into a
-    shell without `|| true`.
+    Every delivered verdict exits 0 — current, behind, ahead, or unknown — because the command was asked
+    a question and answered it. That includes an unknown: with four components there is always something
+    to report, so unreachable data degrades one row rather than failing the command. Non-zero is reserved
+    for a project state in which the question cannot be asked at all, which keeps this safe to drop into
+    a shell without `|| true`.
     """
     state = project.classify()
     if state.state == project.NOT_A_PROJECT:
@@ -417,86 +477,119 @@ def cmd_version(args) -> int:
     if state.state == project.INCOMPLETE:
         return _say_incomplete(state)
 
-    installed = state.installed_version
-    try:
-        published = extension.published_version()
-    except net.FetchError as e:
-        ui.warn(f"Your agents are at {ui.bold(installed)}, but the published version could not be "
-                "fetched, so there is nothing to compare against.")
-        ui.plain(f"  {e}")
-        return EXIT_UNREACHABLE
+    report = health.check_all(state, skip_network=_skip_network(args))
+    _show_health(report)
 
-    verdict = extension.compare(installed, published)
-    if verdict == extension.UP_TO_DATE:
-        ui.ok(f"Your agents are up to date (extension {ui.bold(installed)}).")
-    elif verdict == extension.OUT_OF_DATE:
-        ui.warn(f"Your agents are out of date: installed {ui.bold(installed)}, "
-                f"published {ui.bold(published)}.")
-        ui.plain("  Update them with: " + ui.bold("spectra update"))
+    if report.needs_update:
+        ui.plain("  You can update by running: " + ui.bold("spectra update"))
+        ui.plain()
+    elif report.all_unknown:
+        ui.warn("Nothing could be checked, so the stack could not be verified.")
+        ui.plain()
+    elif report.unknown:
+        names = ", ".join(c.label for c in report.unknown)
+        ui.ok("Nothing needs updating among the components that could be checked.")
+        ui.plain(ui.dim(f"  Unverified: {names}"))
+        ui.plain()
     else:
-        ui.ok(f"Your agents are ahead of what is published: installed {ui.bold(installed)}, "
-              f"published {ui.bold(published)}.")
-        ui.plain(ui.dim("  Nothing to update — this is what a local or pre-release copy looks like."))
-    ui.plain(ui.dim("  This is the extension version. For the tool's own: spectra cli version"))
+        ui.ok("Your whole Spectra stack is up to date.")
+        ui.plain()
     return EXIT_OK
 
 
 # --------------------------------------------------------------------------- #
-# update (the agents in this project)
+# update (the whole stack)
 # --------------------------------------------------------------------------- #
+def _outcome_row(result):
+    """One `(label, glyph, phrase)` row describing what an update attempt did."""
+    if result.outcome == health.UPDATED:
+        return (result.label, ui.GLYPH_OK, "updated")
+    if result.outcome == health.FAILED:
+        return (result.label, ui.GLYPH_FAIL, f"failed ({result.detail})")
+    return (result.label, ui.GLYPH_NONE, f"skipped ({result.detail})")
+
+
+def _confirm_updates(args, outdated) -> bool:
+    """List what will change and get one confirmation covering all of it.
+
+    Only components established as behind are listed — an unknown one is not going to be touched, so
+    naming it here would invite the user to approve something that will not happen.
+    """
+    ui.plain("The following components need updating:")
+    for component in outdated:
+        ui.plain(f"  • {component.label}: {_transition(component)}")
+    ui.plain()
+
+    if args.yes:
+        return True
+    if not sys.stdin.isatty():
+        ui.plain("  Re-run with " + ui.bold("--yes") + " to update without being asked.")
+        return False
+    return ui.confirm("Proceed?")
+
+
 def cmd_update(args) -> int:
-    """Bring the installed agents up to the published version, through Spec Kit."""
+    """Bring every out-of-date part of the Spectra stack current, after one confirmation.
+
+    Runs the same check `spectra version` renders, so the command never acts on a state it did not first
+    report. Updates run in canonical order and continue past failures; anything whose status could not be
+    established is skipped rather than attempted, and skipping never turns a clean run into a failed one.
+    """
     state = project.classify()
     if state.state == project.NOT_A_PROJECT:
         return _say_not_a_project()
     if state.state == project.NOT_INSTALLED:
         return _say_not_installed(state)
+    # An INCOMPLETE install deliberately falls through: the extension check reports it as needing an
+    # update, and the walk repairs it. That is the one component this command can fix outright.
 
-    # An incomplete install is exactly what this command repairs, so it does not check versions
-    # first — there is no readable version to check.
-    if state.state != project.INCOMPLETE:
-        try:
-            published = extension.published_version()
-        except net.FetchError as e:
-            ui.fail("Could not fetch the published version, so nothing was changed.")
-            ui.plain(f"  {e}")
-            return EXIT_UNREACHABLE
+    report = health.check_all(state, skip_network=_skip_network(args))
+    _show_health(report)
 
-        verdict = extension.compare(state.installed_version, published)
-        if verdict == extension.UP_TO_DATE:
-            ui.ok(f"Your agents are already up to date (extension {ui.bold(published)}).")
-            return EXIT_OK
-        if verdict == extension.AHEAD:
-            ui.ok(f"Installed {ui.bold(state.installed_version)} is ahead of published "
-                  f"{ui.bold(published)}; nothing to do.")
-            return EXIT_OK
-        ui.info(f"Updating agents: {ui.bold(state.installed_version)} {ui.dim('->')} "
-                f"{ui.bold(published)}")
-    else:
-        ui.info("Repairing an incomplete Spectra install …")
-
-    ui.plain()
-    try:
-        code = extension.delegate_update()
-    except extension.DelegationError as e:
-        ui.fail("Could not update the extension.")
-        for line in str(e).splitlines():
-            ui.plain(f"  {line}")
-        return EXIT_DELEGATION
-    if code == EXIT_INTERRUPTED:
-        return EXIT_INTERRUPTED
-    if code != 0:
+    if not report.needs_update:
+        if report.all_unknown:
+            # Not the same as "everything is current", and must not read like it.
+            ui.warn("Nothing could be checked, so nothing was updated.")
+            ui.plain(ui.dim("  Unverified: "
+                            + ", ".join(c.label for c in report.unknown)))
+        elif report.unknown:
+            ui.ok("Nothing needs updating among the components that could be checked.")
+            ui.plain(ui.dim("  Unverified: "
+                            + ", ".join(c.label for c in report.unknown)))
+        else:
+            ui.ok("Everything is up to date.")
         ui.plain()
-        ui.fail(f"Spec Kit's extension update exited with code {code}; your agents are unchanged.")
-        return EXIT_DELEGATION
+        return EXIT_OK
+
+    if not _confirm_updates(args, report.outdated):
+        ui.info("Nothing was changed.")
+        return EXIT_DECLINED
+
+    def announce(component):
+        ui.plain()
+        ui.info(f"Updating {component.label} …")
+
+    try:
+        results = health.apply_updates(report, announce=announce)
+    except health.Interrupted:
+        ui.plain()
+        ui.fail("Interrupted; the remaining components were left alone.")
+        return EXIT_INTERRUPTED
 
     ui.plain()
-    now = project.classify()
-    if now.is_installed:
-        ui.ok(f"Agents updated (extension {ui.bold(now.installed_version)}).")
-    else:
-        ui.ok("Agents updated.")
+    ui.health_table([_outcome_row(r) for r in results])
+    ui.plain()
+
+    failed = [r for r in results if r.failed]
+    if failed:
+        ui.fail(f"{len(failed)} of {len(report.outdated)} updates failed.")
+        ui.plain(ui.dim("  The components that succeeded were still updated."))
+        ui.plain()
+        return EXIT_DELEGATION
+
+    ui.ok("Everything that needed updating was updated.")
     ui.plain(ui.dim("  Restart your AI agent so it picks up any new commands."))
+    ui.plain()
     return EXIT_OK
 
 
@@ -584,7 +677,7 @@ def cmd_agent_list(args) -> int:
     if published.newer_minor:
         ui.info(f"This roster (schema {published.schema_version}) is newer than your Spectra CLI, "
                 "so some details may not be shown.")
-        ui.plain(ui.dim("  Update the command with: " + ui.bold("spectra cli update")))
+        ui.plain(ui.dim("  Update the command with: " + ui.bold("spectra update")))
     return 0
 
 
@@ -620,7 +713,8 @@ PROJECT_DISPATCH = {
 }
 
 # Handlers are looked up here rather than branched on, so adding a subcommand means adding a row.
-# All three take `args`, which is what lets the table hold plain references instead of wrappers.
+# `version` and `update` point at retirement handlers rather than being absent, so that typing one gets
+# a named replacement instead of argparse's "invalid choice".
 TOOL_DISPATCH = {
     "version": cmd_cli_version,
     "update": cmd_cli_update,

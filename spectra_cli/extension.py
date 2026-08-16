@@ -130,6 +130,30 @@ def delegate_update() -> int:
     return _delegate(["specify", "extension", "update", EXTENSION_ID])
 
 
+def delegate_self_upgrade() -> int:
+    """`specify self upgrade`. Returns its exit code.
+
+    Spec Kit's own CLI upgrading itself. Runs first in the update order because the integration upgrade
+    that follows is performed *by* this CLI, so it should be the new one doing it.
+    """
+    return _delegate(["specify", "self", "upgrade"])
+
+
+def delegate_integration_upgrade() -> int:
+    """`specify integration upgrade`. Returns its exit code.
+
+    Invoked bare: the optional trailing key defaults to the project's current integration, which is
+    exactly what we want to upgrade.
+
+    **`--force` is deliberately not passed.** Spec Kit blocks this upgrade when it detects locally
+    modified managed files, and overriding that on the user's behalf would silently discard their edits.
+    That gate belongs to Spec Kit, and a user who means to override it can say so directly — the same
+    reasoning that keeps the removal confirmation in `delegate_remove` on Spec Kit's side rather than
+    duplicated here.
+    """
+    return _delegate(["specify", "integration", "upgrade"])
+
+
 def delegate_remove(force: bool = False) -> int:
     """`specify extension remove spectra`, adding `--force` only when asked.
 

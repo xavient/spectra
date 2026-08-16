@@ -249,6 +249,38 @@ def agent_list(roster, installed=None) -> None:
 
 
 # --------------------------------------------------------------------------- #
+# The stack health table
+# --------------------------------------------------------------------------- #
+
+# Status glyphs, reusing the vocabulary ok()/warn()/fail() already established so the CLI speaks one
+# visual language.
+GLYPH_OK = f"{GREEN}✓{RESET}"
+GLYPH_WARN = f"{YELLOW}!{RESET}"
+GLYPH_FAIL = f"{RED}✗{RESET}"
+GLYPH_NONE = f"{PURPLE_DIM}–{RESET}"
+
+
+def health_table(rows) -> None:
+    """Print aligned `label: glyph phrase` rows.
+
+    `rows` is a sequence of `(label, glyph, phrase)` with the glyph and phrase already coloured and
+    formatted by the caller. **One renderer, two callers**: the status table from `spectra version` and
+    the outcome table from `spectra update` have the same shape, and letting them share this keeps them
+    aligned by construction — they print adjacent in a single update run, which is exactly where two
+    implementations would visibly drift.
+
+    Columns rather than a box: `panel()` would force the longest version transition to wrap on an
+    80-column terminal, and the versions are the part a user reads most closely.
+    """
+    if not rows:
+        return
+    label_w = max(len(label) for label, _, _ in rows)
+    for label, glyph, phrase in rows:
+        pad = " " * (label_w - len(label))
+        print(f"  {label}:{pad} {glyph} {phrase}")
+
+
+# --------------------------------------------------------------------------- #
 # Subprocess helpers
 # --------------------------------------------------------------------------- #
 

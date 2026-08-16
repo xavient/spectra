@@ -27,8 +27,8 @@ paths below are literal.
 
 **Purpose**: Establish the baseline so later regressions are attributable.
 
-- [ ] T001 Record the pre-change test baseline by running `python3 -m unittest discover -s tests` and noting the count (expected: 259 tests, OK)
-- [ ] T002 Confirm `specify` is on PATH and capture its live output with `specify self check`, verifying it matches research.md R1 branch 5 (`Up to date: <version>`)
+- [X] T001 Record the pre-change test baseline by running `python3 -m unittest discover -s tests` and noting the count (expected: 259 tests, OK)
+- [X] T002 Confirm `specify` is on PATH and capture its live output with `specify self check`, verifying it matches research.md R1 branch 5 (`Up to date: <version>`)
 
 ---
 
@@ -39,13 +39,13 @@ story needs these.
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T003 Create `spectra_cli/health.py` with the module docstring and the status constants `UP_TO_DATE`, `NEEDS_UPDATING`, `AHEAD`, `UNKNOWN` and component keys `SPECIFY_CLI`, `INTEGRATION`, `SPECTRA_CLI`, `SPECTRA_EXTENSION` per contracts/health-check.md
-- [ ] T004 Implement the `ComponentStatus` class in `spectra_cli/health.py` with fields `key`, `label`, `installed`, `latest`, `status`, `detail` and `__slots__`, following the `ProjectState` style in `spectra_cli/project.py`
-- [ ] T005 Implement the `HealthReport` class in `spectra_cli/health.py` holding `components` plus the derived properties `outdated`, `needs_update`, and `unknown` per data-model.md
-- [ ] T006 [P] Add a single `ui.health_table(rows)` to `spectra_cli/ui.py` rendering aligned label/glyph/phrase/version columns using `visible_len` for padding, with `✓` green, `!` yellow, `✗` red, `–` dimmed per research.md R7. It takes already-formatted glyph/phrase/version cells so the **same** renderer serves both the status table and the update final report — one column layout, two callers
-- [ ] T007 [P] Add a fake `specify` executable fixture to `tests/helpers.py` that can emit any of the five `specify self check` output branches from research.md R1 on demand, placed on a temporary `PATH`
-- [ ] T008 [P] Add a `without_specify()` context manager to `tests/helpers.py` that removes `specify` from `PATH` for the duration of a block
-- [ ] T009 Extend `temp_project()` in `tests/helpers.py` with an `integration_version` argument that writes `.specify/integration.json`, accepting a sentinel for "write malformed JSON" and one for "omit the version key"
+- [X] T003 Create `spectra_cli/health.py` with the module docstring and the status constants `UP_TO_DATE`, `NEEDS_UPDATING`, `AHEAD`, `UNKNOWN` and component keys `SPECIFY_CLI`, `INTEGRATION`, `SPECTRA_CLI`, `SPECTRA_EXTENSION` per contracts/health-check.md
+- [X] T004 Implement the `ComponentStatus` class in `spectra_cli/health.py` with fields `key`, `label`, `installed`, `latest`, `status`, `detail` and `__slots__`, following the `ProjectState` style in `spectra_cli/project.py`
+- [X] T005 Implement the `HealthReport` class in `spectra_cli/health.py` holding `components` plus the derived properties `outdated`, `needs_update`, and `unknown` per data-model.md
+- [X] T006 [P] Add a single `ui.health_table(rows)` to `spectra_cli/ui.py` rendering aligned label/glyph/phrase/version columns using `visible_len` for padding, with `✓` green, `!` yellow, `✗` red, `–` dimmed per research.md R7. It takes already-formatted glyph/phrase/version cells so the **same** renderer serves both the status table and the update final report — one column layout, two callers
+- [X] T007 [P] Add a fake `specify` executable fixture to `tests/helpers.py` that can emit any of the five `specify self check` output branches from research.md R1 on demand, placed on a temporary `PATH`
+- [X] T008 [P] Add a `without_specify()` context manager to `tests/helpers.py` that removes `specify` from `PATH` for the duration of a block
+- [X] T009 Extend `temp_project()` in `tests/helpers.py` with an `integration_version` argument that writes `.specify/integration.json`, accepting a sentinel for "write malformed JSON" and one for "omit the version key"
 
 **Checkpoint**: Data structures, renderer, and fixtures ready — user story implementation can begin.
 
@@ -61,27 +61,27 @@ agents reading `needs updating (0.12.14 → 0.16.4)` — the real state of this 
 
 ### Tests for User Story 1
 
-- [ ] T010 [P] [US1] Create `tests/test_health.py` with a `SelfCheckParsing` class asserting `parse_self_check()` handles all five branches from research.md R1 using literal fixture strings, including the U+2192 arrow and the unrecognized-output fallback
-- [ ] T011 [P] [US1] Add an `IntegrationVersion` class to `tests/test_health.py` covering `read_integration_version()` for: valid file, missing file, malformed JSON, non-object top level, absent `version` key, and empty `version`
-- [ ] T012 [P] [US1] Add an `IntegrationStatus` class to `tests/test_health.py` asserting every row of the state table in contracts/health-check.md §2, including that an unknown Specify CLI forces an unknown integration status
-- [ ] T013 [P] [US1] Add a `CheckAll` class to `tests/test_health.py` asserting `check_all()` returns exactly four components in canonical order and that one component's failure never suppresses the other three
-- [ ] T014 [P] [US1] Add a `SpecifyAbsent` class to `tests/test_health.py` asserting that with `specify` off `PATH` the first two components are `unknown` and the last two still resolve
-- [ ] T015 [P] [US1] Update the `Verdicts` class in `tests/test_version_update.py` to assert all four component rows are reported and that the `spectra update` hint appears only when at least one row needs updating
-- [ ] T016 [US1] Replace `test_it_distinguishes_the_extension_version_from_the_tools_own` in `tests/test_version_update.py` — the `spectra cli version` hint line is removed, so assert it is absent
-- [ ] T017 [US1] Rewrite `test_an_unreachable_published_version_exits_three_without_implying_currency` in `tests/test_version_update.py`: unreachable published data now yields an `unknown` row and **exit 0**, not exit 3, per contracts/cli-surface.md
-- [ ] T018 [P] [US1] Add tests to `tests/test_version_update.py` asserting `--no-update-check` and `SPECTRA_NO_UPDATE_CHECK` suppress only the Spectra CLI release lookup while the other three checks still run (FR-016)
+- [X] T010 [P] [US1] Create `tests/test_health.py` with a `SelfCheckParsing` class asserting `parse_self_check()` handles all five branches from research.md R1 using literal fixture strings, including the U+2192 arrow and the unrecognized-output fallback
+- [X] T011 [P] [US1] Add an `IntegrationVersion` class to `tests/test_health.py` covering `read_integration_version()` for: valid file, missing file, malformed JSON, non-object top level, absent `version` key, and empty `version`
+- [X] T012 [P] [US1] Add an `IntegrationStatus` class to `tests/test_health.py` asserting every row of the state table in contracts/health-check.md §2, including that an unknown Specify CLI forces an unknown integration status
+- [X] T013 [P] [US1] Add a `CheckAll` class to `tests/test_health.py` asserting `check_all()` returns exactly four components in canonical order and that one component's failure never suppresses the other three
+- [X] T014 [P] [US1] Add a `SpecifyAbsent` class to `tests/test_health.py` asserting that with `specify` off `PATH` the first two components are `unknown` and the last two still resolve
+- [X] T015 [P] [US1] Update the `Verdicts` class in `tests/test_version_update.py` to assert all four component rows are reported and that the `spectra update` hint appears only when at least one row needs updating
+- [X] T016 [US1] Replace `test_it_distinguishes_the_extension_version_from_the_tools_own` in `tests/test_version_update.py` — the `spectra cli version` hint line is removed, so assert it is absent
+- [X] T017 [US1] Rewrite `test_an_unreachable_published_version_exits_three_without_implying_currency` in `tests/test_version_update.py`: unreachable published data now yields an `unknown` row and **exit 0**, not exit 3, per contracts/cli-surface.md
+- [X] T018 [P] [US1] Add tests to `tests/test_version_update.py` asserting `--no-update-check` and `SPECTRA_NO_UPDATE_CHECK` suppress only the Spectra CLI release lookup while the other three checks still run (FR-016)
 
 ### Implementation for User Story 1
 
-- [ ] T019 [US1] Implement `parse_self_check(text)` in `spectra_cli/health.py` per the parse table in contracts/health-check.md §1, matching on line prefixes and never on exit code
-- [ ] T020 [US1] Implement `get_specify_cli_status()` in `spectra_cli/health.py`, shelling out via `subprocess.run` with `capture_output=True`, `text=True`, and an explicit timeout; map `shutil.which` miss, `OSError`, and `TimeoutExpired` to `UNKNOWN` with distinct details
-- [ ] T021 [US1] Implement `read_integration_version(project_root)` in `spectra_cli/health.py`, returning `None` for missing, unreadable, malformed, and version-less files alike
-- [ ] T022 [US1] Implement `get_integration_status(project_root, specify_status)` in `spectra_cli/health.py` per the state table, setting `latest` to the CLI's *latest* when the CLI is behind and to its *installed* version otherwise
-- [ ] T023 [P] [US1] Implement `get_spectra_cli_status(skip_network=False)` in `spectra_cli/health.py`, translating `version.check_update()`'s four statuses and honouring `skip_network` per FR-016
-- [ ] T024 [P] [US1] Implement `get_spectra_extension_status(project_state)` in `spectra_cli/health.py`, reusing `extension.published_version()` and `extension.compare()`, mapping `net.FetchError` and an `INCOMPLETE` project to `UNKNOWN` while still reporting `installed`
-- [ ] T025 [US1] Implement `check_all(project_state, skip_network=False, timeout=...)` in `spectra_cli/health.py`, resolving the Specify CLI first and feeding its result into the integration check (FR-025), returning a `HealthReport` of four components in canonical order
-- [ ] T026 [US1] Rewrite `cmd_version` in `spectra_cli/cli.py` to guard project state (exit 5 per FR-022), call `health.check_all()`, render via `ui.health_table()`, append the `spectra update` hint when `needs_update`, and return `EXIT_OK` for every delivered verdict
-- [ ] T027 [US1] Remove the `EXIT_UNREACHABLE` return path from `cmd_version` in `spectra_cli/cli.py` and delete the now-obsolete `spectra cli version` hint line
+- [X] T019 [US1] Implement `parse_self_check(text)` in `spectra_cli/health.py` per the parse table in contracts/health-check.md §1, matching on line prefixes and never on exit code
+- [X] T020 [US1] Implement `get_specify_cli_status()` in `spectra_cli/health.py`, shelling out via `subprocess.run` with `capture_output=True`, `text=True`, and an explicit timeout; map `shutil.which` miss, `OSError`, and `TimeoutExpired` to `UNKNOWN` with distinct details
+- [X] T021 [US1] Implement `read_integration_version(project_root)` in `spectra_cli/health.py`, returning `None` for missing, unreadable, malformed, and version-less files alike
+- [X] T022 [US1] Implement `get_integration_status(project_root, specify_status)` in `spectra_cli/health.py` per the state table, setting `latest` to the CLI's *latest* when the CLI is behind and to its *installed* version otherwise
+- [X] T023 [P] [US1] Implement `get_spectra_cli_status(skip_network=False)` in `spectra_cli/health.py`, translating `version.check_update()`'s four statuses and honouring `skip_network` per FR-016
+- [X] T024 [P] [US1] Implement `get_spectra_extension_status(project_state)` in `spectra_cli/health.py`, reusing `extension.published_version()` and `extension.compare()`, mapping `net.FetchError` and an `INCOMPLETE` project to `UNKNOWN` while still reporting `installed`
+- [X] T025 [US1] Implement `check_all(project_state, skip_network=False, timeout=...)` in `spectra_cli/health.py`, resolving the Specify CLI first and feeding its result into the integration check (FR-025), returning a `HealthReport` of four components in canonical order
+- [X] T026 [US1] Rewrite `cmd_version` in `spectra_cli/cli.py` to guard project state (exit 5 per FR-022), call `health.check_all()`, render via `ui.health_table()`, append the `spectra update` hint when `needs_update`, and return `EXIT_OK` for every delivered verdict
+- [X] T027 [US1] Remove the `EXIT_UNREACHABLE` return path from `cmd_version` in `spectra_cli/cli.py` and delete the now-obsolete `spectra cli version` hint line
 
 **Checkpoint**: `spectra version` reports all four components. US1 is independently demonstrable.
 
@@ -99,27 +99,27 @@ exactly those two, and confirm the final four-row report shows per-component out
 
 ### Tests for User Story 2
 
-- [ ] T028 [P] [US2] Add an `UpdateResult` class to `tests/test_health.py` asserting the outcome vocabulary `UPDATED`/`FAILED`/`SKIPPED` and that `FAILED` always carries a non-empty detail
-- [ ] T029 [P] [US2] Add tests to `tests/test_version_update.py` asserting an all-current stack reports the table, prints no prompt, and exits 0 (FR-021)
-- [ ] T030 [P] [US2] Add a test to `tests/test_version_update.py` asserting that when **no** component's status could be determined, the output says nothing could be checked, names the unverified components, does not claim everything is up to date, and exits 0 (FR-027)
-- [ ] T031 [P] [US2] Add a test to `tests/test_version_update.py` asserting that when some components are current and others unknown with none outdated, the output reports both facts rather than implying the whole stack was verified (FR-027)
-- [ ] T032 [P] [US2] Add tests to `tests/test_version_update.py` asserting the confirmation prompt lists only `NEEDS_UPDATING` components and omits `unknown` and `ahead` ones (FR-024)
-- [ ] T033 [P] [US2] Add tests to `tests/test_version_update.py` asserting `--yes` skips the prompt and that declining exits `EXIT_DECLINED` (1) having invoked no update
-- [ ] T034 [P] [US2] Add a partial-failure test for `apply_updates()` to `tests/test_health.py` (matchable by `-k partial`) proving a failing early component does not prevent later components being attempted, and that the returned results carry actionable detail for the failure
-- [ ] T035 [P] [US2] Add a skip-semantics test for `apply_updates()` to `tests/test_health.py` (matchable by `-k skip`) proving an `unknown` or `ahead` component is never attempted and yields a `SKIPPED` result (FR-023)
-- [ ] T036 [P] [US2] Add a test for `apply_updates()` to `tests/test_health.py` asserting Ctrl-C (exit 130) during a delegated step stops the walk rather than continuing to the next component
-- [ ] T037 [P] [US2] Add an end-to-end test to `tests/test_version_update.py` asserting `cmd_update` exits `EXIT_DELEGATION` (4) when any result failed and `EXIT_OK` (0) when only skips accompany successes (FR-012)
-- [ ] T038 [US2] Update the existing `Update` class tests in `tests/test_version_update.py` that assume extension-only behavior, so they exercise the four-component walk instead
+- [X] T028 [P] [US2] Add an `UpdateResult` class to `tests/test_health.py` asserting the outcome vocabulary `UPDATED`/`FAILED`/`SKIPPED` and that `FAILED` always carries a non-empty detail
+- [X] T029 [P] [US2] Add tests to `tests/test_version_update.py` asserting an all-current stack reports the table, prints no prompt, and exits 0 (FR-021)
+- [X] T030 [P] [US2] Add a test to `tests/test_version_update.py` asserting that when **no** component's status could be determined, the output says nothing could be checked, names the unverified components, does not claim everything is up to date, and exits 0 (FR-027)
+- [X] T031 [P] [US2] Add a test to `tests/test_version_update.py` asserting that when some components are current and others unknown with none outdated, the output reports both facts rather than implying the whole stack was verified (FR-027)
+- [X] T032 [P] [US2] Add tests to `tests/test_version_update.py` asserting the confirmation prompt lists only `NEEDS_UPDATING` components and omits `unknown` and `ahead` ones (FR-024)
+- [X] T033 [P] [US2] Add tests to `tests/test_version_update.py` asserting `--yes` skips the prompt and that declining exits `EXIT_DECLINED` (1) having invoked no update
+- [X] T034 [P] [US2] Add a partial-failure test for `apply_updates()` to `tests/test_health.py` (matchable by `-k partial`) proving a failing early component does not prevent later components being attempted, and that the returned results carry actionable detail for the failure
+- [X] T035 [P] [US2] Add a skip-semantics test for `apply_updates()` to `tests/test_health.py` (matchable by `-k skip`) proving an `unknown` or `ahead` component is never attempted and yields a `SKIPPED` result (FR-023)
+- [X] T036 [P] [US2] Add a test for `apply_updates()` to `tests/test_health.py` asserting Ctrl-C (exit 130) during a delegated step stops the walk rather than continuing to the next component
+- [X] T037 [P] [US2] Add an end-to-end test to `tests/test_version_update.py` asserting `cmd_update` exits `EXIT_DELEGATION` (4) when any result failed and `EXIT_OK` (0) when only skips accompany successes (FR-012)
+- [X] T038 [US2] Update the existing `Update` class tests in `tests/test_version_update.py` that assume extension-only behavior, so they exercise the four-component walk instead
 
 ### Implementation for User Story 2
 
-- [ ] T039 [P] [US2] Add `delegate_self_upgrade()` to `spectra_cli/extension.py` calling `_delegate(["specify", "self", "upgrade"])`
-- [ ] T040 [P] [US2] Add `delegate_integration_upgrade()` to `spectra_cli/extension.py` calling `_delegate(["specify", "integration", "upgrade"])` bare, with a docstring recording why `--force` is deliberately not passed
-- [ ] T041 [US2] Implement the `UpdateResult` class and its `UPDATED`/`FAILED`/`SKIPPED` constants in `spectra_cli/health.py` per data-model.md
-- [ ] T042 [US2] Implement `apply_updates(report)` in `spectra_cli/health.py` as the ordered walk, guarding each step individually so `DelegationError`, `UpdateError`, and a non-zero exit each record a `FAILED` result and continue, while exit 130 aborts the walk. It lives in `health.py`, not `cli.py`, so the partial-failure semantics can be tested without argparse or a terminal — see contracts/health-check.md
-- [ ] T043 [US2] Rewrite `cmd_update` in `spectra_cli/cli.py` to run `health.check_all()`, prompt on `report.outdated` (respecting `--yes` and non-TTY), execute the walk, render the final four-row report, and return `EXIT_DELEGATION` if any result failed
-- [ ] T044 [US2] Implement the three-way no-op branch in `cmd_update` in `spectra_cli/cli.py` per FR-027 and contracts/cli-surface.md: all current → "Everything is up to date"; none outdated but some unknown → report what is current *and* name the unverified components; nothing checkable at all → warn that nothing could be checked. All three exit 0 and none may claim the stack is current when it was not verified
-- [ ] T045 [US2] Add an update-outcome formatter that maps each `UpdateResult` to glyph/phrase/version cells and feeds them to the existing `ui.health_table()` from T006 — **no second renderer**, so the before and after tables share one column layout by construction (F12)
+- [X] T039 [P] [US2] Add `delegate_self_upgrade()` to `spectra_cli/extension.py` calling `_delegate(["specify", "self", "upgrade"])`
+- [X] T040 [P] [US2] Add `delegate_integration_upgrade()` to `spectra_cli/extension.py` calling `_delegate(["specify", "integration", "upgrade"])` bare, with a docstring recording why `--force` is deliberately not passed
+- [X] T041 [US2] Implement the `UpdateResult` class and its `UPDATED`/`FAILED`/`SKIPPED` constants in `spectra_cli/health.py` per data-model.md
+- [X] T042 [US2] Implement `apply_updates(report)` in `spectra_cli/health.py` as the ordered walk, guarding each step individually so `DelegationError`, `UpdateError`, and a non-zero exit each record a `FAILED` result and continue, while exit 130 aborts the walk. It lives in `health.py`, not `cli.py`, so the partial-failure semantics can be tested without argparse or a terminal — see contracts/health-check.md
+- [X] T043 [US2] Rewrite `cmd_update` in `spectra_cli/cli.py` to run `health.check_all()`, prompt on `report.outdated` (respecting `--yes` and non-TTY), execute the walk, render the final four-row report, and return `EXIT_DELEGATION` if any result failed
+- [X] T044 [US2] Implement the three-way no-op branch in `cmd_update` in `spectra_cli/cli.py` per FR-027 and contracts/cli-surface.md: all current → "Everything is up to date"; none outdated but some unknown → report what is current *and* name the unverified components; nothing checkable at all → warn that nothing could be checked. All three exit 0 and none may claim the stack is current when it was not verified
+- [X] T045 [US2] Add an update-outcome formatter that maps each `UpdateResult` to glyph/phrase/version cells and feeds them to the existing `ui.health_table()` from T006 — **no second renderer**, so the before and after tables share one column layout by construction (F12)
 
 **Checkpoint**: `spectra update` brings the whole stack current from one confirmation.
 
@@ -138,23 +138,23 @@ implemented and shipped in any order relative to the others.
 
 ### Tests for User Story 3
 
-- [ ] T046 [P] [US3] Add a `RetiredToolSubcommands` class to `tests/test_cli_surface.py` asserting `spectra cli version` and `spectra cli update` each exit `EXIT_USAGE` (2) and print a message naming their replacement, and that neither reaches the network nor spawns a subprocess — the substantive form of SC-004's one-second bound
-- [ ] T047 [P] [US3] Add a test to `tests/test_cli_surface.py` asserting neither retired subcommand performs its old action — no uv invocation, no release lookup
-- [ ] T048 [US3] Remove `test_cli_version_reports_the_tools_own_version_on_the_first_line` and `test_cli_update_dispatches_to_the_tools_own_update` from `TheToolGroup` in `tests/test_cli_surface.py`, superseded by T044
-- [ ] T049 [US3] Move `test_cli_version_matches_the_committed_version_file` in `tests/test_cli_surface.py` off the retired command, asserting instead that `version.read_installed_version()` equals the committed `VERSION` file
-- [ ] T050 [US3] Update `test_all_three_tool_handlers_share_one_signature` in `tests/test_cli_surface.py` — there is one live tool handler plus two retirement handlers now — and confirm `test_cli_uninstall_dispatches_to_the_tools_own_uninstall` still passes untouched, which is what verifies FR-015 (`cli uninstall` unchanged)
-- [ ] T051 [US3] Update `test_every_tool_command_is_listed_under_cli` and the `TheSplitIsEvident` panel tests in `tests/test_cli_surface.py` to expect a single-row Tool commands panel
-- [ ] T052 [P] [US3] Add a test to `tests/test_cli_surface.py` asserting the `version` and `update` descriptions in the help output describe the whole stack rather than "the agents installed here" (FR-019)
+- [X] T046 [P] [US3] Add a `RetiredToolSubcommands` class to `tests/test_cli_surface.py` asserting `spectra cli version` and `spectra cli update` each exit `EXIT_USAGE` (2) and print a message naming their replacement, and that neither reaches the network nor spawns a subprocess — the substantive form of SC-004's one-second bound
+- [X] T047 [P] [US3] Add a test to `tests/test_cli_surface.py` asserting neither retired subcommand performs its old action — no uv invocation, no release lookup
+- [X] T048 [US3] Remove `test_cli_version_reports_the_tools_own_version_on_the_first_line` and `test_cli_update_dispatches_to_the_tools_own_update` from `TheToolGroup` in `tests/test_cli_surface.py`, superseded by T044
+- [X] T049 [US3] Move `test_cli_version_matches_the_committed_version_file` in `tests/test_cli_surface.py` off the retired command, asserting instead that `version.read_installed_version()` equals the committed `VERSION` file
+- [X] T050 [US3] Update `test_all_three_tool_handlers_share_one_signature` in `tests/test_cli_surface.py` — there is one live tool handler plus two retirement handlers now — and confirm `test_cli_uninstall_dispatches_to_the_tools_own_uninstall` still passes untouched, which is what verifies FR-015 (`cli uninstall` unchanged)
+- [X] T051 [US3] Update `test_every_tool_command_is_listed_under_cli` and the `TheSplitIsEvident` panel tests in `tests/test_cli_surface.py` to expect a single-row Tool commands panel
+- [X] T052 [P] [US3] Add a test to `tests/test_cli_surface.py` asserting the `version` and `update` descriptions in the help output describe the whole stack rather than "the agents installed here" (FR-019)
 
 ### Implementation for User Story 3
 
-- [ ] T053 [US3] Add retirement handlers to `spectra_cli/cli.py` that print `✗ \`spectra cli <verb>\` has been retired. Use \`spectra <verb>\` instead.` and return `EXIT_USAGE`
-- [ ] T054 [US3] Point the `version` and `update` entries of `TOOL_DISPATCH` in `spectra_cli/cli.py` at the retirement handlers, keeping both registered with the parser so they do not degrade into a bare "invalid choice" error
-- [ ] T055 [US3] Reduce `TOOL_COMMANDS` in `spectra_cli/cli.py` to `cli uninstall` only, and update the `version` / `update` descriptions in `PROJECT_COMMANDS` to describe the whole stack (FR-019, FR-020)
-- [ ] T056 [US3] Update `print_cli_group_help()` in `spectra_cli/cli.py` so the group help lists only `uninstall` and points at the top-level commands for version and update
-- [ ] T057 [US3] Update the module docstring of `spectra_cli/cli.py`, which currently documents `spectra cli version | update | uninstall` as the tool surface
-- [ ] T058 [US3] Replace the `spectra cli version` assertion in `.github/workflows/ci.yml` with the `importlib.metadata` comparison from research.md R3, keeping the `VERSION` parity intent intact
-- [ ] T059 [US3] Extend the "removed flags name their replacements" step in `.github/workflows/ci.yml` to also assert `spectra cli version` and `spectra cli update` exit non-zero and name their replacements
+- [X] T053 [US3] Add retirement handlers to `spectra_cli/cli.py` that print `✗ \`spectra cli <verb>\` has been retired. Use \`spectra <verb>\` instead.` and return `EXIT_USAGE`
+- [X] T054 [US3] Point the `version` and `update` entries of `TOOL_DISPATCH` in `spectra_cli/cli.py` at the retirement handlers, keeping both registered with the parser so they do not degrade into a bare "invalid choice" error
+- [X] T055 [US3] Reduce `TOOL_COMMANDS` in `spectra_cli/cli.py` to `cli uninstall` only, and update the `version` / `update` descriptions in `PROJECT_COMMANDS` to describe the whole stack (FR-019, FR-020)
+- [X] T056 [US3] Update `print_cli_group_help()` in `spectra_cli/cli.py` so the group help lists only `uninstall` and points at the top-level commands for version and update
+- [X] T057 [US3] Update the module docstring of `spectra_cli/cli.py`, which currently documents `spectra cli version | update | uninstall` as the tool surface
+- [X] T058 [US3] Replace the `spectra cli version` assertion in `.github/workflows/ci.yml` with the `importlib.metadata` comparison from research.md R3, keeping the `VERSION` parity intent intact
+- [X] T059 [US3] Extend the "removed flags name their replacements" step in `.github/workflows/ci.yml` to also assert `spectra cli version` and `spectra cli update` exit non-zero and name their replacements
 
 **Checkpoint**: The retirement is complete and CI no longer depends on a command that does not exist.
 
@@ -172,14 +172,14 @@ call order.
 
 ### Tests for User Story 4
 
-- [ ] T060 [P] [US4] Add an ordering test to `tests/test_version_update.py` (matchable by `-k order`) recording delegate invocation order with all four components out of date and asserting the canonical sequence
-- [ ] T061 [P] [US4] Add a test to `tests/test_version_update.py` asserting that when only a subset is out of date, only that subset is attempted and its relative order is preserved
-- [ ] T062 [P] [US4] Add a test to `tests/test_version_update.py` asserting the order holds even when an earlier component's update fails — no short-circuiting (US4 scenario 3)
+- [X] T060 [P] [US4] Add an ordering test to `tests/test_version_update.py` (matchable by `-k order`) recording delegate invocation order with all four components out of date and asserting the canonical sequence
+- [X] T061 [P] [US4] Add a test to `tests/test_version_update.py` asserting that when only a subset is out of date, only that subset is attempted and its relative order is preserved
+- [X] T062 [P] [US4] Add a test to `tests/test_version_update.py` asserting the order holds even when an earlier component's update fails — no short-circuiting (US4 scenario 3)
 
 ### Implementation for User Story 4
 
-- [ ] T063 [US4] Assert canonical ordering structurally in `spectra_cli/health.py` by deriving the walk from `HealthReport.components` order rather than a separate list, so ordering cannot drift from the report
-- [ ] T064 [US4] Add a comment in `spectra_cli/health.py` recording research.md R6's finding that the Spectra CLI step must stay third because it replaces the running process's own code
+- [X] T063 [US4] Assert canonical ordering structurally in `spectra_cli/health.py` by deriving the walk from `HealthReport.components` order rather than a separate list, so ordering cannot drift from the report
+- [X] T064 [US4] Add a comment in `spectra_cli/health.py` recording research.md R6's finding that the Spectra CLI step must stay third because it replaces the running process's own code
 
 **Checkpoint**: Ordering is guaranteed by construction and pinned by tests.
 
@@ -187,19 +187,19 @@ call order.
 
 ## Phase 7: Polish & Cross-Cutting Concerns
 
-- [ ] T065 Bump the root `VERSION` file from `5.0.0` to `6.0.0` — major, because two commands are removed (constitution Principle VI)
-- [ ] T066 Verify `spectra/extension.yml` and `catalog.json` versions are **unchanged**, confirming the two release channels stayed decoupled
-- [ ] T067 [P] Update the `Working with your agents` and `Keeping the command itself up to date` sections of `README.md`, which document `spectra cli version` and `spectra cli update` as live commands, and the `Two release channels` table at line 390 which names `spectra cli update` as the tool's update path
-- [ ] T068 [P] Add a "Changed in 6.0.0" note to `README.md` mirroring the existing 5.0.0 note, explaining that the two `cli` subcommands were absorbed into the top-level commands
-- [ ] T069 Update the four `spectra cli version` / `spectra cli update` references in `CONTRIBUTING.md` (lines ~335, ~390, ~400, ~413), and rewrite the release smoke-test step at lines 398-400 to use bare `spectra` per research.md R8 — `spectra version` cannot substitute there because the step runs from an arbitrary directory
-- [ ] T070 [P] Update `docs/index.html`, which documents `spectra cli version` and `spectra cli update` as live commands; leave the dynamically-read version pill alone, since constitution Principle V forbids hard-coding a version there
-- [ ] T071 Update the clean-room test matrix in `test/README.md`, whose rows 1b, 5, 9, and 10 are built on the retired commands; row 10 ("project uninstall leaves the tool") must become `spectra uninstall` then bare `spectra` per research.md R8, because by construction no project extension remains for `spectra version` to accept
-- [ ] T072 Run `python3 tools/generate_agent_docs.py --check` to confirm no generated region drifted (expected: no change, since no agent data was touched)
-- [ ] T073 Run the full suite `python3 -m unittest discover -s tests` and confirm it is green with no fewer tests than the T001 baseline
-- [ ] T074 Work through every scenario in `quickstart.md` (1–15), confirming each expected outcome and exit code
-- [ ] T075 Confirm the `spectra version` timing budget from plan.md holds — roughly one second on a warm network
-- [ ] T076 Verify the suite passes on Python 3.9 as well as 3.12 to match the CI matrix in `.github/workflows/ci.yml`, e.g. `python3.9 -m unittest discover -s tests`
-- [ ] T077 Grep the whole repository for surviving references to the retired commands — `grep -rn "cli version\|cli update" --exclude-dir=.git --exclude-dir=specs .` should return only the retirement handlers, their tests, and the CI assertions that check them
+- [X] T065 Bump the root `VERSION` file from `5.0.0` to `6.0.0` — major, because two commands are removed (constitution Principle VI)
+- [X] T066 Verify `spectra/extension.yml` and `catalog.json` versions are **unchanged**, confirming the two release channels stayed decoupled
+- [X] T067 [P] Update the `Working with your agents` and `Keeping the command itself up to date` sections of `README.md`, which document `spectra cli version` and `spectra cli update` as live commands, and the `Two release channels` table at line 390 which names `spectra cli update` as the tool's update path
+- [X] T068 [P] Add a "Changed in 6.0.0" note to `README.md` mirroring the existing 5.0.0 note, explaining that the two `cli` subcommands were absorbed into the top-level commands
+- [X] T069 Update the four `spectra cli version` / `spectra cli update` references in `CONTRIBUTING.md` (lines ~335, ~390, ~400, ~413), and rewrite the release smoke-test step at lines 398-400 to use bare `spectra` per research.md R8 — `spectra version` cannot substitute there because the step runs from an arbitrary directory
+- [X] T070 [P] Update `docs/index.html`, which documents `spectra cli version` and `spectra cli update` as live commands; leave the dynamically-read version pill alone, since constitution Principle V forbids hard-coding a version there
+- [X] T071 Update the clean-room test matrix in `test/README.md`, whose rows 1b, 5, 9, and 10 are built on the retired commands; row 10 ("project uninstall leaves the tool") must become `spectra uninstall` then bare `spectra` per research.md R8, because by construction no project extension remains for `spectra version` to accept
+- [X] T072 Run `python3 tools/generate_agent_docs.py --check` to confirm no generated region drifted (expected: no change, since no agent data was touched)
+- [X] T073 Run the full suite `python3 -m unittest discover -s tests` and confirm it is green with no fewer tests than the T001 baseline
+- [X] T074 Work through every scenario in `quickstart.md` (1–15), confirming each expected outcome and exit code
+- [X] T075 Confirm the `spectra version` timing budget from plan.md holds — roughly one second on a warm network
+- [X] T076 Verify the suite passes on Python 3.9 as well as 3.12 to match the CI matrix in `.github/workflows/ci.yml`, e.g. `python3.9 -m unittest discover -s tests`
+- [X] T077 Grep the whole repository for surviving references to the retired commands — `grep -rn "cli version\|cli update" --exclude-dir=.git --exclude-dir=specs .` should return only the retirement handlers, their tests, and the CI assertions that check them
 
 ---
 
@@ -313,5 +313,8 @@ would advertise a major bump without the removal that justifies it.
   see research.md R8
 - Two existing tests encode behavior this feature deliberately changes and must be rewritten rather than
   patched: T017 (exit 3 → exit 0 on unreachable data) and T016 (the removed hint line)
+- **T076 caveat.** Only Python 3.14 is installed on the development machine, so 3.9 was verified
+  at the syntax level (`ast.parse(..., feature_version=(3, 9))` over every module, clean). The
+  real 3.9 run happens in CI, whose matrix covers 3.9 and 3.12
 - Zero third-party dependencies is a hard constraint — nothing here adds one
 - Commit after each task or logical group; stop at any checkpoint to validate a story independently

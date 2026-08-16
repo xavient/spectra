@@ -43,9 +43,13 @@ missing, unreadable, and version-less manifests alike.
 ### Invariants
 
 - `status == UNKNOWN` ⟹ `detail` is a non-empty string.
-- `status` is `UP_TO_DATE`, `NEEDS_UPDATING`, or `AHEAD` ⟹ both `installed` and `latest` are non-`None`.
-  A comparison verdict without two versions to compare is not reachable.
-- `installed is None and latest is None` ⟹ `status == UNKNOWN`.
+- `status` is `UP_TO_DATE`, `NEEDS_UPDATING`, or `AHEAD` ⟹ both `installed` and `latest` are non-`None`,
+  **with one documented exception**: an `INCOMPLETE` Spectra-agents install reports `NEEDS_UPDATING` with
+  no `installed` version. What is unknown there is the version, not the verdict — a half-written install
+  definitely needs fixing, and reporting it as `UNKNOWN` would make the update walk skip the one
+  component it could repair.
+- `installed is None and latest is None` ⟹ `status == UNKNOWN`, unless the incomplete-install case above
+  applies and the published version was also unreachable.
 - `installed` may be non-`None` while `status == UNKNOWN` — the common offline case, where the local
   version is readable but nothing can be compared against it (FR-026 requires it still be shown).
 
