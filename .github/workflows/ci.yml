@@ -45,8 +45,12 @@ jobs:
           fi
           echo "spectra-cli reports $REPORTED."
           # Bare `spectra` prints `cli vX.Y.Z` and works from any directory, so it is what the release
-          # smoke test and the clean-room matrix use now that `cli version` is gone.
-          BANNER="$(cd "$(mktemp -d)" && spectra | grep -o 'cli v[0-9][^ ]*' | head -1)"
+          # smoke test and the clean-room matrix use now that `cli version` is gone. Constitution
+          # Principle VI makes that line a MUST; this is what enforces it.
+          # Captured to a file first: `grep | head` under `set -o pipefail` can fail on SIGPIPE when
+          # head closes the pipe early, which would be a flake rather than a real failure.
+          ( cd "$(mktemp -d)" && spectra > /tmp/banner.txt 2>&1 ) || true
+          BANNER="$(grep -o 'cli v[0-9][^ ]*' /tmp/banner.txt | head -1 || true)"
           if [ "$BANNER" != "cli v$FILE_VERSION" ]; then
             echo "::error::bare spectra reported '$BANNER', expected 'cli v$FILE_VERSION'." >&2
             exit 1
@@ -92,10 +96,18 @@ jobs:
             grep -q "spectra $verb" /tmp/retired.txt \
               || { echo "::error::spectra cli $verb did not name its replacement." >&2; exit 1; }
           done
-          # The one that stays must stay.
-          spectra cli --help > /dev/null 2>&1 || true
-          spectra cli 2>&1 | grep -q 'uninstall' \
+          # The one that stays must stay. `spectra cli` with no subcommand prints its group help and
+          # exits 2 by design, so its output is captured first — piping it under `set -o pipefail`
+          # would fail the step on that intentional exit code even when the grep matches.
+          spectra cli > /tmp/cli-group.txt 2>&1 || true
+          grep -q 'uninstall' /tmp/cli-group.txt \
             || { echo "::error::spectra cli no longer advertises uninstall." >&2; exit 1; }
+          for gone in 'cli version' 'cli update'; do
+            if grep -q "$gone" /tmp/cli-group.txt; then
+              echo "::error::spectra cli still advertises '$gone'." >&2
+              exit 1
+            fi
+          done
           echo "Both retired cli subcommands name their replacements; uninstall survives."
 
       - name: Neither tools/ nor tests/ ships in the wheel
