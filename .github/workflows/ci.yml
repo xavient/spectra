@@ -27,21 +27,35 @@ jobs:
         # whole repository, so CI installs nothing beyond the package itself.
         run: python -m unittest discover -s tests -v
       - name: The command runs and reports the committed version
-        # `spectra cli version` replaced `--version` in 5.0.0. Its first line stays the bare version
-        # precisely so this remains a one-line comparison.
-        # SPECTRA_NO_UPDATE_CHECK keeps this offline and deterministic — no GitHub round trip.
+        # Asserts the installed distribution reports the committed VERSION. This used to read
+        # `spectra cli version | head -1`, but that command was retired in 6.0.0 — and its replacement,
+        # `spectra version`, requires a Spec Kit project with Spectra installed, which this job has no
+        # reason to build. Reading importlib.metadata tests the same parity closer to the source: it is
+        # exactly what `version.read_installed_version()` reads.
         env:
           SPECTRA_NO_UPDATE_CHECK: '1'
         run: |
           set -euo pipefail
           spectra --help > /dev/null
-          REPORTED="$(spectra cli version | head -1)"
+          REPORTED="$(python -c 'import importlib.metadata as m; print(m.version("spectra-cli"))')"
           FILE_VERSION="$(tr -d '[:space:]' < VERSION)"
           if [ "$REPORTED" != "$FILE_VERSION" ]; then
-            echo "::error::spectra cli version reported '$REPORTED' but VERSION says '$FILE_VERSION'." >&2
+            echo "::error::spectra-cli metadata reported '$REPORTED' but VERSION says '$FILE_VERSION'." >&2
             exit 1
           fi
-          echo "spectra cli version reports $REPORTED."
+          echo "spectra-cli reports $REPORTED."
+          # Bare `spectra` prints `cli vX.Y.Z` and works from any directory, so it is what the release
+          # smoke test and the clean-room matrix use now that `cli version` is gone. Constitution
+          # Principle VI makes that line a MUST; this is what enforces it.
+          # Captured to a file first: `grep | head` under `set -o pipefail` can fail on SIGPIPE when
+          # head closes the pipe early, which would be a flake rather than a real failure.
+          ( cd "$(mktemp -d)" && spectra > /tmp/banner.txt 2>&1 ) || true
+          BANNER="$(grep -o 'cli v[0-9][^ ]*' /tmp/banner.txt | head -1 || true)"
+          if [ "$BANNER" != "cli v$FILE_VERSION" ]; then
+            echo "::error::bare spectra reported '$BANNER', expected 'cli v$FILE_VERSION'." >&2
+            exit 1
+          fi
+          echo "bare spectra reports $BANNER from an unrelated directory."
 
       - name: The removed flags name their replacements
         # Removing them is the breaking change in 5.0.0; leaving a user with "unrecognized arguments"
@@ -57,10 +71,44 @@ jobs:
             fi
             grep -q 'was removed in' /tmp/removed.txt \
               || { echo "::error::spectra $flag did not explain that it was removed." >&2; exit 1; }
-            grep -q 'spectra cli' /tmp/removed.txt \
+            # A replacement is always named. Since 6.0.0 that is a top-level command for --version and
+            # --update, so match the verb rather than the retired `spectra cli` form.
+            verb="${flag#--}"
+            grep -q "spectra $verb" /tmp/removed.txt \
               || { echo "::error::spectra $flag did not name its replacement." >&2; exit 1; }
           done
           echo "All three removed flags name their replacements."
+
+      - name: The retired cli subcommands name their replacements
+        # Retired in 6.0.0: `spectra version` and `spectra update` absorbed them. Same contract as the
+        # removed flags — the action is gone, and the message says what to run instead.
+        env:
+          SPECTRA_NO_UPDATE_CHECK: '1'
+        run: |
+          set -euo pipefail
+          for verb in version update; do
+            if spectra cli "$verb" > /tmp/retired.txt 2>&1; then
+              echo "::error::spectra cli $verb still succeeds; it was supposed to be retired." >&2
+              exit 1
+            fi
+            grep -q 'retired' /tmp/retired.txt \
+              || { echo "::error::spectra cli $verb did not say it was retired." >&2; exit 1; }
+            grep -q "spectra $verb" /tmp/retired.txt \
+              || { echo "::error::spectra cli $verb did not name its replacement." >&2; exit 1; }
+          done
+          # The one that stays must stay. `spectra cli` with no subcommand prints its group help and
+          # exits 2 by design, so its output is captured first — piping it under `set -o pipefail`
+          # would fail the step on that intentional exit code even when the grep matches.
+          spectra cli > /tmp/cli-group.txt 2>&1 || true
+          grep -q 'uninstall' /tmp/cli-group.txt \
+            || { echo "::error::spectra cli no longer advertises uninstall." >&2; exit 1; }
+          for gone in 'cli version' 'cli update'; do
+            if grep -q "$gone" /tmp/cli-group.txt; then
+              echo "::error::spectra cli still advertises '$gone'." >&2
+              exit 1
+            fi
+          done
+          echo "Both retired cli subcommands name their replacements; uninstall survives."
 
       - name: Neither tools/ nor tests/ ships in the wheel
         # FR-023: the generator is maintainer tooling and must never reach a user's machine. Today

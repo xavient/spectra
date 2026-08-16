@@ -332,7 +332,7 @@ uv tool install spectra-cli --from git+https://github.com/xavient/spectra
 
 There is **no build artifact and no release asset** — uv builds the wheel from source at install time.
 A GitHub Release is still published for every version, because that Release object is what
-`spectra cli version` / `spectra cli update` and the landing page's version pill read via
+`spectra version` / `spectra update` and the landing page's version pill read via
 `/releases/latest`.
 
 ### Tags and Releases belong to the CLI
@@ -387,7 +387,7 @@ at all. Bump the extension, not this. See [Publish the catalog and package](#pub
 
    > **Never publish or re-publish an old release without re-checking `/releases/latest`.** Left to
    > GitHub's default, "Latest" is resolved by `created_at` with `published_at` as the tie-breaker, so
-   > touching an older release can steal the slot and point `spectra cli update` and the landing page's
+   > touching an older release can steal the slot and point `spectra update` and the landing page's
    > version pill at an ancient version. `make_latest: true` in the workflow protects new releases;
    > for anything done by hand, verify afterwards:
    > ```bash
@@ -397,8 +397,10 @@ at all. Bump the extension, not this. See [Publish the catalog and package](#pub
 4. **Smoke-test what a consumer gets**, from any directory:
    ```bash
    uv tool install spectra-cli --from git+https://github.com/xavient/spectra --force
-   spectra cli version
+   spectra              # the banner's `cli vX.Y.Z` line is the version, and works anywhere
    ```
+   `spectra version` is deliberately *not* used here: it reports the whole stack and so requires a
+   Spec Kit project with Spectra installed, which a bare smoke test has no reason to build.
    For a full clean-room run (no uv, no `specify`, no `.specify/`), use [`test/run.sh`](test/run.sh).
 
 ### How consumers get it
@@ -410,7 +412,7 @@ spectra
 
 Unpinned, so new installs track `main`. Keep `main` releasable. A specific version is pinned by
 appending the tag (`--from git+https://github.com/xavient/spectra@3.0.0`), which is exactly what
-`spectra cli update` does. Keep the README's [Installation](README.md#installation) section and the
+`spectra update` does. Keep the README's [Installation](README.md#installation) section and the
 landing page in sync if the install command ever changes.
 
 > **Heads-up:** the `download_url`s inside `catalog.json` point at `raw.githubusercontent.com/.../main/...`,

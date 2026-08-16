@@ -463,11 +463,11 @@
                       <p class="more"><code>spectra agent-list</code> reads the published roster at run time, so a newly published agent shows up without you updating anything.</p>
                     </li>
                     <li>
-                      <b>Manage the command itself.</b> <span class="os">Tool operations live under <code>spectra cli</code>, so they can never be confused with your agents.</span>
-                      <pre><code>spectra cli version     # the command's own version</code></pre>
-                      <pre><code>spectra cli update      # update the command via uv</code></pre>
+                      <b>Keep the whole stack current.</b> <span class="os">One command reports all four components — Spec Kit&rsquo;s CLI, the core agents, the <code>spectra</code> command, and your agents — and one brings them current.</span>
+                      <pre><code>spectra version         # is every part of my stack current?</code></pre>
+                      <pre><code>spectra update          # bring every out-of-date part current</code></pre>
                       <pre><code>spectra cli uninstall   # remove the command from this machine</code></pre>
-                      <p class="more">The <b>command</b> and the <b>extensions</b> update separately and on their own schedule — you do not need a new <code>spectra</code> version to get new agents. <span class="os">Changed in 5.0.0: <code>--version</code>, <code>--update</code> and <code>--uninstall</code> were removed; run one and it names its replacement.</span></p>
+                      <p class="more">The <b>command</b> and the <b>extensions</b> still release separately and on their own schedule — you do not need a new <code>spectra</code> version to get new agents. <span class="os">Changed in 6.0.0: <code>spectra cli version</code> and <code>spectra cli update</code> were retired into the two commands above. Changed in 5.0.0: <code>--version</code>, <code>--update</code> and <code>--uninstall</code> were removed; run any of them and it names its replacement.</span></p>
                     </li>
           </ol>
         </div>

@@ -165,7 +165,7 @@ class SchemaTolerance(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertIn("Guardrails", out)
         self.assertIn("newer than your Spectra CLI", out)
-        self.assertIn("spectra cli update", out)
+        self.assertIn("spectra update", out)
 
     def test_a_newer_major_schema_lists_nothing_and_names_the_remedy(self):
         data = h.roster(schema_version="2.0")
@@ -174,7 +174,7 @@ class SchemaTolerance(unittest.TestCase):
             code, out = run(["agent-list"])
         self.assertEqual(code, 3)
         self.assertNotIn("Guardrails", out)
-        self.assertIn("spectra cli update", out)
+        self.assertIn("spectra update", out)
 
 
 class Failures(unittest.TestCase):

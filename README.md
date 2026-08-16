@@ -261,38 +261,67 @@ in**:
 ```bash
 spectra agent-list   # every agent Spectra offers, grouped by SDLC phase (works anywhere)
 spectra check        # is Spectra installed in this project? offers to install it if not
-spectra version      # are my agents current? names the fix if they aren't
-spectra update       # bring the agents up to the published version, via Spec Kit
+spectra version      # is my whole stack current? checks all four components
+spectra update       # bring every out-of-date component current, after one confirmation
 spectra uninstall    # remove the agents from this project; the command stays on your machine
 ```
 
 `spectra agent-list` reads the published roster at run time, so a newly published agent shows up
 without you updating anything.
 
-#### Keeping the command itself up to date
+#### Keeping everything up to date
 
-Managing the **tool** lives under `spectra cli`, so it can never be confused with managing your
-agents:
+Two commands cover the whole stack. `spectra version` reports it; `spectra update` fixes it:
 
 ```bash
-spectra cli version     # print the command's version; note if a newer one exists
-spectra cli update      # update the spectra command to the latest release via uv
+spectra version   # is every part of my stack current?
+spectra update    # bring every out-of-date part current, after one confirmation
+```
+
+Both check **four** things, because all four have to be current for Spectra to work:
+
+| Component | What it is |
+|---|---|
+| Specify CLI | Spec Kit's own `specify` command |
+| Core agents | the Spec Kit integration installed in `.specify/` |
+| Spectra CLI | the `spectra` command itself |
+| Spectra agents | the Spectra extension installed in this project |
+
+```text
+Specify CLI:     ✓ up to date (0.16.4)
+Core agents:     ! needs updating (0.12.14 -> 0.16.4)
+Spectra CLI:     ✓ up to date (6.0.0)
+Spectra agents:  ✓ up to date (1.3.1)
+
+  You can update by running: spectra update
+```
+
+Anything that can't be checked — no network, no `specify` on `PATH` — is reported as `unknown` rather
+than guessed at, and `spectra update` skips it instead of acting on a state it couldn't establish.
+
+Managing the **tool itself** is down to one verb, since `version` and `update` now cover it:
+
+```bash
 spectra cli uninstall   # remove the spectra command from this machine
 ```
+
+> **Changed in 6.0.0.** `spectra cli version` and `spectra cli update` were retired. They reported on
+> and updated the `spectra` command alone, which is only a quarter of what has to be current — so
+> `spectra version` and `spectra update` absorbed them and now cover all four components. Run either
+> retired command and it tells you which replacement you want. `spectra cli uninstall` is unchanged.
 
 > **Changed in 5.0.0.** `--version`, `--update`, and `--uninstall` were removed. They reported on the
 > *tool*, which is the number you're least likely to care about. Run one and it tells you which
 > replacement you want.
 
-**The command and the extensions update separately** — and that's deliberate. New agents reach you
-through the catalog, not through a new `spectra` release, so `spectra update` (or
-`specify extension update spectra`) is what you run from inside your project when we publish
-extension updates.
+**The command and the extensions still release separately** — and that's deliberate. New agents reach
+you through the catalog, not through a new `spectra` release. What changed in 6.0.0 is only that one
+command now *reports and updates* both, instead of making you run two.
 
 See [Two release channels](#two-release-channels) for why.
 
-This removes the `spectra` command only. Extensions already installed into your projects are left
-untouched — remove those with `specify extension remove spectra`.
+`spectra cli uninstall` removes the `spectra` command only. Extensions already installed into your
+projects are left untouched — remove those with `specify extension remove spectra`.
 
 ### Manual setup
 
@@ -387,7 +416,7 @@ Spectra ships two things, and they carry **two different version numbers on purp
 |---|---|---|
 | What it is | the uv tool that sets everything up | the agents your AI assistant runs |
 | You install it with | `uv tool install spectra-cli --from git+…` | `specify extension add spectra` |
-| You update it with | `spectra cli update` | `spectra update` (or `specify extension update spectra`) |
+| You update it with | `spectra update` (or `spectra cli uninstall` to remove it) | `spectra update` (or `specify extension update spectra`) |
 | Its version comes from | the latest [GitHub Release](https://github.com/xavient/spectra/releases) | `version` in [`catalog.json`](catalog.json) |
 
 They are **not** expected to match, and a bump to one does not imply a bump to the other. Adding a new
