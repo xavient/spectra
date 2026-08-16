@@ -63,6 +63,8 @@ A developer who has confirmed (via `spectra version` or otherwise) that componen
 9. **Given** `specify` is not on PATH so the Specify CLI and Core agents statuses are unknown, **When** the developer runs `spectra update`, **Then** those two components are not attempted, are listed as skipped with the reason, and the exit code reflects only the components that were actually attempted.
 10. **Given** every out-of-date component updates successfully while one other component's status is unknown, **When** the final report is shown, **Then** the command exits 0 — a skipped component does not make the run a failure.
 11. **Given** a component's status is unknown, **When** the confirmation prompt lists what will be updated, **Then** that component does not appear in the list.
+12. **Given** no component's status could be determined at all (offline and `specify` absent), **When** the developer runs `spectra update`, **Then** the output states that nothing could be checked and names the unknown components, does **not** claim everything is up to date, prompts for nothing, and exits 0.
+13. **Given** some components are current and others are unknown, with none needing updating, **When** the developer runs `spectra update`, **Then** the output reports what is current *and* names the components that could not be checked, rather than implying the whole stack was verified.
 
 ---
 
@@ -115,7 +117,7 @@ Updates execute in a defined order that respects dependency relationships: the S
 ### Functional Requirements
 
 - **FR-001**: System MUST report the status of four components in a single `spectra version` invocation: Specify CLI, Core agents (integration), Spectra CLI, and Spectra agents (extension).
-- **FR-002**: Each component status MUST include at minimum: component name, installed version, and a status indicator (up to date / needs updating / ahead / unknown / error).
+- **FR-002**: Each component status MUST include at minimum: component name, installed version, and a status indicator drawn from exactly four values — up to date, needs updating, ahead, or unknown. A component that could not be checked, for any reason, MUST report "unknown" together with an explanation; there is no separate "error" state, because reporting it and acting on it are identical to the unknown case.
 - **FR-003**: When any component reports "needs updating", the output MUST end with a hint to run `spectra update`.
 - **FR-004**: System MUST detect the Specify CLI status by running `specify self check` first, before any other component check, and parsing from its output both the installed CLI version and whether a newer one is available.
 - **FR-005**: System MUST detect the Core agents status by reading the `version` field from `.specify/integration.json` and reporting it as needing updating when **either** the Specify CLI is itself behind (because the integration version tracks the CLI version, so a behind CLI implies a behind integration) **or** the integration version does not match the installed Specify CLI version (the CLI was upgraded but the integration upgrade was never re-run).
@@ -140,12 +142,13 @@ Updates execute in a defined order that respects dependency relationships: the S
 - **FR-024**: A component whose status is "unknown" MUST NOT appear in the list of components presented for confirmation, since it is not being updated.
 - **FR-025**: The health check MUST resolve the Specify CLI status before the Core agents status, because the Core agents verdict depends on it. When the Specify CLI status is unknown, the Core agents status MUST also be reported as unknown rather than guessed from the integration file alone.
 - **FR-026**: When a component's latest version cannot be resolved, the health check MUST still report that component's locally-readable installed version alongside the "unknown" status, and MUST NOT fail the whole command.
+- **FR-027**: `spectra update` MUST distinguish "nothing to update because every component is current" from "nothing to update because no component's status could be determined". It MUST NOT report that everything is up to date when no component was successfully checked. When at least one component is unknown and none needs updating, it MUST name the unknown components and say that they could not be checked, while still exiting 0.
 
 ### Key Entities
 
-- **Component Status**: Represents the health of one stack component — includes component name, installed version, latest version, comparison status, and optional error message.
-- **Health Report**: An aggregate of four Component Status objects, representing the full-stack health at a point in time.
-- **Update Result**: The outcome of attempting to update one component — success, failure (with error detail), or skipped.
+- **Component Status**: Represents the health of one stack component — includes component name, installed version, latest version, comparison status (one of the four values in FR-002), and an explanatory detail, which is required whenever the status is "unknown".
+- **Health Report**: An aggregate of exactly four Component Status objects in a fixed order, representing the full-stack health at a point in time. A component that could not be checked appears as "unknown" rather than being omitted, so the report always has four entries.
+- **Update Result**: The outcome of attempting to update one component — updated, failed (with actionable detail), or skipped (already current, ahead, or status undeterminable).
 
 ## Success Criteria *(mandatory)*
 

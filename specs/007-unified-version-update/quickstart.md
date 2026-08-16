@@ -134,6 +134,25 @@ spectra update; echo "exit=$?"
 With everything current: **expect** the status table, an "everything is up to date" line, **no prompt**,
 and **exit 0**.
 
+## Scenario 7b — update with nothing *checkable* (US2 #12, #13, FR-027)
+
+```bash
+env PATH="/usr/bin:/bin" SPECTRA_RAW_BASE=http://127.0.0.1:9 spectra update; echo "exit=$?"
+```
+
+With every component unknown: **expect** a message stating nothing could be checked, the unverified
+components named, **no claim that everything is up to date**, no prompt, and **exit 0**.
+
+Then the partial case — network up, `specify` absent:
+
+```bash
+env PATH="/usr/bin:/bin" spectra update; echo "exit=$?"
+```
+
+**Expect** the output to report what is current *and* name the components that could not be checked. The
+distinction from Scenario 7 is the whole point: exit 0 must not be allowed to imply "verified current"
+when nothing was verified.
+
 ## Scenario 8 — update with work to do (US2 #2…#6, FR-008, FR-011)
 
 ```bash
@@ -220,6 +239,14 @@ tr -d '[:space:]' < VERSION
 grep -n "cli version" .github/workflows/ci.yml    # expect no matches
 ```
 
+Finally confirm the R8 replacement works from an arbitrary directory, which is what the release
+smoke-test and clean-room row 10 now depend on:
+
+```bash
+cd "$(mktemp -d)" && SPECTRA_NO_UPDATE_CHECK=1 spectra | grep -i 'cli v'
+ls -A | wc -l          # expect 0 — bare spectra must still touch nothing
+```
+
 ## Scenario 15 — interruption (contracts/health-check.md)
 
 Run `spectra update` with work to do and press Ctrl-C during a delegated step.
@@ -240,6 +267,7 @@ Cancellation is not a partial failure.
 | 5 | Offline keeps installed versions and exits 0 | FR-026 |
 | 6 | `--no-update-check` suppresses one lookup only | FR-016 |
 | 7 | No-op update exits 0 without prompting | FR-021 |
+| 7b | No-op-because-unverified reads differently from no-op-because-current | FR-027 |
 | 8 | One prompt; `--yes` skips; decline exits 1 | FR-011, SC-002 |
 | 9 | Partial failure continues and exits 4 | FR-009, FR-012, SC-003 |
 | 10 | Skips never fail the run | FR-023 |
@@ -249,3 +277,4 @@ Cancellation is not a partial failure.
 | 14 | CI parity assertion moved and passing | R3 |
 | 15 | Ctrl-C stops the walk, exits 130 | — |
 | 16 | Full suite green on 3.9 and 3.12 | SC-005, SC-006 |
+| 17 | No stale references to the retired commands survive anywhere in the repo | R8, T076 |

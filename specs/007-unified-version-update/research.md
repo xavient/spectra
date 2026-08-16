@@ -237,9 +237,15 @@ means *failures*, not *cancellation*.
 
 ## R7 — Rendering the four-row table
 
-**Decision**: A new `ui.health_table(rows)`, aligned in columns rather than boxed, reusing the
-existing glyph vocabulary — `✓` in green for up to date, `!` in yellow for needs updating, `–` dimmed
-for unknown.
+**Decision**: One new `ui.health_table(rows)`, aligned in columns rather than boxed, reusing the
+existing glyph vocabulary — `✓` green for up to date or updated, `!` yellow for needs updating, `✗` red
+for failed, `–` dimmed for unknown or skipped.
+
+**One renderer, two callers.** The status table and the update final report have identical shape — four
+labelled rows carrying a glyph, a phrase, and version information — so `health_table` takes
+already-formatted cells and both callers feed it. A second renderer for the final report would drift
+from the first the moment either changed, and the two tables sitting adjacent in one `spectra update`
+run is exactly where drift would show.
 
 Target shape (the issue's desired output, with the label column padded to the longest name):
 
@@ -262,6 +268,58 @@ plain text without stripping escapes.
 
 ---
 
+## R8 — Reading the CLI's version once `spectra cli version` is gone
+
+**Decision**: Two replacements, no new CLI surface. CI asserts on `importlib.metadata` (R3); every
+procedure that needs the version *from an arbitrary directory* reads the banner line printed by **bare
+`spectra`**.
+
+**Finding**: R3 caught CI's dependency, but two further procedures depend on the same retired command,
+and neither was in scope:
+
+| Procedure | Current step | Why `spectra version` cannot substitute |
+| --- | --- | --- |
+| `CONTRIBUTING.md:398-400` — release smoke test | `uv tool install … --force` then `spectra cli version` | Runs "from any directory"; `spectra version` exits 5 without a Spec Kit project |
+| `test/README.md:79` — clean-room row 10 | `spectra uninstall`, then `spectra cli version` | The whole point is that the *tool* survives removing the *project's* extension — so by construction there is no project extension left for `spectra version` to accept |
+
+Row 10 is the sharper case: its purpose is to prove the command still runs after the project's agents are
+removed, which is exactly the state in which the new `spectra version` refuses to report.
+
+**Resolution — bare `spectra` already does this.** `cmd_overview()` calls `ui.splash()`, which prints a
+`cli vX.Y.Z` line, and bare `spectra` is documented as informational: it works anywhere and touches
+nothing. Verified from an empty temporary directory:
+
+```text
+$ cd "$(mktemp -d)" && SPECTRA_NO_UPDATE_CHECK=1 spectra | grep -i 'cli v'
+cli v5.0.0
+$ ls -A | wc -l
+0
+```
+
+So both procedures become:
+
+- **Release smoke test** → `spectra | grep 'cli v<tag>'`, which additionally exercises the banner path a
+  consumer sees first.
+- **Clean-room row 10** → `spectra uninstall`, then bare `spectra`, asserting it still runs and reports
+  its version. This tests the requirement *better* than before: "the command still runs" is now
+  demonstrated by the command actually running rather than by a subcommand that only reported a number.
+
+**Rationale for not adding a flag**: `--version` was deliberately removed in 5.0.0, and clarification 1
+of this spec deliberately refused to let `spectra version` report a partial subset outside a project.
+Re-introducing either would reverse a considered decision to serve two internal procedures that an
+existing, already-supported command path already satisfies.
+
+**Alternatives considered**:
+
+- *Add `spectra version --json` now.* Rejected: unnecessary once bare `spectra` is recognized as the
+  answer, and it would widen a breaking release. Still worth doing on its own merits for scripting users
+  — see Deferred.
+- *Let `spectra version` degrade outside a project.* Rejected: directly contradicts clarification 1.
+- *Keep `spectra cli version` alive for internal use only.* Rejected: a hidden command that internal
+  procedures depend on is precisely the drift the constitution's sync principle exists to prevent.
+
+---
+
 ## Resolved unknowns
 
 | Unknown from Technical Context | Resolution |
@@ -274,10 +332,12 @@ plain text without stripping escapes.
 | Cost of running all four checks | R4 — ~0.33 s subprocess + two bounded GETs; stay sequential |
 | How to render the table | R7 — new `ui.health_table()`, aligned columns |
 | CI's dependency on the retired command | R3 — real; move the assertion to `importlib.metadata` |
+| How other procedures read the CLI version | R8 — bare `spectra` prints `cli vX.Y.Z` from any directory |
 
 ## Deferred
 
-- **A machine-readable `spectra version`.** R3 shows the only scriptable way to read the CLI's version
-  disappears with `spectra cli version`. CI is handled, but a user scripting against Spectra loses
-  something. A `--json` output mode would restore it properly and serve `spectra version`'s new
-  four-component shape at the same time. Out of scope here; worth its own issue.
+- **A machine-readable `spectra version`.** R8 resolves every *internal* procedure that needed the
+  retired command, so nothing in this repository is left without a path. What remains unserved is an
+  external user scripting against Spectra who wants the four-component report as data rather than as a
+  table — grepping a banner line is not an interface to build on. A `--json` mode would serve that
+  properly. Out of scope here; worth its own issue.

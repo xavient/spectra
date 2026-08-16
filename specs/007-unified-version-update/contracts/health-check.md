@@ -18,9 +18,15 @@ INTEGRATION       = "integration"
 SPECTRA_CLI       = "spectra_cli"
 SPECTRA_EXTENSION = "spectra_extension"
 
+UPDATED = "updated"
+FAILED  = "failed"
+SKIPPED = "skipped"
+
 class ComponentStatus:   # key, label, installed, latest, status, detail
 class HealthReport:      # components; .outdated, .needs_update, .unknown
+class UpdateResult:      # key, label, outcome, detail
 
+# Detection
 def parse_self_check(text) -> dict
 def get_specify_cli_status(timeout=...) -> ComponentStatus
 def read_integration_version(project_root) -> str | None
@@ -28,10 +34,18 @@ def get_integration_status(project_root, specify_status) -> ComponentStatus
 def get_spectra_cli_status(*, skip_network=False) -> ComponentStatus
 def get_spectra_extension_status(project_state) -> ComponentStatus
 def check_all(project_state, *, skip_network=False, timeout=...) -> HealthReport
+
+# Action
+def apply_updates(report) -> list[UpdateResult]
 ```
 
 `parse_self_check` is separated from `get_specify_cli_status` on purpose: the parser is the risky part
 and must be unit-testable against literal fixture strings without spawning a subprocess.
+
+`apply_updates` lives here rather than in `cli.py` for the same reason — the ordered walk and its
+partial-failure semantics are the feature's most intricate logic, and they must be testable without
+argparse, prompts, or a terminal. `cli.py` keeps only what it is good at: parsing, prompting, and
+rendering.
 
 ---
 
@@ -175,6 +189,8 @@ of destructive action that belongs behind Spec Kit's own gate rather than behind
 ---
 
 ## The update walk
+
+`apply_updates(report)` in `spectra_cli/health.py`, returning one `UpdateResult` per component:
 
 ```text
 for component in report.components:          # canonical order == update order

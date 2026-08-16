@@ -141,6 +141,37 @@ Spectra agents:  ✓ up to date (1.3.1)
 ✓ Everything is up to date.
 ```
 
+Nothing **checkable** (FR-027) — a different message for a different situation, because claiming
+everything is current here would be false:
+
+```text
+Specify CLI:     – unknown (specify is not on PATH)
+Core agents:     – unknown (the Specify CLI version is unknown, so there is nothing to compare against)
+Spectra CLI:     – unknown (installed 6.0.0; the latest release could not be fetched)
+Spectra agents:  – unknown (installed 1.3.1; the published version could not be fetched)
+
+! Nothing could be checked, so nothing was updated.
+  Unverified: Specify CLI, Core agents, Spectra CLI, Spectra agents
+                                                                    exit 0
+```
+
+Partially checkable (FR-027) — what is known is stated, and what is not is named:
+
+```text
+Specify CLI:     ✓ up to date (0.16.4)
+Core agents:     ✓ up to date (0.16.4)
+Spectra CLI:     ✓ up to date (6.0.0)
+Spectra agents:  – unknown (installed 1.3.1; the published version could not be fetched)
+
+✓ Nothing needs updating among the components that could be checked.
+  Unverified: Spectra agents
+                                                                    exit 0
+```
+
+All three exit 0 — no update was needed or attempted in any of them. The distinction is in the message,
+not the code, because the exit code answers "did anything I attempted go wrong?" and nothing was
+attempted.
+
 Work to do — only `needs_updating` rows are listed, and one prompt covers all of them:
 
 ```text

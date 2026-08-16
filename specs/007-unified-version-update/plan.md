@@ -136,9 +136,10 @@ Every component resolves to one `ComponentStatus` with the same five fields rega
 different its detection mechanism is. That uniformity is the whole point: it collapses `cmd_version`
 into a render loop and `cmd_update` into an ordered walk, with no per-component branching in either.
 
-Statuses: `UP_TO_DATE` · `NEEDS_UPDATING` · `AHEAD` · `UNKNOWN`. Full field list and the state table
-live in [data-model.md](data-model.md); per-component detection and update mechanics live in
-[contracts/health-check.md](contracts/health-check.md).
+Statuses: `UP_TO_DATE` · `NEEDS_UPDATING` · `AHEAD` · `UNKNOWN` — exactly four, with no separate
+`error` state, because reporting an error and reporting an unknown provoke identical caller behavior.
+Full field list and the state table live in [data-model.md](data-model.md); per-component detection and
+update mechanics live in [contracts/health-check.md](contracts/health-check.md).
 
 ### Detection, per component
 
@@ -156,6 +157,16 @@ without being attempted (FR-023, FR-024). Each step is independently guarded so 
 the run (FR-009), and results are collected into one final report (FR-010). Order is
 Specify CLI → Core agents → Spectra CLI → Spectra agents, and R6 records why step 3 must stay third
 rather than first: it replaces the running process's own code.
+
+The walk is `health.apply_updates(report)`, not a loop inside `cmd_update`. Its partial-failure
+semantics are the most intricate logic in the feature, and putting it beside `check_all` makes it
+testable without argparse, prompts, or a terminal — `cli.py` keeps only parsing, prompting, and
+rendering.
+
+When nothing is outdated, `cmd_update` has three distinct things it might mean, and FR-027 requires it
+distinguish them: every component verified current; nothing outdated but some component unverifiable; or
+nothing checkable at all. Only the first may say the stack is up to date. All three exit 0, because the
+exit code answers "did anything I attempted go wrong?" and nothing was attempted.
 
 ### Exit codes
 
