@@ -15,6 +15,7 @@ extension that bundles Spectra's agentic SDLC commands. Every command lives unde
 | `speckit.spectra.brd` | Turn a raw business requirement, typed or in a document, into a structured, specify-ready BRD. |
 | `speckit.spectra.adr` | Capture a context-aware Architecture Decision Record grounded in the codebase, prior ADRs, and the constitution. |
 | `speckit.spectra.create-pr` | Open a correctly-targeted GitHub PR for the current spec branch and return its URL. |
+| `speckit.spectra.review-pr` | Review a GitHub pull request against the spec, plan, tasks, ADRs, and constitution it carries, then publish a single human-curated review containing only the findings the reviewer selected. |
 <!-- SPECTRA:GENERATED END id=spectra-readme-commands -->
 
 ## Install
@@ -138,6 +139,64 @@ Optional arguments:
 **GitHub only** in this version (via the `gh` CLI). When `gh`, a GitHub remote, or network access is
 unavailable, the command explains the situation and prints the manual `git push` + `gh pr create`
 commands (including the base branch it would have used).
+
+---
+
+## `speckit.spectra.review-pr` — Review PR
+
+Covers the last fully manual gate in the lifecycle. Where `create-pr` opens a pull request, this
+reviews one — judging it against **the intent and standards the PR carries**, not just the diff. It:
+
+1. **Gates on `gh` first.** If `gh` is missing or unauthenticated it stops before any analysis, saying
+   which of the two failed. Unlike `create-pr` this does **not** degrade, because a review's entire
+   value is the analysis and the analysis needs the pull request.
+2. Resolves the target — a URL, a number, or a pick from the repository's open PRs — and **pins the
+   review to one head revision**, reported everywhere and re-checked before publishing.
+3. Reads the PR's **spec, plan, tasks, and ADRs at that revision**, and the **constitution and ADRs in
+   force on the base branch**. The revision split is deliberate: it is what lets the agent notice a PR
+   that changes the rules it is being measured against.
+4. Locates the governing spec by trying the PR's own diff, then the project's Spec Kit feature record,
+   then treating the change as carrying no spec. Branch names are never used to guess.
+5. Runs **traceability in both directions** (work claimed complete but absent; changes no task
+   authorized), **guardrails** with the violated clause quoted, and **craft** lenses chosen from what
+   the diff actually touches — reporting which lenses did not run, and why.
+6. Grades every finding Blocker / Major / Minor / Nit / Question from a **fixed rubric** so repeated
+   reviews of one revision agree, with a separate confidence axis that caps severity: a low-confidence
+   finding becomes a Question rather than a Blocker.
+7. Presents the findings numbered and ranked, with a severity tally, its own reading of the change, a
+   recommended verdict, and a mandatory **coverage-and-limits** statement.
+8. Hands control back: **nothing is pre-selected.** You choose which findings are published and which
+   verdict to submit, you see the exact body first, and only then is a **single review event** posted
+   under your own `gh` authentication.
+
+**Every finding cites a file, a line, and the clause, requirement, or principle it rests on** — a
+finding that cannot be anchored and sourced is not reported at all. An **empty selection posts nothing**,
+which is a normal outcome, not a failure. Approving over a blocker you accepted requires a typed
+confirmation and is recorded in the published review, so an override is never silent. The published body
+declares that it was AI-assisted and human-curated.
+
+Its only mutation is publishing that one review, after an explicit go-ahead. It never edits source, the
+spec, the plan, the tasks, or the constitution, never touches your working tree, holds no credentials of
+its own, and stores nothing between runs.
+
+Usage (Claude):
+
+```
+/speckit-spectra-review-pr https://github.com/acme/api/pull/142
+```
+
+Optional arguments:
+
+- *(none)* — offers the current branch's open PR, then lists open PRs to pick from.
+- `<url>` or `<number>` — review that pull request.
+- `--since <revision>` — review only the delta since a revision you reviewed before, reporting which
+  previously published findings now appear resolved. Prior findings are recovered by reading the earlier
+  review off the pull request itself, since nothing is stored locally.
+
+Deliberately **on demand only** — there is no hook, because a reviewer should not be the author.
+**GitHub only** in this version (via the `gh` CLI), and single-body reviews only; line-anchored inline
+comments are a follow-on. Failures *after* the `gh` gate — a fork restriction, insufficient permission —
+degrade to handing you the rendered review body for manual posting.
 
 ---
 

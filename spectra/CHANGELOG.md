@@ -3,6 +3,44 @@
 All notable changes to the `spectra` extension are documented here. This project follows
 [Semantic Versioning](https://semver.org/).
 
+## [1.4.0] - 2026-08-17
+
+### Added
+- **`speckit.spectra.review-pr` — a reviewing agent for the last manual gate in the lifecycle.** It
+  reviews a GitHub pull request against **the intent and standards the PR carries**: the spec, plan,
+  tasks, and ADRs read at the PR's own head revision, plus the constitution and ADRs in force on the
+  **base** branch. That is what lets it report a task marked complete but absent from the diff, scope
+  no requirement authorized, or a pattern an ADR forbids — none of which a diff-only reviewer can see.
+
+  Two properties define it:
+
+  - **Every finding is anchored and sourced.** A file, a line, and the clause, requirement id, or named
+    principle it rests on. A finding that cannot be anchored and sourced is not reported at all.
+  - **The human is the filter.** Nothing is pre-selected. The reviewer chooses which findings are
+    published and which verdict to submit, sees the exact body first, and gives a final go-ahead before
+    anything is posted. An empty selection posts nothing and is a normal outcome. Approving over a
+    blocker the reviewer accepted requires a typed confirmation and is recorded in the published review.
+
+  Findings are graded Blocker / Major / Minor / Nit / Question from a fixed rubric so repeated reviews of
+  one revision agree, with floors that keep an explicit constitution violation at Major or above and an
+  explicit compliance violation at Blocker. Low confidence cannot be a Blocker — it becomes a Question.
+
+  Publication is a single review event through the reviewer's own `gh` authentication. The agent holds no
+  credentials, adds no data path, and stores nothing between runs.
+
+  Two behaviours differ from `create-pr` on purpose:
+
+  - **It hard-stops when `gh` is missing or unauthenticated** rather than degrading, because a review's
+    value is the analysis and the analysis needs the PR. Failures *after* that gate — a fork
+    restriction, insufficient permission — still degrade gracefully to a rendered body for manual
+    posting.
+  - **It registers no hook.** Review is on demand only, since the reviewer should not be the author.
+
+  GitHub only in this release, and single-body reviews only — line-anchored inline comments are a
+  follow-on.
+
+A command was added, which is why this is a MINOR.
+
 ## [1.3.1] - 2026-08-09
 
 ### Changed

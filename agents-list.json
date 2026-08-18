@@ -357,6 +357,16 @@
       "command": "speckit.spectra.create-pr"
     },
     {
+      "id": "review-pr",
+      "title": "Review PR",
+      "description": "Review a GitHub pull request against the spec, plan, tasks, ADRs, and constitution it carries, then publish a single human-curated review containing only the findings the reviewer selected.",
+      "status": "available",
+      "phase": "deployment-operations",
+      "type": "core",
+      "provider": "spectra",
+      "command": "speckit.spectra.review-pr"
+    },
+    {
       "id": "operations-monitor",
       "title": "Operations Monitor",
       "description": "Analyze logs, latency, and error signals post-deployment, surfacing anomalies and predicting SLA breaches.",
