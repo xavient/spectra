@@ -179,7 +179,7 @@ easy to forget: the `AGENTS_LIST.md` prose block and the `docs/index.html` comma
 - [X] T047 Regenerate every structured agent listing by running `python3 tools/generate_agent_docs.py` from the repository root, updating the generated regions in `README.md`, `AGENTS_LIST.md`, and `spectra/README.md`. Depends on T041 and T042 — the generator asserts roster and manifest agree (FR-042).
 - [X] T048 Rebuild the published package by running `python3 tools/build_package.py`, producing an updated `docs/packages/spectra.zip` containing the new command file. Depends on T041.
 
-**Checkpoint**: `python3 tools/generate_agent_docs.py --check` must now report **45 agents / 5 prose blocks / roster and manifest agree**.
+**Checkpoint**: `python3 tools/generate_agent_docs.py --check` must now report **45 agents / 5 prose blocks / roster and manifest agree**, **and** `python3 -m unittest discover -s tests -q` must pass. The CLI's `tests/test_roster_data.py` asserts the roster's exact shape — total, available count, and shipped ids — so adding an agent necessarily changes it. Two of those tests encode the count in the method name. This second command was missing from the original plan and the failure was found by CI instead (research R-010 correction); the roster has **four** consumers, not three.
 
 ---
 

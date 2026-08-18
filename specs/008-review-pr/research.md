@@ -274,6 +274,31 @@ are generated while paragraphs are written. The card must therefore be authored 
 **Alternatives considered**: Splitting the publishing updates into a follow-up commit — rejected;
 Principle V requires them in the same change, and CI would fail the intermediate state anyway.
 
+> **Correction — 2026-08-17, after the first CI run.** This enumeration was **incomplete**. It listed
+> every artifact the roster *feeds* — the generated doc regions, the landing page, the catalog — and
+> missed a fourth consumer: **the CLI's own test suite**. `tests/test_roster_data.py` asserts the
+> roster's exact shape, so adding an agent broke three tests that hard-code it:
+>
+> | Test | Was | Now |
+> |---|---|---|
+> | `test_it_carries_the_full_published_roster` | 44 agents | 45 |
+> | `test_it_splits_into_*_available_and_thirty_one_planned` | 13 available | 14 |
+> | `test_spectra_ships_exactly_*_agents_today` | 4 shipped ids | 5, adding `review-pr` |
+>
+> Two of those encode the count in the **method name**, so the names changed too — `thirteen` →
+> `fourteen`, `four_agents` → `five_agents`. A docstring in `tests/helpers.py` citing "all 44 published
+> entries" was also stale.
+>
+> These are correct-by-design failures: the assertions exist precisely so that changing the roster is a
+> deliberate act rather than a silent one. The defect was in the *plan*, which did not list them as
+> artifacts to update, so the work was discovered by CI instead of scheduled.
+>
+> **The roster has four consumers, not three**: (1) generated documentation regions via
+> `tools/generate_agent_docs.py`, (2) `docs/index.html` at page load, (3) `catalog.json` command count,
+> and (4) `tests/test_roster_data.py`. Any future agent addition must update all four. Running
+> `python3 -m unittest discover -s tests -q` belongs alongside `generate_agent_docs.py --check` in the
+> Phase 7 checkpoint.
+
 ---
 
 ## R-011 — No automatic hook
