@@ -79,6 +79,46 @@ you don't have to invoke it by hand.
   /speckit-spectra-create-pr --base develop
   ```
 
+<!-- SPECTRA:AGENT id=review-pr -->
+### Review PR ✅
+
+**`speckit.spectra.review-pr`** — Review a GitHub pull request against **the intent and standards it
+carries**, not just the diff. It reads the PR's spec, plan, tasks, and ADRs *at the PR's own head
+revision*, plus the constitution and ADRs in force on the **base** branch, then reports findings that a
+diff-only reviewer cannot produce: a task marked complete but absent from the change, scope no
+requirement authorized, a pattern an ADR forbids. Every finding cites a file, a line, and the clause,
+requirement, or principle it rests on — anything that cannot be anchored and sourced is not reported at
+all.
+
+Then the reviewer takes over. **Nothing is pre-selected.** You choose which findings get published, you
+choose the verdict, and you see the exact text before anything is posted. One review event goes to the
+pull request under your own `gh` credentials, containing only what you selected — and the published body
+declares that it was AI-assisted and human-curated. An empty selection posts nothing, which is a normal
+outcome rather than a failure: a short, correct, human-endorsed review beats thirty findings that bury
+the two that matter.
+
+Unlike `create-pr`, this command **hard-stops** when `gh` is missing or unauthenticated instead of
+degrading, because a review's whole value is the analysis and that cannot be produced without reading
+the PR. It is deliberately **on demand only** — there is no hook — since a reviewer should not be the
+author.
+
+- **Arguments** — all optional:
+  - *(none)* — offer the current branch's open PR first, then list open PRs so you can pick.
+  - `<url>` or `<number>` — review that pull request.
+  - `--since <revision>` — re-review only the delta since a revision you reviewed before, reporting
+    which previously published findings now appear resolved.
+- **Use it when** — you are reviewing someone else's PR and want the spec, plan, tasks, ADRs, and
+  constitution checked against the diff before you sign off, without reading all of them yourself.
+- **Good to know** — findings are graded Blocker / Major / Minor / Nit / Question from a fixed rubric, so
+  two runs over the same revision agree; approving over a blocker you accepted requires a typed
+  confirmation and is recorded in the published review; nothing is stored between runs.
+- **Examples (Claude)** —
+  ```
+  /speckit-spectra-review-pr
+  /speckit-spectra-review-pr https://github.com/acme/api/pull/142
+  /speckit-spectra-review-pr 142 --since 4a9f2c1
+  ```
+
 <!-- SPECTRA:AGENT id=brd -->
 ### BRD Generator ✅
 

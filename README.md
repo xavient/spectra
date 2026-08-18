@@ -124,6 +124,7 @@ phases below, each also mapped onto the [**AI-DLC**](#ai-dlc) phases (Inception 
 | Internationalization Readiness | Testing & Quality | Construction | Add-on | 🚧 under dev |
 | Responsible-AI & Bias | Testing & Quality | Construction | Add-on | 🚧 under dev |
 | GitHub (PR) | Deployment & Operations | Operation | Core | ✅ available |
+| Review PR | Deployment & Operations | Operation | Core | ✅ available |
 | Operations Monitor | Deployment & Operations | Operation | Add-on | 🚧 under dev |
 | Incident Responder | Deployment & Operations | Operation | Add-on | 🚧 under dev |
 | SOC 2 | Deployment & Operations | Operation | Add-on | 🚧 under dev |
