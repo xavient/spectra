@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SPECTRA — Full Agent Roster</title>
+<meta name="description" content="Every agent in the SPECTRA roster — from requirements through deployment — each purpose-built for a single job in the software development lifecycle." />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23a78bfa' d='M12 2 2 7l10 5 10-5-10-5Z'/%3E%3Cpath fill='%23a78bfa' opacity='.55' d='m2 12 10 5 10-5M2 17l10 5 10-5'/%3E%3C/svg%3E" />
+<style>
+  :root {
+    --bg: #0c0a16;
+    --bg-2: #120f22;
+    --panel: rgba(255,255,255,0.035);
+    --panel-2: rgba(255,255,255,0.05);
+    --border: rgba(167,139,250,0.20);
+    --text: #e9e7f2;
+    --muted: #a3a0b5;
+    --accent: #a78bfa;
+    --accent-2: #c4b5fd;
+    --green: #34d399;
+    --code-bg: #0d0b17;
+    --radius: 14px;
+    --maxw: 960px;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--text);
+    background:
+      radial-gradient(1100px 520px at 78% -10%, rgba(167,139,250,0.18), transparent 60%),
+      radial-gradient(900px 480px at 10% 6%, rgba(124,92,222,0.12), transparent 55%),
+      linear-gradient(180deg, var(--bg-2), var(--bg));
+    background-attachment: fixed;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  body::before {
+    content: "";
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(167,139,250,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(167,139,250,0.05) 1px, transparent 1px);
+    background-size: 46px 46px;
+    mask-image: radial-gradient(circle at 50% 0%, #000 0%, transparent 75%);
+  }
+  .wrap { position: relative; z-index: 1; max-width: var(--maxw); margin: 0 auto; padding: 0 22px; }
+  a { color: var(--accent-2); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .sitebar {
+    position: sticky; top: 0; z-index: 60;
+    background: rgba(12,10,22,0.82);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  header.site {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; padding: 12px 0;
+  }
+  header.site .brand { display: inline-flex; align-items: center; }
+  header.site .brand:hover { text-decoration: none; }
+  header.site img.logo { height: 26px; width: auto; opacity: .95; display: block; }
+  header.site .nav { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  header.site .nav a.nav-page {
+    color: var(--muted); font-size: 14px;
+    padding: 5px 13px; border: 1px solid transparent; border-radius: 999px;
+    transition: color .15s ease, border-color .15s ease, background .15s ease;
+  }
+  header.site .nav a.nav-page:hover { color: var(--text); text-decoration: none; }
+  header.site .nav a.nav-page[aria-current="page"] {
+    color: var(--accent-2); border-color: var(--border);
+    background: rgba(167,139,250,0.10);
+  }
+  header.site .nav a:focus-visible { outline: 2px solid var(--accent-2); outline-offset: 2px; }
+  header.site .nav .nav-sep { width: 1px; height: 18px; background: var(--border); margin: 0 4px; }
+  header.site .nav a.nav-jump { color: var(--muted); font-size: 13px; padding: 5px 5px; }
+  header.site .nav a.nav-jump:hover { color: var(--text); }
+
+  .page-header { padding: 56px 0 34px; text-align: center; }
+  .page-header h1 {
+    font-size: clamp(36px, 8vw, 60px); line-height: 1; margin: 0 0 14px;
+    letter-spacing: -0.03em; font-weight: 800;
+    background: linear-gradient(180deg, #ffffff, #a78bfa);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .page-header p { color: var(--muted); max-width: 680px; margin: 0 auto; font-size: 16px; }
+
+  .panel {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 22px 24px; margin-bottom: 24px;
+  }
+  .panel header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .panel header h2 { font-size: 20px; margin: 0; }
+  .panel .badges { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; color: var(--muted); }
+  .panel .desc { color: var(--muted); font-size: 14.5px; margin: 8px 0 0; }
+
+  .phase-section h3 {
+    font-size: 18px; margin: 32px 0 6px; padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .phase-section h3 .badge {
+    font-size: 12px; color: var(--muted); font-weight: 400;
+    margin-left: 10px;
+  }
+
+  ul.agents-list { list-style: none; margin: 0; padding: 0; }
+  ul.agents-list > li {
+    padding: 16px 0; border-bottom: 1px solid rgba(167,139,250,0.10);
+  }
+  ul.agents-list > li:last-child { border-bottom: none; }
+  ul.agents-list .agent-title {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 14px; color: var(--accent); font-weight: 700;
+  }
+  ul.agents-list .agent-desc {
+    display: block; margin-top: 4px; color: var(--muted); font-size: 14.5px;
+  }
+  ul.agents-list .agent-meta {
+    display: block; margin-top: 6px; font-size: 13px; color: var(--muted);
+  }
+  ul.agents-list .agent-meta code {
+    background: var(--panel-2); border: 1px solid var(--border);
+    padding: 1px 6px; border-radius: 6px; font-size: 12px; color: #ded7f5;
+  }
+
+  .loading { text-align: center; padding: 40px 0; color: var(--muted); }
+
+  footer.site {
+    border-top: 1px solid var(--border); margin-top: 30px; padding: 26px 0 46px;
+    color: var(--muted); font-size: 13.5px; display: flex; justify-content: space-between; gap: 14px; flex-wrap: wrap;
+  }
+
+  @media (max-width: 720px) {
+    header.site { flex-wrap: wrap; gap: 10px; }
+    header.site .nav { gap: 4px; }
+    header.site .nav a.nav-page { font-size: 13px; padding: 5px 10px; }
+    header.site .nav .nav-sep { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="sitebar">
+  <div class="wrap">
+    <header class="site">
+      <a class="brand" href="index.html" aria-label="SPECTRA — home">
+        <img class="logo" src="https://raw.githubusercontent.com/xavient/spectra/main/assets/TELUS_Digital_logo.png" alt="TELUS Digital" />
+      </a>
+      <nav class="nav" aria-label="Primary">
+        <a class="nav-page" href="index.html">Home</a>
+        <a class="nav-page" href="capability-brief.html">Capability Brief</a>
+        <a class="nav-page" href="agents.html" aria-current="page">Agents</a>
+        <a class="nav-page" href="e-learning/index.html">E-Learning</a>
+        <a class="nav-page" href="https://github.com/xavient/spectra">GitHub</a>
+        <span class="nav-sep" aria-hidden="true"></span>
+        <a class="nav-jump" href="index.html#install">Install</a>
+      </nav>
+    </header>
+  </div>
+</div>
+<div class="wrap">
+
+  <section class="page-header">
+    <h1>Full Agent Roster</h1>
+    <p>Every agent in the SPECTRA roster — from requirements through deployment — each purpose-built for a single job in the software development lifecycle.</p>
+  </section>
+
+  <section class="panel">
+    <header>
+      <h2>SPECTRA Agents</h2>
+      <span class="badges" id="roster-count">Loading...</span>
+    </header>
+    <p class="desc">This roster updates automatically as new agents are published — what you see here is always current.</p>
+    <div id="roster">
+      <p class="loading">Loading agent roster...</p>
+    </div>
+  </section>
+
+  <footer class="site">
+    <span>SPECTRA &middot; a curated catalog of Spec Kit extensions &middot; by TELUS Digital</span>
+    <span><a href="https://github.com/xavient/spectra">github.com/xavient/spectra</a></span>
+  </footer>
+
+</div>
+<script>
+(function () {
+  var host = document.getElementById("roster");
+  var count = document.getElementById("roster-count");
+  if (!host) return;
+
+  var PROVIDERS = { spectra: "Spectra", speckit: "Spec Kit" };
+
+  fetch("https://raw.githubusercontent.com/xavient/spectra/main/agents-list.json")
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (data) {
+      if (!data || !Array.isArray(data.agents) || !Array.isArray(data.phases)) {
+        host.innerHTML = '<p class="loading">Unable to load agent roster.</p>';
+        return;
+      }
+
+      var major = parseInt(String(data.schema_version || "0").split(".")[0], 10);
+      if (!(major === 1)) {
+        host.innerHTML = '<p class="loading">Unsupported schema version.</p>';
+        return;
+      }
+
+      var available = data.agents.filter(function (a) { return a.status === "available"; }).length;
+      count.textContent = data.agents.length + " agents \u00b7 " + available + " available";
+
+      host.innerHTML = "";
+
+      data.phases.forEach(function (phase) {
+        var agents = data.agents.filter(function (a) { return a.phase === phase.id; });
+        if (!agents.length) return;
+
+        var section = document.createElement("div");
+        section.className = "phase-section";
+
+        var heading = document.createElement("h3");
+        heading.textContent = phase.title;
+        var badge = document.createElement("span");
+        badge.className = "badge";
+        badge.textContent = phase.aidlc;
+        heading.appendChild(badge);
+        section.appendChild(heading);
+
+        var list = document.createElement("ul");
+        list.className = "agents-list";
+
+        agents.forEach(function (agent) {
+          var item = document.createElement("li");
+
+          var title = document.createElement("span");
+          title.className = "agent-title";
+          title.textContent = (agent.status === "available" ? "\u2705 " : "\ud83d\udea7 ") + agent.title;
+          item.appendChild(title);
+
+          var desc = document.createElement("span");
+          desc.className = "agent-desc";
+          desc.textContent = agent.description;
+          item.appendChild(desc);
+
+          var meta = document.createElement("span");
+          meta.className = "agent-meta";
+          var metaText = agent.type + " \u00b7 " + (PROVIDERS[agent.provider] || agent.provider);
+          if (agent.command) {
+            meta.innerHTML = metaText + " \u00b7 <code>" + agent.command + "</code>";
+          } else {
+            meta.textContent = metaText + " \u00b7 under development";
+          }
+          item.appendChild(meta);
+
+          list.appendChild(item);
+        });
+
+        section.appendChild(list);
+        host.appendChild(section);
+      });
+    })
+    .catch(function () {
+      host.innerHTML = '<p class="loading">Unable to load agent roster.</p>';
+    });
+})();
+</script>
+</body>
+</html>

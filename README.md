@@ -12,6 +12,21 @@
 
 ---
 
+## Table of Contents
+
+- [AI-Assisted VS AI-Native](#ai-assisted-vs-ai-native)
+- [Spec-Driven Development](#spec-driven-development)
+- [AI-DLC](#ai-dlc)
+- [Agents](#agents)
+- [Security, policy, and compliance](#security-policy-and-compliance)
+- [Installation](#installation)
+  - [Installer (recommended)](#installer-recommended)
+  - [Manual](#manual)
+- [Two release channels](#two-release-channels)
+- [License](#license)
+
+---
+
 Spectra **builds on top of** [![Spec Kit — GitHub stars](https://img.shields.io/github/stars/github/spec-kit?style=social&label=Spec%20Kit)](https://github.com/github/spec-kit) — it does not replace it.
 Spec Kit gives you spec-driven development (`specify`, `plan`, `tasks`, `implement`); Spectra adds
 focused, production-ready agents for the work that surrounds the code: architecture decisions, design,
@@ -208,10 +223,10 @@ Inheriting the perimeter is the floor, not the ceiling. Spectra is also built to
 ## Installation
 
 Spectra installs **into** a Spec Kit project, and its catalog is **public** — there's no GitHub login
-or token involved either way. Pick one path: the **`spectra` command** does everything for you, or
-**manual setup** walks you through it step by step.
+or token involved either way. Pick one path: the **Installer** does everything for you, or
+**Manual** walks you through it step by step.
 
-### The `spectra` command
+### Installer (recommended)
 
 The recommended path — **you don't need to clone this repo.** Spectra ships as a
 [`uv`](https://docs.astral.sh/uv/) tool. Install it once, from anywhere:
@@ -234,8 +249,7 @@ It installs the `specify` CLI if it's missing (at the latest Spec Kit release), 
 `specify init` if the current folder isn't a Spec Kit project yet, registers the Spectra catalog, and
 installs every extension the catalog advertises. It works on macOS, Linux, and Windows.
 
-When it finishes, **restart your AI agent** to pick up the new commands — then skip ahead to
-[Install and use extensions](#install-and-use-extensions).
+When it finishes, **restart your AI agent** to pick up the new commands.
 
 <details>
 <summary>Don't have <code>uv</code> yet?</summary>
@@ -324,10 +338,10 @@ See [Two release channels](#two-release-channels) for why.
 `spectra cli uninstall` removes the `spectra` command only. Extensions already installed into your
 projects are left untouched — remove those with `specify extension remove spectra`.
 
-### Manual setup
+### Manual
 
 Prefer to wire it up by hand (or `uv` isn't an option for you)? Because the catalog is public,
-there's nothing to authenticate — no GitHub token, no `gh` login. Three steps:
+there's nothing to authenticate — no GitHub token, no `gh` login.
 
 **1. Install the `specify` CLI (Spec Kit).** Spectra installs into a Spec Kit project, so you need Spec
 Kit first — follow the [Spec Kit installation guide](https://github.com/github/spec-kit#-get-started)
@@ -373,9 +387,7 @@ catalogs:
 no per-developer setup. (Prefer not to touch project config? Set `SPECKIT_CATALOG_URL` to the same URL
 to use Spectra everywhere.)
 
-## Install and use extensions
-
-Once the catalog is added:
+**4. Install and use the extension.**
 
 ```bash
 specify extension search          # find the Spectra extension
@@ -413,7 +425,7 @@ The extension has its own README with full per-command usage details — see [`s
 
 Spectra ships two things, and they carry **two different version numbers on purpose**:
 
-| | The `spectra` command | The `spectra` extension |
+| | The `spectra` CLI | The `spectra` extension |
 |---|---|---|
 | What it is | the uv tool that sets everything up | the agents your AI assistant runs |
 | You install it with | `uv tool install spectra-cli --from git+…` | `specify extension add spectra` |
@@ -427,21 +439,6 @@ command reads the live catalog every time it runs. Changing the setup flow bumps
 Git tags and GitHub Releases on this repo belong to the **command** channel; the extension is
 published continuously from `main` over raw URLs and is never tagged. Both current versions are shown
 live on the [Spectra landing page](https://xavient.github.io/spectra/).
-
-## Support and compatibility
-
-- Spectra extensions are built and maintained by TELUS Digital.
-- Each extension pins the Spec Kit version it was tested against (`requires.speckit_version`). If you
-  upgrade Spec Kit and a command misbehaves, check that field and update the extension.
-- Issues and requests: <https://github.com/xavient/spectra/issues>.
-
-## Contributing
-
-Want to add a new command or change an existing one? Everything you need — repository layout,
-the `extension.yml` manifest reference, how to write agent-agnostic commands, local testing with
-`--dev`, and how to publish the catalog and package — lives in [CONTRIBUTING.md](CONTRIBUTING.md). Use
-the [`spectra/`](spectra/) extension as the reference model; new capabilities are added as commands
-under it in the `speckit.spectra.*` namespace.
 
 ## License
 
