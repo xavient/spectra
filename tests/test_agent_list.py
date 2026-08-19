@@ -36,7 +36,7 @@ class Listing(unittest.TestCase):
             code, out = run(["agent-list"])
         self.assertEqual(code, 0)
         for title in ("Guardrails", "Domain Analyzer", "BRD Generator",
-                      "GDPR Compliance", "GitHub (PR)"):
+                      "GDPR Compliance", "Create PR"):
             self.assertIn(title, out)
         for phase in ("Foundation", "Requirements & Discovery", "Deployment & Operations"):
             self.assertIn(phase, out)

@@ -161,7 +161,7 @@ which is the wording already public. **44 entries: 13 available (4 Spectra, 9 Sp
 
 | id | Title | Type | Status | Provider | Command |
 | --- | --- | --- | --- | --- | --- |
-| `create-pr` | GitHub (PR) | core | available | spectra | `speckit.spectra.create-pr` |
+| `create-pr` | Create PR | core | available | spectra | `speckit.spectra.create-pr` |
 | `operations-monitor` | Operations Monitor | add-on | planned | spectra | — |
 | `incident-responder` | Incident Responder | add-on | planned | spectra | — |
 | `soc-2` | SOC 2 | add-on | planned | spectra | — |
@@ -178,7 +178,7 @@ rather than invented, so FR-007 is satisfied; two entries sharing a command is h
 manifest cross-check (rule 5) only looks at `provider == "spectra"` entries.
 
 `create-pr` resolves the three-way name disagreement FR-010 calls out: `id: create-pr`,
-`title: GitHub (PR)`. The `github` heading form in `AGENTS_LIST.md` and the bare `GitHub` are both retired.
+`title: Create PR`. The `github` heading form in `AGENTS_LIST.md` and the bare `GitHub` are both retired.
 
 ---
 

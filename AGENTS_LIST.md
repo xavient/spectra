@@ -58,7 +58,7 @@ edits the constitution or source — you choose which guardrails to adopt.
   ```
 
 <!-- SPECTRA:AGENT id=create-pr -->
-### GitHub (PR) ✅
+### Create PR ✅
 
 **`speckit.spectra.create-pr`** — Open a correctly-targeted GitHub PR for the current spec branch. It
 derives the base branch from your promotion strategy, confirms before any push or PR creation, and

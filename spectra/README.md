@@ -104,7 +104,7 @@ and ordering; only genuinely new candidates are appended under a dated heading.
 
 ---
 
-## `speckit.spectra.create-pr` — GitHub (PR)
+## `speckit.spectra.create-pr` — Create PR
 
 Closes the loop after `implement`: it **offers** to open a pull request for the completed spec,
 targeting the **correct base branch** for your project's branching/promotion strategy, and returns

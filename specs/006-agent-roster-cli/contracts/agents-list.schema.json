@@ -60,7 +60,7 @@
             "type": "string",
             "minLength": 1,
             "description": "Display text. Exactly one per agent, used identically in the roster, every generated document, and the CLI.",
-            "examples": ["Architecture Decision Records (ADR)", "GitHub (PR)"]
+            "examples": ["Architecture Decision Records (ADR)", "Create PR"]
           },
           "description": {
             "type": "string",
@@ -81,7 +81,7 @@
           "type": {
             "type": "string",
             "enum": ["core", "add-on"],
-            "description": "Whether the agent is part of the required core roster or an optional add-on. Orthogonal to provider: GitHub (PR) is core and Spectra-provided."
+            "description": "Whether the agent is part of the required core roster or an optional add-on. Orthogonal to provider: Create PR is core and Spectra-provided."
           },
           "provider": {
             "type": "string",

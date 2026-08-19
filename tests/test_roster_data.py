@@ -122,7 +122,7 @@ class Content(unittest.TestCase):
     def test_the_pr_agent_has_one_canonical_title(self):
         """FR-010: the name that used to differ in four places resolves here."""
         agent = self.parsed.by_id("create-pr")
-        self.assertEqual(agent.title, "GitHub (PR)")
+        self.assertEqual(agent.title, "Create PR")
         self.assertEqual(agent.command, "speckit.spectra.create-pr")
 
     def test_titles_are_unique(self):

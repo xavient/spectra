@@ -295,7 +295,7 @@ _ROSTER = {
         },
         {
             "id": "create-pr",
-            "title": "GitHub (PR)",
+            "title": "Create PR",
             "description": "Open a correctly-targeted GitHub PR for the current spec branch.",
             "status": "available",
             "phase": "deployment-operations",

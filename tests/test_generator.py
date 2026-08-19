@@ -224,7 +224,7 @@ class TitleContainment(unittest.TestCase):
         with sandbox() as root:
             path = root / "spectra" / "README.md"
             path.write_text(path.read_text(encoding="utf-8")
-                            .replace("GitHub (PR)", "GitHub PR delivery"), encoding="utf-8")
+                            .replace("Create PR", "GitHub PR delivery"), encoding="utf-8")
             code, out = run(root, ["--check"])
         self.assertEqual(code, 1)
         self.assertIn("create-pr", out)
