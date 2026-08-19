@@ -470,7 +470,7 @@
 <style>
   /* Course navigation bar (shared) */
   .course-nav {
-    position: sticky; top: 0; z-index: 50;
+    z-index: 50;
     background: rgba(12, 10, 22, 0.82);
     -webkit-backdrop-filter: saturate(180%) blur(12px);
     backdrop-filter: saturate(180%) blur(12px);
@@ -554,7 +554,68 @@
     .module-footer-nav { gap: 12px; }
     .mod-nav-next { padding: 10px 16px; }
   }
+
+  /* ---------- Site-wide top bar (matches docs/index.html) ---------- */
+  .topstack { position: sticky; top: 0; z-index: 60; }
+  .sitebar {
+    background: rgba(12,10,22,0.82);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .sitebar .sitebar-inner {
+    max-width: 960px; margin: 0 auto; padding: 0 22px;
+  }
+  header.site {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; padding: 12px 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  header.site .brand { display: inline-flex; align-items: center; text-decoration: none; border-bottom: none; }
+  header.site .brand:hover { text-decoration: none; }
+  header.site img.logo { height: 26px; width: auto; opacity: .95; display: block; }
+  header.site .nav { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  header.site .nav a.nav-page {
+    color: var(--text-muted, #a3a0b5); font-size: 14px; text-decoration: none;
+    padding: 5px 13px; border: 1px solid transparent; border-radius: 999px;
+    transition: color .15s ease, border-color .15s ease, background .15s ease;
+    border-bottom: none;
+  }
+  header.site .nav a.nav-page:hover { color: var(--text, #e9e7f2); text-decoration: none; }
+  header.site .nav a.nav-page[aria-current="page"] {
+    color: var(--accent-2, #c4b5fd); border-color: var(--border, rgba(167,139,250,0.20));
+    background: rgba(167,139,250,0.10);
+  }
+  header.site .nav a:focus-visible { outline: 2px solid var(--accent-2, #c4b5fd); outline-offset: 2px; }
+  header.site .nav .nav-sep { width: 1px; height: 18px; background: var(--border, rgba(167,139,250,0.20)); margin: 0 4px; }
+  header.site .nav a.nav-jump { color: var(--text-muted, #a3a0b5); font-size: 13px; padding: 5px 5px; text-decoration: none; border-bottom: none; }
+  header.site .nav a.nav-jump:hover { color: var(--text, #e9e7f2); }
+  @media (max-width: 720px) {
+    header.site { flex-wrap: wrap; gap: 10px; }
+    header.site .nav { gap: 4px; }
+    header.site .nav a.nav-page { font-size: 13px; padding: 5px 10px; }
+    header.site .nav .nav-sep { display: none; }
+  }
 </style>
+<div class="topstack">
+<div class="sitebar">
+  <div class="sitebar-inner">
+    <header class="site">
+      <a class="brand" href="../index.html" aria-label="SPECTRA — home">
+        <img class="logo" src="https://raw.githubusercontent.com/xavient/spectra/main/assets/TELUS_Digital_logo.png" alt="TELUS Digital" />
+      </a>
+      <nav class="nav" aria-label="Primary">
+        <a class="nav-page" href="../index.html">Home</a>
+        <a class="nav-page" href="../capability-brief.html">Capability Brief</a>
+        <a class="nav-page" href="../agents.html">Agents</a>
+        <a class="nav-page" href="index.html" aria-current="page">E-Learning</a>
+        <a class="nav-page" href="https://github.com/xavient/spectra">GitHub</a>
+        <span class="nav-sep" aria-hidden="true"></span>
+        <a class="nav-jump" href="../index.html#install">Install</a>
+      </nav>
+    </header>
+  </div>
+</div>
 <nav class="course-nav">
   <div class="course-nav-inner">
     <a class="course-nav-brand is-active" href="index.html">
@@ -573,6 +634,7 @@
     </div>
   </div>
 </nav>
+</div>
 <main>
   <header class="hero">
     <div class="hero-eyebrow">Course handbook</div>
