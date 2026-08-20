@@ -3,7 +3,7 @@ schema_version: "1.0"
 extension:
   id: "spectra"
   name: "Spectra"
-  version: "1.4.0"
+  version: "1.5.0"
   description: "TELUS Digital - Agentic software engineering across the entire SDLC."
   category: "workflow"
   effect: "read-write"
@@ -18,10 +18,11 @@ requires:
   tools:
     # Used by speckit.spectra.create-pr and speckit.spectra.review-pr at runtime. Kept optional at the
     # extension level because adr, brd, and domain-analyzer never touch GitHub — marking gh required
-    # would degrade installation for users who only want those. The two GitHub commands differ in how
-    # they handle its absence: create-pr degrades gracefully and prints a manual fallback, while
-    # review-pr hard-stops before any analysis, because a review's value is the analysis and that
-    # cannot be produced without reading the PR through gh.
+    # would block installation for users who only want those. Both GitHub commands hard-gate on gh at
+    # run time: a missing binary or a failed `gh auth status` stops them before any other work, with
+    # distinct remedies (install vs `gh auth login`). What each does *after* that gate differs —
+    # create-pr hands over the manual git/gh commands and states whether the branch was pushed, while
+    # review-pr hands over the rendered review body for manual posting.
     - name: git
       required: false
     - name: gh
