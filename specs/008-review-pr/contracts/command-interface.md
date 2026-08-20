@@ -111,6 +111,13 @@ stopping. The difference is justified: `create-pr` can meaningfully print manual
 user can run verbatim, whereas a review's value is the *analysis*, which cannot be produced at all
 without reading the PR through `gh`.
 
+> **Superseded (2026-08-19) by
+> [`009-create-pr-gh-gate`](../../009-create-pr-gh-gate/contracts/command-interface.md) §"Degradation
+> policy — the replacement".** `create-pr` now hard-gates on `gh` as well, so there is no departure to
+> justify. The paragraph above also overstated its own case: the manual commands it pointed to began with
+> `gh pr create`, which a user without `gh` cannot run. What still differs between the two commands is
+> only what each hands over *after* the gate.
+
 ---
 
 ## Confirmation semantics

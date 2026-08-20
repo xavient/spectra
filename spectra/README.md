@@ -110,16 +110,20 @@ Closes the loop after `implement`: it **offers** to open a pull request for the 
 targeting the **correct base branch** for your project's branching/promotion strategy, and returns
 the PR link. When you accept the offer (or run it on demand) it:
 
-1. Checks preconditions — `gh` installed and authenticated, remote is GitHub — and **degrades
-   gracefully** with a manual fallback if any are missing.
-2. Validates the **source branch** (one-branch-per-spec): refuses to open a PR from `main`, a
+1. **Gates on `gh` first.** If `gh` is missing or unauthenticated it **stops before anything else** —
+   before the constitution is read, before a target branch is derived, before any `git` command — saying
+   which of the two failed, because the remedies differ (install the CLI, or `gh auth login`). Nothing is
+   mutated on that path.
+2. Confirms the remote is on GitHub. A missing remote, or one on another host, stops with a scope
+   statement rather than a `gh` fallback that could not work.
+3. Validates the **source branch** (one-branch-per-spec): refuses to open a PR from `main`, a
    detached HEAD, or a non-spec branch.
-3. Detects an **existing open PR** and returns its link instead of opening a duplicate.
-4. Determines the **target (base) branch** from the constitution's *Version Control & Branching
+4. Detects an **existing open PR** and returns its link instead of opening a duplicate.
+5. Determines the **target (base) branch** from the constitution's *Version Control & Branching
    Strategy* section and the branching config — honoring a defined promotion flow, or proposing the
    repository default branch with confirmation when none is defined.
-5. Surfaces uncommitted changes and, on your confirmation, pushes the branch.
-6. Opens the PR with `gh` (**ready-for-review by default**, `--draft` on request) using a title and
+6. Surfaces uncommitted changes and, on your confirmation, pushes the branch.
+7. Opens the PR with `gh` (**ready-for-review by default**, `--draft` on request) using a title and
    body derived from the spec, and returns the PR URL.
 
 Its only mutations are the Git/remote actions required to open the PR; it never edits your source,
@@ -136,9 +140,11 @@ Optional arguments:
 - `--draft` — open the PR as a draft instead of ready-for-review.
 - `--base <branch>` — override the derived base branch (still confirmed before opening).
 
-**GitHub only** in this version (via the `gh` CLI). When `gh`, a GitHub remote, or network access is
-unavailable, the command explains the situation and prints the manual `git push` + `gh pr create`
-commands (including the base branch it would have used).
+**GitHub only** in this version (via the `gh` CLI), and `gh` is required at run time rather than
+optional: without it the command stops with the remedy instead of half-running. Failures *after* that
+gate — a protected base branch, a token without push permission, a fork restriction — degrade to the
+manual `git push` + `gh pr create` commands (including the base branch it derived) plus an explicit
+statement of whether the branch already reached the remote.
 
 ---
 
@@ -148,8 +154,8 @@ Covers the last fully manual gate in the lifecycle. Where `create-pr` opens a pu
 reviews one — judging it against **the intent and standards the PR carries**, not just the diff. It:
 
 1. **Gates on `gh` first.** If `gh` is missing or unauthenticated it stops before any analysis, saying
-   which of the two failed. Unlike `create-pr` this does **not** degrade, because a review's entire
-   value is the analysis and the analysis needs the pull request.
+   which of the two failed. `create-pr` gates the same way, for the same reason: neither command can
+   deliver its product — a review here, a pull request there — without reading GitHub through `gh`.
 2. Resolves the target — a URL, a number, or a pick from the repository's open PRs — and **pins the
    review to one head revision**, reported everywhere and re-checked before publishing.
 3. Reads the PR's **spec, plan, tasks, and ADRs at that revision**, and the **constitution and ADRs in

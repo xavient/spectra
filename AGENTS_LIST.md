@@ -62,9 +62,17 @@ edits the constitution or source — you choose which guardrails to adopt.
 
 **`speckit.spectra.create-pr`** — Open a correctly-targeted GitHub PR for the current spec branch. It
 derives the base branch from your promotion strategy, confirms before any push or PR creation, and
-returns the PR URL — degrading gracefully with a manual fallback when `gh`, the remote, or the network
-is unavailable. Also offered automatically by an `after_implement` hook once `implement` finishes, so
+returns the PR URL. Also offered automatically by an `after_implement` hook once `implement` finishes, so
 you don't have to invoke it by hand.
+
+`gh` is required at run time, and the command **gates on it before doing anything else**: if `gh` is
+missing or unauthenticated it stops immediately — before reading the constitution, before deriving a base
+branch, before touching the remote — and names which of the two failed, because the remedies differ
+(install the CLI, or `gh auth login`). Nothing is mutated on that path, and a missing `gh` never produces
+a `gh` command you cannot run. A remote that isn't on GitHub stops the same way, with a scope statement.
+Failures *after* the gate degrade instead: you get the manual `git push` + `gh pr create` commands with
+the derived base branch filled in, plus an explicit statement of whether the branch already reached the
+remote.
 
 - **Arguments** — all optional:
   - *(none)* — open a **ready-for-review** PR (the default).
@@ -97,10 +105,11 @@ declares that it was AI-assisted and human-curated. An empty selection posts not
 outcome rather than a failure: a short, correct, human-endorsed review beats thirty findings that bury
 the two that matter.
 
-Unlike `create-pr`, this command **hard-stops** when `gh` is missing or unauthenticated instead of
-degrading, because a review's whole value is the analysis and that cannot be produced without reading
-the PR. It is deliberately **on demand only** — there is no hook — since a reviewer should not be the
-author.
+Like `create-pr`, this command **hard-stops** when `gh` is missing or unauthenticated, naming which of
+the two failed — neither command can deliver its product without reading GitHub through `gh`. What
+differs is what each hands over after that gate: `create-pr` gives you the `git`/`gh` commands to finish
+by hand, this one gives you the rendered review body to post yourself. It is deliberately **on demand
+only** — there is no hook — since a reviewer should not be the author.
 
 - **Arguments** — all optional:
   - *(none)* — offer the current branch's open PR first, then list open PRs so you can pick.

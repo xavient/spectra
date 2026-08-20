@@ -236,6 +236,11 @@ those three. The hard gate belongs to the command that actually needs it, which 
 FR-001 puts it. The existing comment in the manifest is updated to name both `create-pr` (degrades) and
 `review-pr` (hard-gates), so the difference is documented rather than surprising.
 
+> **Partially superseded (2026-08-19) by [`009-create-pr-gh-gate`](../009-create-pr-gh-gate/research.md)
+> R-009.** The decision above still holds: `gh` stays extension-optional and the gate lives in the
+> command. What no longer holds is the *difference* — `create-pr` now hard-gates too, and the manifest
+> comment records both gates rather than a contrast.
+
 **Alternatives considered**: `required: true` — rejected; punishes users of the three commands that have
 no GitHub dependency. Splitting GitHub commands into a second extension — rejected outright by
 Principle II.

@@ -57,6 +57,11 @@ Run each on a project whose current branch is a real spec branch (e.g., `003-som
 
 ### S6 — Graceful degradation (no `gh` / non-GitHub remote)
 
+> **Superseded (2026-08-19) by [`009-create-pr-gh-gate`](../009-create-pr-gh-gate/quickstart.md) S2–S4.**
+> An unusable `gh` and a non-GitHub remote are now hard stops with a named remedy, so this scenario's
+> expectation no longer holds. S5 of the new quickstart covers the manual fallback in its remaining
+> home: failures after the gate.
+
 1. Temporarily make `gh` unavailable (or point the remote at a non-GitHub URL) and invoke the command.
 2. **Expect**: a clear explanation plus the manual `git push` + `gh pr create` (or web) fallback,
    including the target branch it would have used — no opaque failure. (FR-007, SC-006)

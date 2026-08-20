@@ -3,6 +3,53 @@
 All notable changes to the `spectra` extension are documented here. This project follows
 [Semantic Versioning](https://semver.org/).
 
+## [1.5.0] - 2026-08-19
+
+### Changed
+- **`speckit.spectra.create-pr` now hard-stops when `gh` is missing or unauthenticated**, instead of
+  degrading to a printed manual fallback. The check runs as the first thing after you accept the offer —
+  before the constitution is read, before a target branch is derived, before any `git` command — and it
+  names which of the two failed, because the remedies differ: install the GitHub CLI, or run
+  `gh auth login`. Nothing is mutated on that path, and when `gh` is absent the message no longer prints
+  a `gh` command line; the only alternative it names is the GitHub web interface.
+
+  This **reverses the difference recorded in 1.4.0**, where `create-pr` degrading was described as a
+  deliberate contrast with `review-pr`. That justification does not survive contact with the two
+  failures it was meant to serve. The printed fallback told the user to run `gh pr create` — the command
+  they demonstrably did not have — and the duplicate-PR check is itself a `gh` call, so a run without
+  `gh` could walk them into a second pull request for a branch that already had one. Both GitHub
+  commands now gate identically. What differs is only what each hands over *after* the gate.
+
+- **A refusal after the gate now degrades properly, and says what it changed.** A protected base branch,
+  a token without push permission, or a fork restriction is reported with the underlying `git`/`gh`
+  message, the manual commands including the derived base branch — runnable, because `gh` is present
+  here — and, critically, the mutation state: *nothing reached the remote*, or *the branch is on the
+  remote and no pull request exists*. The command previously had no instructions for this case at all,
+  even though by then it may already have pushed.
+
+- **A remote that is absent or not on `github.com` is now a stop with a scope statement**, not a
+  degradation, and prints no `gh` fallback — there is nothing `gh` can do with a GitLab remote. GitHub
+  Enterprise is named as out of scope rather than half-attempted.
+
+- **The pull request body is passed on standard input** (`--body-file -`) rather than as a
+  command-line argument, so spec prose carrying backticks, code fences, quotes, and blank lines reaches
+  the pull request unaltered. `review-pr` already published review bodies this way.
+
+- **Fork detection is read from the repository, not guessed from the URL.** One
+  `gh repo view --json nameWithOwner,isFork,parent,defaultBranchRef,viewerPermission` call replaces the
+  previous "if `origin` looks like a fork" heuristic *and* the separate default-branch lookup. Forks and
+  multi-remote setups are still resolved by asking, and now for a stated reason: `gh pr list --head`
+  rejects `<owner>:<branch>` while `gh pr create --head` accepts it, so an inferred fork flow would
+  check for duplicates against one head and open against another.
+
+- **`gh` is declared as the only route to GitHub** in the command's governing rule — no `curl`, no
+  direct REST calls — matching `review-pr`.
+
+`gh` remains **optional at the extension level**: `adr`, `brd`, and `domain-analyzer` never touch
+GitHub, so requiring it would block installation for users who only want those.
+
+A command changed behaviour, no argument or output contract did, which is why this is a MINOR.
+
 ## [1.4.0] - 2026-08-17
 
 ### Added

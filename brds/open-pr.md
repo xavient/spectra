@@ -59,6 +59,9 @@ strategy is designed to guarantee.
   from the constitution, the branching strategy, and the spec itself.
 - **G5 — Degrade gracefully.** When `gh`, a GitHub remote, or network access is unavailable, explain
   the manual path instead of failing opaquely or guessing.
+  > **Superseded (2026-08-19)** by `specs/009-create-pr-gh-gate/spec.md`: an unusable `gh` or a
+  > non-GitHub remote now stops with a named remedy. "Never fail opaquely" survives; "always degrade"
+  > does not, because the manual path it printed required the missing tool.
 
 ## 4. Stakeholders & Users
 
@@ -196,7 +199,7 @@ strategy is designed to guarantee.
 | BR-04 | When no promotion flow is defined, the agent MUST propose the repository's default branch as the target and MUST obtain explicit user confirmation of source and target before opening the PR. | P1       |
 | BR-05 | The agent MUST open the PR using `gh` and MUST return the resulting PR URL to the user in chat.                                                       | P1       |
 | BR-06 | The agent MUST derive the PR source branch from the current spec branch and MUST NOT open a PR from `main`, a detached HEAD, or a non-spec branch.    | P1       |
-| BR-07 | If `gh` is unavailable/unauthenticated, the remote is not GitHub, or no remote is configured, the agent MUST degrade gracefully and explain the manual fallback rather than failing silently or guessing. | P1       |
+| BR-07 | If `gh` is unavailable/unauthenticated, the remote is not GitHub, or no remote is configured, the agent MUST degrade gracefully and explain the manual fallback rather than failing silently or guessing. **Superseded 2026-08-19 by `specs/009-create-pr-gh-gate` FR-001–FR-006: these cases are now hard stops with a named remedy; the fallback applies to post-gate failures only.** | P1       |
 | BR-08 | The agent MUST NOT modify source code, the spec, or the constitution; its only mutations are the Git/remote actions required to open the PR (pushing the source branch, creating the PR). | P1       |
 | BR-09 | The agent MUST operate as an agent-agnostic command and run on whatever coding agent the team uses.                                                   | P1       |
 | BR-10 | If an open PR already exists for the source branch, the agent MUST detect it and return the existing PR link instead of opening a duplicate.          | P2       |

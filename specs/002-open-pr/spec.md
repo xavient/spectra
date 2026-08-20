@@ -140,6 +140,9 @@ would have immediately after `implement`.
 - **FR-007**: When `gh` is unavailable or unauthenticated, the remote is not GitHub, or no remote is
   configured, the system MUST degrade gracefully and explain the manual fallback (including the target
   it would have used) rather than failing silently or guessing.
+  > **Superseded (2026-08-19) by [`009-create-pr-gh-gate`](../009-create-pr-gh-gate/spec.md) FR-001–FR-006
+  > and FR-010.** An unusable `gh`, an absent remote, and a non-GitHub remote are now **hard stops** with
+  > a named remedy; the manual fallback survives only for failures *after* that gate.
 - **FR-008**: The system MUST NOT modify source code, the spec, or the constitution; its only
   mutations MUST be the Git/remote actions required to open the PR (pushing the source branch,
   creating the PR).
@@ -190,6 +193,9 @@ would have immediately after `implement`.
 - **SC-005**: Zero duplicate PRs are opened for a source branch that already has an open PR.
 - **SC-006**: When `gh`, the remote, or network access is unavailable, 100% of runs explain the manual
   fallback rather than erroring opaquely.
+  > **Superseded (2026-08-19) by [`009-create-pr-gh-gate`](../009-create-pr-gh-gate/spec.md)
+  > SC-001–SC-004.** Runs without a usable `gh` now stop before any mutation with the remedy that fits;
+  > the fallback is measured on post-gate failures instead.
 - **SC-007**: Zero PRs are opened from a non-spec branch (`main` or a detached HEAD) as a result of the
   agent.
 
