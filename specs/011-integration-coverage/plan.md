@@ -139,20 +139,27 @@ specs/011-integration-coverage/
 spectra_cli/
 ├── coverage.py          # NEW — coverage detection, the plan, the rotation, the restoration
 │                        #       obligation, and post-rotation verification
+├── exits.py             # NEW — the EXIT_* constants, moved out of cli.py so install.py can return
+│                        #       them without a circular import (research R13)
 ├── extension.py         # MODIFIED — delegate_integration_use(key); registered_agents() reused as-is
 ├── install.py           # MODIFIED — step 4 (coverage), already-present detection by project state
-├── cli.py               # MODIFIED — cmd_install exit contract, cmd_update coverage step and
-│                        #            outcome row, advisory repointed at `spectra install`
+├── cli.py               # MODIFIED — re-exports EXIT_* from exits.py, cmd_install exit contract,
+│                        #            cmd_update coverage step and outcome row, advisory repointed
 ├── health.py            # UNCHANGED as a decision — currency lives here, coverage does not (R1)
 ├── project.py           # MODIFIED — a small "is this extension present?" helper for any id
 └── ui.py                # UNCHANGED — existing helpers and glyphs cover the new output
 
 tests/
 ├── test_coverage.py     # NEW — detection, plan shape, rotation order, restoration, verification
-├── test_install.py      # NEW — install's coverage step, already-present path, exit codes
-├── test_version_update.py  # MODIFIED — the update's coverage step: ask, decline, --yes, no-TTY
+├── test_install.py      # NEW — install's coverage step, already-present path, exit codes.
+│                        #       Today's install-flow assertions live in test_check.py, which reaches
+│                        #       cmd_install through `spectra check --yes`; those stay put, and this
+│                        #       file owns the coverage step and the exit contract.
+├── test_version_update.py  # MODIFIED — the update's coverage step (ask, decline, --yes, no-TTY) and
+│                        #              the advisory wording, which lives here — not in test_health.py
 ├── test_cli_surface.py  # MODIFIED — no new flag, help text unchanged, exit codes
-├── test_health.py       # MODIFIED — advisory wording now names `spectra install`
+├── test_no_hardcoded_agents.py  # MODIFIED — coverage.py added to the source scan
+├── test_health.py       # UNCHANGED — the advisory is rendered by cli.py, so its tests are not here
 └── helpers.py           # MODIFIED — argv log + `integration use` side effect in the specify stub
 
 test/
@@ -172,7 +179,7 @@ duplicating them, so the installed-integration list and the default are read in 
 
 ## Phase 0 — Research
 
-See [research.md](research.md). Twelve decisions; the five that shape the design:
+See [research.md](research.md). Thirteen decisions; the five that shape the design:
 
 - **R1** — coverage lives in a new module, not in `health.py`.
 - **R3** — the rotation covers non-default integrations first and ends by re-activating the original
@@ -184,6 +191,8 @@ See [research.md](research.md). Twelve decisions; the five that shape the design
   by matching the dependency's message text (FR-021).
 - **R9** — the byte-for-byte restoration claim (FR-044) is enforced by an end-to-end test against a real
   Spec Kit, with the disclose-and-decline fallback specified but not built unless that test fails.
+- **R13** — the `EXIT_*` constants move to a new `spectra_cli/exits.py`, because `install.py` must return
+  them and `cli.py` already imports `install.py`.
 
 ## Phase 1 — Design & Contracts
 

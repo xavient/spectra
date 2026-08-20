@@ -1,8 +1,9 @@
 # Phase 0 — Research: Full Integration Coverage on Install and Update
 
-Twelve decisions. Each is stated as decision / rationale / alternatives, and each is traceable to a
+Thirteen decisions. Each is stated as decision / rationale / alternatives, and each is traceable to a
 requirement in [spec.md](spec.md). Five are load-bearing — R1, R3, R4, R6, R9 — in that a different
-answer would change the module layout, the observable behaviour, or the test strategy.
+answer would change the module layout, the observable behaviour, or the test strategy. R13 was added by
+`/speckit.analyze`, which found that the exit contract could not be honoured as written.
 
 The dependency behaviours these decisions rest on were verified against **Spec Kit CLI 0.16.5** and are
 recorded as F1–F9 in BRD-007 § 2.1. They are cited here, not restated.
@@ -299,3 +300,26 @@ keeps two contracts from disagreeing about whether the default may move.
 **Alternatives considered**:
 - *Document at release time* — rejected: the repository's own constitution treats the docs as part of the
   change, not a follow-up.
+
+---
+
+## R13 — The exit codes move to their own module
+
+**Decision**: move the `EXIT_*` constants from `spectra_cli/cli.py` into a new `spectra_cli/exits.py`.
+`cli.py` imports and re-exports the same names, so `cli.EXIT_OK` keeps resolving for the existing tests
+that reference it. `install.py` imports them from `exits.py`. The values do not change.
+
+**Rationale**: the clarified exit contract requires `spectra install` to distinguish an attempted-and-failed
+coverage step (non-zero) from an abstention (zero), which means `install.py` has to return real codes
+rather than the bare `0` / `1` literals it returns today. It cannot import them from `cli.py`, because
+`cli.py` imports `install.py` — a back-import would be circular. Discovered by
+`/speckit.analyze` (finding C2) rather than at implementation time, which is the cheaper place to find it.
+
+**Alternatives considered**:
+- *Have `run_install` return a result object that `cmd_install` maps to codes* — viable, and it keeps the
+  module count down, but it puts the mapping in two places conceptually (the flow decides a category, the
+  caller decides a number) for no gain over one shared constant module.
+- *Duplicate the literals in `install.py`* — rejected outright: two sources of truth for a number the
+  contract pins.
+- *Move `install.py`'s flow into `cli.py`* — rejected: it would grow the largest module to solve an import
+  direction.

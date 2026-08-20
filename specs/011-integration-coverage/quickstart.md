@@ -122,10 +122,13 @@ Expected:
 ```bash
 cd "$WORK" && specify init solo --integration kiro-cli --script sh --non-interactive --ignore-agent-tools
 cd solo && spectra install > after.txt; echo "exit=$?"
+spectra install < /dev/null > noninteractive.txt; echo "exit=$?"
 ```
 
 Expected: `after.txt` shows `[1/3]`…`[3/3]` and **no** step 4, no disclosure, no activation. Diff it
 against the same run on the previous release; the only permitted differences are version numbers.
+`noninteractive.txt` matches it — a run with no terminal attached behaves the same, and in a
+*multi*-integration project it performs the coverage step rather than withholding it (FR-019).
 
 ## Scenario 4 — Update keeps coverage (Story 2, FR-024/FR-025/FR-027)
 
@@ -182,6 +185,15 @@ default; coverage; echo "exit=$?"
 
 Expected: `default` prints `kiro-cli`, the integration covered before the interrupt is still covered,
 the run reports an **interruption** rather than a failure, and `exit=130`.
+
+Then prove the interrupted state is repairable, not merely tidy (SC-010):
+
+```bash
+spectra install; echo "exit=$?"
+coverage; default
+```
+
+Expected: coverage completes for every integration, `default` still prints `kiro-cli`, and `exit=0`.
 
 ## Scenario 7 — A failed restore names the recovery command (Story 4 scenario 3, FR-034)
 
@@ -249,10 +261,10 @@ applies and the coverage step becomes declinable in the install too.
 | --- | --- | --- |
 | 1 | 1 | FR-001–FR-008, FR-014–FR-018, FR-033, FR-043 |
 | 2 | 3 | FR-020–FR-023 |
-| 3 | 5 | FR-037, FR-038, SC-006 |
+| 3 | 5 | FR-019, FR-037, FR-038, SC-006, SC-011 |
 | 4 | 2 | FR-024–FR-027, FR-029–FR-032 |
 | 5 | 2 | FR-028 |
-| 6 | 4 | FR-016, FR-036 |
+| 6 | 4 | FR-016, FR-036, SC-010 |
 | 7 | 4 | FR-034, FR-015 |
 | 8 | 6 | FR-039–FR-042 |
 | 9 | — | FR-003, FR-004, FR-011 |

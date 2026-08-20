@@ -48,6 +48,32 @@ Then one line per activation, and the restoration:
 `spectra install` **does not ask** (FR-018). There is no flag or environment variable to skip the step
 (FR-018, FR-047).
 
+### The one case where the install *does* ask — conditional, and inactive by default
+
+FR-044 defines a single exception. If a coverage run is found to leave the project's committed
+configuration textually different from how it started — same meaning, different bytes — and that
+difference cannot be eliminated, then the affected files must be named in the disclosure and the step
+must become declinable **including here**:
+
+```text
+› Adding Spectra's commands to claude requires making it the project's default
+  for a moment. The default returns to kiro-cli at the end.
+
+  Doing this rewrites these files, though their meaning does not change:
+    .specify/integration.json
+    .specify/init-options.json
+
+Register Spectra's commands for these agents? [y/N]
+```
+
+Declining leaves the project untouched, reports the integrations left uncovered with `spectra install`
+as the remedy, and exits 0 — an abstention, not a failure.
+
+**This path is inactive unless task T070's byte-comparison gate fails.** The behaviour observed in
+BRD-007 § 2.1 (F3) was a clean return to the original values, so the expected outcome is that this
+section never activates. It is specified rather than left to be invented under time pressure, because an
+implementer who read only the paragraph above would build a step that cannot satisfy FR-044.
+
 ### The FR-013 case — only the default is uncovered
 
 One activation, of the key that is already default. **No transient-default disclosure**, because nothing
@@ -74,6 +100,12 @@ No restoration line: `restoration == NOT_NEEDED`.
 The clarified rule (spec § Clarifications): **an attempt that fails is non-zero; an abstention with a
 stated reason is zero.** A successful coverage step never masks a failed extension step, and its exit code
 does not override the extension failure's (FR-022).
+
+> **Where these constants live.** `install.py` cannot import them from `cli.py`, because `cli.py` already
+> imports `install.py` — today `run_install` returns bare `0` / `1` literals. The codes therefore move to a
+> neutral `spectra_cli/exits.py`, `cli.py` re-exports the existing names so `cli.EXIT_OK` keeps resolving
+> for current tests, and `install.py` imports them (task T013, research R13). No code is renumbered: the
+> values are unchanged.
 
 ### `NOT_RESTORED` output
 
