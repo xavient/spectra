@@ -1,17 +1,17 @@
 {
   "integration": "kiro-cli",
-  "version": "0.12.14",
-  "installed_at": "2026-07-14T00:45:39.659464+00:00",
+  "version": "0.16.5",
+  "installed_at": "2026-08-20T05:26:35.506032+00:00",
   "files": {
     ".kiro/prompts/speckit.analyze.md": "8b2e31164aec18574c207f227c166322ec04d6f7335f2a993948587957a2ccea",
-    ".kiro/prompts/speckit.clarify.md": "1d52a718054927f97276b38e743d3f2d4d2b5bd2bcc58e358eb82c168a1edfc0",
-    ".kiro/prompts/speckit.constitution.md": "a26e029a114808ef04cc6d874a1f85992ad9cea5efb1a5156ed7a2a741a8d9cb",
-    ".kiro/prompts/speckit.implement.md": "429ec938c0bf01b18c38d53e8391828a9c72786b907a15588bc14ff346b2eb1d",
+    ".kiro/prompts/speckit.clarify.md": "3b819cab9953c10d2d16165eb4d683f37ef73d9683b6a78422dde4fdb0d61927",
+    ".kiro/prompts/speckit.constitution.md": "2cfd5b2d774f7773af0bd3fe23feb73b584d87ff12e946d8d3ba69477b96cc34",
+    ".kiro/prompts/speckit.implement.md": "00a428020e2db8e65f118b98b9f48987260ba635718a20394bfe073ab6547849",
     ".kiro/prompts/speckit.converge.md": "4c12cfadcfd21f9b5847d8a781594ebfb55102fa11911b28bfb0da2325a6668a",
     ".kiro/prompts/speckit.plan.md": "efb186493575e4a4a29d4d0d34d1a480399ad84250b4f3fe0166990d22db9498",
-    ".kiro/prompts/speckit.checklist.md": "9db83eda9e7b8913d2aa5e9f28e0aa409b11d81f2cd27cbc29a7411403e53864",
-    ".kiro/prompts/speckit.specify.md": "ad45e008793d24aee8173227b9d808a14d770252e000f70fdcd7cd2d735dbd7f",
-    ".kiro/prompts/speckit.tasks.md": "a4685c9f00ba108a5c8f3dfc4f2b06e2ba10dd95d0f93d779eda87b89dfee845",
-    ".kiro/prompts/speckit.taskstoissues.md": "a49c59f9ae8229c1baa4233bd60bdf24f9c9ab8860d60c63c1b426c27699a85c"
+    ".kiro/prompts/speckit.checklist.md": "f2d2d786f6558a0e2efb2e3a2ad4bd6ea3e244e467cb6ece3a3e38350bae98ec",
+    ".kiro/prompts/speckit.specify.md": "faf1db20ef2eca2ed9bb735d156973ea7a6f5f87ab6bb11b1a31e714d3e964f1",
+    ".kiro/prompts/speckit.tasks.md": "f0305e60f80b213a9aea5cd3b2890c7628e892d6bd0c5ebd9651dfa4719c8eaa",
+    ".kiro/prompts/speckit.taskstoissues.md": "e199cc749a5902aa190efb3daef926e5f00191d0693ab571cca6aefd5113d393"
   }
 }
