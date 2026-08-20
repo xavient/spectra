@@ -78,7 +78,8 @@ def manifest_yaml(version: str = "1.3.1", *, commands=("adr", "domain-analyzer",
 @contextlib.contextmanager
 def temp_project(installed_version: str | None = "1.3.1", *, is_project: bool = True,
                  incomplete: bool = False, subdir: str | None = None,
-                 integration_version=None):
+                 integration_version=None, integrations=None, default_integration=None,
+                 registered_agents=None):
     """Yield the path a project-scoped command should be run from.
 
     The four states the CLI must distinguish map onto the arguments:
@@ -98,6 +99,19 @@ def temp_project(installed_version: str | None = "1.3.1", *, is_project: bool = 
     * a version string  -> a well-formed file recording it
     * :data:`BAD_JSON`  -> a file that is not valid JSON
     * :data:`NO_VERSION`-> valid JSON with the ``version`` key missing
+
+    ``integrations`` makes the project **multi-integration**: a mapping of integration key to the
+    version its own manifest records, e.g. ``{"kiro-cli": "0.16.5", "claude": "0.15.1"}``. It writes
+    ``installed_integrations`` and ``default_integration`` into ``.specify/integration.json`` and one
+    ``.specify/integrations/<key>.manifest.json`` per key. Pass :data:`MISSING_MANIFEST` as a value to
+    record a key as installed while leaving it no readable manifest.
+
+    Omitting ``integrations`` leaves the single-record fixture exactly as it was, which is what keeps the
+    existing tests — and the fallback path they cover — untouched.
+
+    ``registered_agents`` writes ``.specify/extensions/.registry`` recording which agents Spectra's
+    commands are registered for, so the coverage advisory has something to read. ``None`` writes no
+    registry at all, which is the "cannot determine, say nothing" case.
     """
     with tempfile.TemporaryDirectory() as tmp:
         root = Path(tmp)
@@ -111,7 +125,12 @@ def temp_project(installed_version: str | None = "1.3.1", *, is_project: bool = 
             ext.mkdir(parents=True)
             (ext / "extension.yml").write_text(manifest_yaml(installed_version), encoding="utf-8")
         if is_project and integration_version is not None:
-            write_integration(root, integration_version)
+            write_integration(root, integration_version, integrations=integrations,
+                              default_integration=default_integration)
+        if is_project and integrations is not None:
+            write_integration_manifests(root, integrations)
+        if is_project and registered_agents is not None:
+            write_registry(root, registered_agents)
         target = root
         if subdir:
             target = root / subdir
@@ -128,24 +147,36 @@ def temp_project(installed_version: str | None = "1.3.1", *, is_project: bool = 
 BAD_JSON = object()     # write something that is not JSON
 NO_VERSION = object()   # write valid JSON with no `version` key
 
+# Sentinel for `temp_project(integrations={...})`: record the key as installed but write no manifest for
+# it. That is "recorded but unverifiable" — a state the enumeration must report as unknown rather than
+# drop, so it needs to be expressible in a fixture.
+MISSING_MANIFEST = object()
 
-def integration_json(version: str = "0.16.4") -> str:
+
+def integration_json(version: str = "0.16.4", *, integrations=None, default_integration=None) -> str:
     """An `.specify/integration.json` with the shape the health check reads.
 
     Mirrors the real file Spec Kit writes, including the keys we ignore, so a fixture that happened to
     contain only `version` could not let a too-eager reader pass.
+
+    With `integrations` given, `installed_integrations` lists those keys and `default_integration` names
+    the first (or the one passed explicitly) — the multi-install shape. The top-level `version` is left
+    as given on purpose: the real file records the CLI that last ran *any* upgrade, which is exactly the
+    field that can disagree with a stale per-integration manifest.
     """
+    keys = list(integrations) if integrations else ["claude"]
+    default = default_integration or keys[0]
     return json.dumps({
         "version": version,
         "integration_state_schema": 1,
-        "installed_integrations": ["claude"],
-        "integration_settings": {"claude": {"script": "sh", "invoke_separator": "-"}},
-        "integration": "claude",
-        "default_integration": "claude",
+        "installed_integrations": keys,
+        "integration_settings": {k: {"script": "sh", "invoke_separator": "-"} for k in keys},
+        "integration": default,
+        "default_integration": default,
     }, indent=2) + "\n"
 
 
-def write_integration(project_root, version) -> None:
+def write_integration(project_root, version, *, integrations=None, default_integration=None) -> None:
     """Write (or deliberately corrupt) `.specify/integration.json` under `project_root`."""
     path = Path(project_root) / ".specify" / "integration.json"
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -154,7 +185,65 @@ def write_integration(project_root, version) -> None:
     elif version is NO_VERSION:
         path.write_text(json.dumps({"integration": "claude"}, indent=2) + "\n", encoding="utf-8")
     else:
-        path.write_text(integration_json(version), encoding="utf-8")
+        path.write_text(integration_json(version, integrations=integrations,
+                                         default_integration=default_integration), encoding="utf-8")
+
+
+def integration_manifest(key: str, version: str) -> str:
+    """A `.specify/integrations/<key>.manifest.json` with the shape the per-integration read expects.
+
+    Carries `integration`, `installed_at`, and `files` alongside `version` because the real manifest does;
+    a fixture holding only the field we read could let a reader that grabs the wrong key pass.
+    """
+    return json.dumps({
+        "integration": key,
+        "version": version,
+        "installed_at": "2026-08-19T00:00:00.000000+00:00",
+        "files": {f".{key}/commands/speckit.plan.md": "0" * 64},
+    }, indent=2) + "\n"
+
+
+def write_integration_manifests(project_root, integrations: dict) -> None:
+    """Write one manifest per entry in `integrations`, honouring :data:`MISSING_MANIFEST`.
+
+    Also writes `speckit.manifest.json` — the shared-infrastructure record — because it sits in the same
+    directory and is *not* an integration. Every fixture carries it so a reader that enumerates by
+    globbing the directory fails here rather than in production.
+    """
+    directory = Path(project_root) / ".specify" / "integrations"
+    directory.mkdir(parents=True, exist_ok=True)
+    for key, version in integrations.items():
+        if version is MISSING_MANIFEST:
+            continue
+        (directory / f"{key}.manifest.json").write_text(integration_manifest(key, version),
+                                                        encoding="utf-8")
+    (directory / "speckit.manifest.json").write_text(integration_manifest("speckit", "0.16.4"),
+                                                     encoding="utf-8")
+
+
+def write_registry(project_root, registered_agents) -> None:
+    """Write `.specify/extensions/.registry` recording Spectra's per-agent command registration.
+
+    `registered_agents` is a list of agent keys, or :data:`BAD_JSON` for an unreadable registry, or an
+    empty list for a `spectra` entry that records no command map at all. All three of the latter mean
+    "coverage could not be determined", which must produce no advisory rather than a guess.
+    """
+    path = Path(project_root) / ".specify" / "extensions" / ".registry"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if registered_agents is BAD_JSON:
+        path.write_text("{ not json at all", encoding="utf-8")
+        return
+    commands = {agent: ["speckit.spectra.adr"] for agent in registered_agents}
+    path.write_text(json.dumps({
+        "schema_version": "1.0",
+        "extensions": {
+            "spectra": {
+                "version": "1.3.1",
+                "enabled": True,
+                "registered_commands": commands,
+            },
+        },
+    }, indent=2) + "\n", encoding="utf-8")
 
 
 # --------------------------------------------------------------------------- #
@@ -185,21 +274,91 @@ SELF_CHECK_NO_LOCAL_VERSION = (
 SELF_CHECK_GIBBERISH = "something entirely unexpected\n"
 
 
+def integration_status_json(installed=("claude",), *, default=None, modified=None,
+                            status=None) -> str:
+    """The payload `specify integration status --json` prints, reduced to what we read.
+
+    Reproduces the real shape: per-manifest `modified_files` lists under `manifests`, the `speckit`
+    record sitting among them without being an integration, and `findings` carrying the
+    `managed-files-modified` code. `status` derives from the findings unless overridden, mirroring the
+    real command — which reports `warning` while still exiting 0.
+    """
+    modified = dict(modified or {})
+    keys = list(installed)
+    manifests = {}
+    for key in keys + ["speckit"]:
+        manifests[key] = {
+            "manifest": f".specify/integrations/{key}.manifest.json",
+            "readable": True,
+            "tracked_files": 10,
+            "missing_files": [],
+            "modified_files": list(modified.get(key, [])),
+            "invalid_files": [],
+        }
+    findings = [
+        {"severity": "warning", "code": "managed-files-modified",
+         "message": f"{len(files)} managed file(s) were modified for integration '{key}'.",
+         "integration": key,
+         "suggestion": "Review the changes before running `specify integration upgrade --force`."}
+        for key, files in modified.items() if files
+    ]
+    total = sum(len(files) for files in modified.values())
+    return json.dumps({
+        "status": status or ("warning" if findings else "ok"),
+        "default_integration": default or (keys[0] if keys else None),
+        "installed_integrations": keys,
+        "recorded_installed_integrations": keys,
+        "manifest_checked_integrations": keys + ["speckit"],
+        "multi_install_safe": True,
+        "shared_templates_target_alignment": default or (keys[0] if keys else None),
+        "missing_managed_files": 0,
+        "modified_managed_files": total,
+        "invalid_manifest_paths": 0,
+        "unchecked_manifests": 0,
+        "manifests": manifests,
+        "findings": findings,
+    }, indent=2) + "\n"
+
+
 @contextlib.contextmanager
-def fake_specify(output: str = SELF_CHECK_UP_TO_DATE, *, exit_code: int = 0):
-    """Put a stub `specify` on PATH that prints `output` for `self check`.
+def fake_specify(output: str = SELF_CHECK_UP_TO_DATE, *, exit_code: int = 0,
+                 installed=("claude",), default=None, modified=None,
+                 status_output=None, status_exit_code=0):
+    """Put a stub `specify` on PATH that answers each subcommand it is actually asked.
 
     Exercises the real subprocess path rather than only `parse_self_check`, so a mistake in how the
     child is invoked or decoded is caught too. `exit_code` defaults to 0 deliberately: the real command
     exits 0 on every branch, and a test that let us succeed only because of a non-zero code would be
     testing something Spec Kit does not actually do.
+
+    **Argument-aware on purpose.** A stub that printed self-check text for every invocation would answer
+    `integration status --json` with the wrong payload entirely, and the reader would still "pass". The
+    dispatch below is therefore part of the fixture's correctness:
+
+    * ``self check``               -> `output` (one of the SELF_CHECK_* branches)
+    * ``integration status --json``-> a JSON payload built from `installed` / `default` / `modified`
+    * anything else                -> exit 0 silently, which is what a delegated upgrade looks like
+
+    `modified` maps an integration key (or ``"speckit"`` for shared infrastructure) to the managed files
+    that diverge, which is what makes the disclosure and consent paths testable end to end.
+    `status_output` replaces the JSON wholesale — pass unparseable text to exercise degradation — and
+    `status_exit_code` makes the status call fail outright.
     """
+    payload = (status_output if status_output is not None
+               else integration_status_json(installed, default=default, modified=modified))
     with tempfile.TemporaryDirectory() as tmp:
         script = Path(tmp) / "specify"
         script.write_text(
             "#!/bin/sh\n"
-            f"cat <<'SPECTRA_EOF'\n{output}SPECTRA_EOF\n"
-            f"exit {exit_code}\n",
+            'if [ "$1" = "self" ] && [ "$2" = "check" ]; then\n'
+            f"  cat <<'SPECTRA_SELF_EOF'\n{output}SPECTRA_SELF_EOF\n"
+            f"  exit {exit_code}\n"
+            "fi\n"
+            'if [ "$1" = "integration" ] && [ "$2" = "status" ]; then\n'
+            f"  cat <<'SPECTRA_STATUS_EOF'\n{payload}SPECTRA_STATUS_EOF\n"
+            f"  exit {status_exit_code}\n"
+            "fi\n"
+            "exit 0\n",
             encoding="utf-8",
         )
         script.chmod(0o755)

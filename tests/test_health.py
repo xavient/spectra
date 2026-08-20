@@ -8,6 +8,7 @@ and both are reachable here without argparse, a prompt, or a terminal.
 from __future__ import annotations
 
 import unittest
+from unittest import mock
 
 from spectra_cli import extension, health, project, version as cli_version
 from tests import helpers
@@ -15,6 +16,19 @@ from tests import helpers
 
 def _status(key, status, installed=None, latest=None, detail=None):
     return health.ComponentStatus(key, status, installed=installed, latest=latest, detail=detail)
+
+
+class _Completed:
+    """A stand-in for `subprocess.CompletedProcess`, so the probe's failure paths are reachable."""
+
+    def __init__(self, stdout="", returncode=0):
+        self.stdout = stdout
+        self.stderr = ""
+        self.returncode = returncode
+
+
+def _completed(stdout="", code=0):
+    return _Completed(stdout, code)
 
 
 # --------------------------------------------------------------------------- #
@@ -155,6 +169,412 @@ class IntegrationVersion(unittest.TestCase):
 
     def test_no_project_root_yields_none(self):
         self.assertIsNone(health.read_integration_version(None))
+
+
+class ModificationReportReading(unittest.TestCase):
+    """What the probe reports, and what it does when it cannot report at all."""
+
+    def test_the_shared_record_is_routed_to_shared_not_to_an_integration(self):
+        with helpers.temp_project("1.3.1", integration_version="0.16.5",
+                                  integrations={"claude": "0.16.5"}) as path:
+            with helpers.fake_specify(installed=("claude",),
+                                      modified={"claude": [".claude/x.md"],
+                                                "speckit": [".specify/templates/spec-template.md"]}):
+                with helpers.cwd(path):
+                    report = health.modification_report(project.find_project_root(path))
+        self.assertTrue(report.established)
+        self.assertEqual(report.files_for("claude"), [".claude/x.md"])
+        self.assertEqual(report.shared, [".specify/templates/spec-template.md"])
+        self.assertNotIn(health.SHARED_KEY, report.per_integration)
+
+    def test_keys_that_are_not_installed_integrations_are_ignored(self):
+        with helpers.temp_project("1.3.1", integration_version="0.16.5",
+                                  integrations={"claude": "0.16.5"}) as path:
+            with helpers.fake_specify(installed=("claude", "gemini"),
+                                      modified={"gemini": [".gemini/x.md"]}):
+                with helpers.cwd(path):
+                    report = health.modification_report(project.find_project_root(path))
+        self.assertEqual(report.files_for("gemini"), [])
+
+    def test_a_clean_project_is_established_and_empty(self):
+        with helpers.temp_project("1.3.1", integration_version="0.16.5",
+                                  integrations={"claude": "0.16.5"}) as path:
+            with helpers.fake_specify(installed=("claude",)):
+                with helpers.cwd(path):
+                    report = health.modification_report(project.find_project_root(path))
+        self.assertTrue(report.established)
+        self.assertEqual(report.per_integration, {})
+        self.assertEqual(report.shared, [])
+
+    def test_only_json_output_is_ever_read(self):
+        """FR-041: the human-formatted table is never parsed."""
+        argv = []
+        with mock.patch.object(health, "specify_available", return_value=True), \
+             mock.patch("subprocess.run",
+                        side_effect=lambda a, **k: argv.append(a) or _completed("{}")):
+            health.modification_report(None)
+        self.assertEqual(argv, [["specify", "integration", "status", "--json"]])
+
+    def test_an_absent_specify_is_not_established(self):
+        with helpers.without_specify():
+            report = health.modification_report(None)
+        self.assertFalse(report.established)
+        self.assertEqual(report.per_integration, {})
+        self.assertEqual(report.shared, [])
+
+    def test_a_timeout_is_not_established(self):
+        import subprocess as sp
+        with mock.patch.object(health, "specify_available", return_value=True), \
+             mock.patch("subprocess.run", side_effect=sp.TimeoutExpired("specify", 5)):
+            report = health.modification_report(None)
+        self.assertFalse(report.established)
+
+    def test_a_non_zero_exit_is_not_established(self):
+        with mock.patch.object(health, "specify_available", return_value=True), \
+             mock.patch("subprocess.run", return_value=_completed("", code=1)):
+            report = health.modification_report(None)
+        self.assertFalse(report.established)
+
+    def test_unparseable_output_is_not_established(self):
+        with mock.patch.object(health, "specify_available", return_value=True), \
+             mock.patch("subprocess.run", return_value=_completed("not json at all")):
+            report = health.modification_report(None)
+        self.assertFalse(report.established)
+
+    def test_an_os_error_is_not_established(self):
+        with mock.patch.object(health, "specify_available", return_value=True), \
+             mock.patch("subprocess.run", side_effect=OSError("boom")):
+            report = health.modification_report(None)
+        self.assertFalse(report.established)
+
+
+class InstalledIntegrations(unittest.TestCase):
+    """Membership comes from the recorded list, and never from what happens to be on disk."""
+
+    def _read(self, path):
+        return health.read_installed_integrations(project.find_project_root(path))
+
+    def test_a_recorded_list_is_returned_in_order(self):
+        with helpers.temp_project("1.3.1", integration_version="0.16.5",
+                                  integrations={"kiro-cli": "0.16.5", "claude": "0.16.5"}) as path:
+            self.assertEqual(self._read(path), ["kiro-cli", "claude"])
+
+    def test_the_shared_infrastructure_record_is_not_an_integration(self):
+        # `speckit.manifest.json` sits in the same directory as the integration manifests but is shared
+        # infrastructure. A reader that enumerated the directory would find three; the recorded list has
+        # two, and the recorded list is the truth (FR-002).
+        with helpers.temp_project("1.3.1", integration_version="0.16.5",
+                                  integrations={"kiro-cli": "0.16.5", "claude": "0.16.5"}) as path:
+            root = project.find_project_root(path)
+            on_disk = sorted(p.name for p in (root / ".specify" / "integrations").iterdir())
+            self.assertIn("speckit.manifest.json", on_disk)
+            self.assertNotIn("speckit", self._read(path))
+
+    def test_a_missing_file_yields_none_meaning_fall_back(self):
+        with helpers.temp_project("1.3.1") as path:
+            self.assertIsNone(self._read(path))
+
+    def test_malformed_json_yields_none(self):
+        with helpers.temp_project("1.3.1", integration_version=helpers.BAD_JSON) as path:
+            self.assertIsNone(self._read(path))
+
+    def test_a_file_without_the_key_yields_none(self):
+        with helpers.temp_project("1.3.1", integration_version=helpers.NO_VERSION) as path:
+            self.assertIsNone(self._read(path))
+
+    def test_an_empty_list_yields_none(self):
+        with helpers.temp_project("1.3.1", integration_version="0.16.5") as path:
+            root = project.find_project_root(path)
+            (root / ".specify" / "integration.json").write_text(
+                '{"version": "0.16.5", "installed_integrations": []}', encoding="utf-8")
+            self.assertIsNone(health.read_installed_integrations(root))
+
+    def test_no_project_root_yields_none(self):
+        self.assertIsNone(health.read_installed_integrations(None))
+
+    def test_the_default_integration_is_read_from_either_key(self):
+        with helpers.temp_project("1.3.1", integration_version="0.16.5",
+                                  integrations={"kiro-cli": "0.16.5", "claude": "0.16.5"},
+                                  default_integration="claude") as path:
+            root = project.find_project_root(path)
+            self.assertEqual(health.read_default_integration(root), "claude")
+
+    def test_an_absent_default_is_none_rather_than_invented(self):
+        with helpers.temp_project("1.3.1", integration_version="0.16.5") as path:
+            root = project.find_project_root(path)
+            (root / ".specify" / "integration.json").write_text(
+                '{"version": "0.16.5", "installed_integrations": ["claude"]}', encoding="utf-8")
+            self.assertIsNone(health.read_default_integration(root))
+
+
+class PerIntegrationVersion(unittest.TestCase):
+    """Every way one integration's manifest can fail to yield a version is the same answer: None."""
+
+    def _read(self, path, key):
+        return health.read_integration_version(project.find_project_root(path), key)
+
+    def test_a_well_formed_manifest_yields_its_version(self):
+        with helpers.temp_project("1.3.1", integration_version="0.16.5",
+                                  integrations={"kiro-cli": "0.16.5", "claude": "0.15.1"}) as path:
+            self.assertEqual(self._read(path, "kiro-cli"), "0.16.5")
+            self.assertEqual(self._read(path, "claude"), "0.15.1")
+
+    def test_a_missing_manifest_yields_none(self):
+        with helpers.temp_project("1.3.1", integration_version="0.16.5",
+                                  integrations={"kiro-cli": "0.16.5",
+                                                "claude": helpers.MISSING_MANIFEST}) as path:
+            self.assertIsNone(self._read(path, "claude"))
+
+    def test_malformed_json_yields_none(self):
+        with helpers.temp_project("1.3.1", integration_version="0.16.5",
+                                  integrations={"claude": "0.16.5"}) as path:
+            root = project.find_project_root(path)
+            (root / ".specify" / "integrations" / "claude.manifest.json").write_text(
+                "{ not json", encoding="utf-8")
+            self.assertIsNone(health.read_integration_version(root, "claude"))
+
+    def test_a_non_object_top_level_yields_none(self):
+        with helpers.temp_project("1.3.1", integration_version="0.16.5",
+                                  integrations={"claude": "0.16.5"}) as path:
+            root = project.find_project_root(path)
+            (root / ".specify" / "integrations" / "claude.manifest.json").write_text(
+                '["not", "an", "object"]', encoding="utf-8")
+            self.assertIsNone(health.read_integration_version(root, "claude"))
+
+    def test_an_absent_or_empty_version_yields_none(self):
+        with helpers.temp_project("1.3.1", integration_version="0.16.5",
+                                  integrations={"claude": "0.16.5"}) as path:
+            root = project.find_project_root(path)
+            manifest = root / ".specify" / "integrations" / "claude.manifest.json"
+            manifest.write_text('{"integration": "claude"}', encoding="utf-8")
+            self.assertIsNone(health.read_integration_version(root, "claude"))
+            manifest.write_text('{"integration": "claude", "version": "  "}', encoding="utf-8")
+            self.assertIsNone(health.read_integration_version(root, "claude"))
+
+
+class PerIntegrationVerdict(unittest.TestCase):
+    """The per-integration state table, evaluated once per key instead of once per project."""
+
+    CURRENT = None  # set in setUp; a Specify CLI that is current at 0.16.5
+
+    def setUp(self):
+        self.CURRENT = _status(health.SPECIFY_CLI, health.UP_TO_DATE,
+                               installed="0.16.5", latest="0.16.5")
+        self.BEHIND = _status(health.SPECIFY_CLI, health.NEEDS_UPDATING,
+                              installed="0.16.4", latest="0.16.5")
+        self.UNKNOWN = _status(health.SPECIFY_CLI, health.UNKNOWN, detail="no specify")
+
+    def _states(self, integrations, specify_status, default=None):
+        with helpers.temp_project("1.3.1", integration_version="0.16.5",
+                                  integrations=integrations,
+                                  default_integration=default) as path:
+            root = project.find_project_root(path)
+            return {s.key: s for s in health.get_integration_states(root, specify_status)}
+
+    def test_an_unknown_specify_cli_forces_every_integration_unknown(self):
+        states = self._states({"kiro-cli": "0.16.5", "claude": "0.15.1"}, self.UNKNOWN)
+        self.assertEqual({s.status for s in states.values()}, {health.UNKNOWN})
+        for state in states.values():
+            self.assertIn("nothing to compare against", state.detail)
+
+    def test_every_unknown_carries_a_reason(self):
+        states = self._states({"kiro-cli": "0.16.5", "claude": helpers.MISSING_MANIFEST},
+                              self.CURRENT)
+        self.assertEqual(states["claude"].status, health.UNKNOWN)
+        self.assertTrue(states["claude"].detail)
+
+    def test_a_behind_cli_makes_every_integration_behind_and_targets_its_latest(self):
+        states = self._states({"kiro-cli": "0.16.4", "claude": "0.16.4"}, self.BEHIND)
+        for state in states.values():
+            self.assertEqual(state.status, health.NEEDS_UPDATING)
+            self.assertEqual(state.latest, "0.16.5")
+            self.assertIn("tracks it", state.detail)
+
+    def test_a_stale_manifest_against_a_current_cli_needs_updating(self):
+        states = self._states({"kiro-cli": "0.16.5", "claude": "0.15.1"}, self.CURRENT)
+        self.assertEqual(states["kiro-cli"].status, health.UP_TO_DATE)
+        self.assertEqual(states["claude"].status, health.NEEDS_UPDATING)
+        self.assertEqual(states["claude"].latest, "0.16.5")
+        # The two ways of being behind are distinguishable by their reason.
+        self.assertIn("was upgraded but", states["claude"].detail)
+
+    def test_a_newer_manifest_is_ahead(self):
+        states = self._states({"claude": "0.17.0"}, self.CURRENT)
+        self.assertEqual(states["claude"].status, health.AHEAD)
+
+    def test_the_default_integration_is_marked(self):
+        states = self._states({"kiro-cli": "0.16.5", "claude": "0.16.5"}, self.CURRENT,
+                              default="claude")
+        self.assertTrue(states["claude"].is_default)
+        self.assertFalse(states["kiro-cli"].is_default)
+
+    def test_modified_is_unset_until_the_update_path_asks(self):
+        states = self._states({"claude": "0.16.5"}, self.CURRENT)
+        self.assertIsNone(states["claude"].modified)
+
+
+class Aggregation(unittest.TestCase):
+    """One row from many integrations: the five precedence rules, in order."""
+
+    CURRENT = _status(health.SPECIFY_CLI, health.UP_TO_DATE, installed="0.16.5", latest="0.16.5")
+
+    def _row(self, *states):
+        return health.aggregate_integration_status(list(states), self.CURRENT)
+
+    def _state(self, key, status, installed=None):
+        return health.IntegrationState(key, status, installed=installed,
+                                       detail="reason" if status == health.UNKNOWN else None)
+
+    def test_rule_1_no_integrations_is_unknown(self):
+        row = self._row()
+        self.assertEqual(row.status, health.UNKNOWN)
+        self.assertIn("no installed integrations", row.detail)
+
+    def test_rule_2_any_behind_makes_the_row_behind(self):
+        row = self._row(self._state("a", health.UP_TO_DATE, "0.16.5"),
+                        self._state("b", health.NEEDS_UPDATING, "0.15.1"))
+        self.assertEqual(row.status, health.NEEDS_UPDATING)
+
+    def test_rule_2_outranks_rule_3_so_an_unreadable_sibling_cannot_hide_work(self):
+        row = self._row(self._state("a", health.UNKNOWN),
+                        self._state("b", health.NEEDS_UPDATING, "0.15.1"))
+        self.assertEqual(row.status, health.NEEDS_UPDATING)
+
+    def test_rule_3_any_unknown_outranks_a_claim_of_currency(self):
+        row = self._row(self._state("a", health.UP_TO_DATE, "0.16.5"),
+                        self._state("b", health.UNKNOWN))
+        self.assertEqual(row.status, health.UNKNOWN)
+        self.assertIn("b", row.detail)
+
+    def test_rule_3_covers_every_integration_being_unknown(self):
+        row = self._row(self._state("a", health.UNKNOWN), self._state("b", health.UNKNOWN))
+        self.assertEqual(row.status, health.UNKNOWN)
+
+    def test_rule_4_ahead_only_when_every_integration_is_ahead(self):
+        row = self._row(self._state("a", health.AHEAD, "0.17.0"),
+                        self._state("b", health.AHEAD, "0.17.0"))
+        self.assertEqual(row.status, health.AHEAD)
+
+    def test_rule_5_a_mix_of_ahead_and_current_is_up_to_date(self):
+        # "Ahead" is a flavour of not-behind, and the row answers "is anything stale here?".
+        row = self._row(self._state("a", health.AHEAD, "0.17.0"),
+                        self._state("b", health.UP_TO_DATE, "0.16.5"))
+        self.assertEqual(row.status, health.UP_TO_DATE)
+
+    def test_rule_5_all_current_is_up_to_date(self):
+        row = self._row(self._state("a", health.UP_TO_DATE, "0.16.5"),
+                        self._state("b", health.UP_TO_DATE, "0.16.5"))
+        self.assertEqual(row.status, health.UP_TO_DATE)
+
+    def test_the_children_are_carried_on_the_row(self):
+        row = self._row(self._state("a", health.UP_TO_DATE, "0.16.5"),
+                        self._state("b", health.NEEDS_UPDATING, "0.15.1"))
+        self.assertEqual([part.key for part in row.parts], ["a", "b"])
+        self.assertTrue(row.has_parts)
+
+
+class DerivedRowFields(unittest.TestCase):
+    """The row's version and reason are derived from its children, never set independently."""
+
+    CURRENT = _status(health.SPECIFY_CLI, health.UP_TO_DATE, installed="0.16.5", latest="0.16.5")
+
+    def _row(self, *states):
+        return health.aggregate_integration_status(list(states), self.CURRENT)
+
+    def test_the_row_shows_the_oldest_readable_version(self):
+        row = self._row(health.IntegrationState("a", health.UP_TO_DATE, installed="0.16.5"),
+                        health.IntegrationState("b", health.NEEDS_UPDATING, installed="0.15.1",
+                                                latest="0.16.5"))
+        self.assertEqual(row.installed, "0.15.1")
+
+    def test_an_unreadable_child_contributes_no_version_to_the_comparison(self):
+        row = self._row(health.IntegrationState("a", health.UP_TO_DATE, installed="0.16.5"),
+                        health.IntegrationState("b", health.UNKNOWN, detail="unreadable"))
+        self.assertEqual(row.installed, "0.16.5")
+
+    def test_the_row_names_the_behind_integrations(self):
+        row = self._row(health.IntegrationState("kiro-cli", health.UP_TO_DATE, installed="0.16.5"),
+                        health.IntegrationState("claude", health.NEEDS_UPDATING, installed="0.15.1",
+                                                latest="0.16.5"))
+        self.assertIn("claude", row.detail)
+        self.assertNotIn("kiro-cli", row.detail)
+
+    def test_the_row_targets_what_the_behind_children_target(self):
+        row = self._row(health.IntegrationState("claude", health.NEEDS_UPDATING, installed="0.15.1",
+                                                latest="0.16.5"))
+        self.assertEqual(row.latest, "0.16.5")
+
+
+class RecordPrecedence(unittest.TestCase):
+    """The regression this feature exists for.
+
+    Spec Kit rewrites the project-level `version` in `.specify/integration.json` to the current CLI
+    version whenever **any** integration is upgraded (BRD-006 finding F2). So after upgrading one of two,
+    that field reads current while the other integration's own manifest is still stale. A check that
+    reads the project-level field first reports a green row over a stale stack — which is the bug.
+    """
+
+    CURRENT = _status(health.SPECIFY_CLI, health.UP_TO_DATE, installed="0.16.5", latest="0.16.5")
+
+    def test_a_current_project_record_cannot_mask_a_stale_manifest(self):
+        with helpers.temp_project("1.3.1", integration_version="0.16.5",
+                                  integrations={"kiro-cli": "0.16.5", "claude": "0.15.1"},
+                                  default_integration="kiro-cli") as path:
+            root = project.find_project_root(path)
+            # The project-level field says everything is current...
+            self.assertEqual(health.read_integration_version(root), "0.16.5")
+            # ...but the row must not believe it.
+            row = health.get_integration_status(root, self.CURRENT)
+        self.assertEqual(row.status, health.NEEDS_UPDATING)
+        self.assertEqual(row.installed, "0.15.1")
+        self.assertIn("claude", row.detail)
+
+    def test_the_project_level_field_is_not_consulted_while_manifests_read(self):
+        with helpers.temp_project("1.3.1", integration_version="0.11.0",
+                                  integrations={"kiro-cli": "0.16.5"}) as path:
+            root = project.find_project_root(path)
+            row = health.get_integration_status(root, self.CURRENT)
+        # A wildly stale project-level field is irrelevant when the manifest is readable and current.
+        self.assertEqual(row.status, health.UP_TO_DATE)
+        self.assertEqual(row.installed, "0.16.5")
+
+
+class Fallback(unittest.TestCase):
+    """Older layouts keep working: one unnamed integration, judged by the project-level record."""
+
+    CURRENT = _status(health.SPECIFY_CLI, health.UP_TO_DATE, installed="0.16.5", latest="0.16.5")
+
+    def test_no_recorded_list_falls_back_to_the_project_level_record(self):
+        with helpers.temp_project("1.3.1", integration_version="0.15.1") as path:
+            root = project.find_project_root(path)
+            row = health.get_integration_status(root, self.CURRENT)
+        self.assertEqual(row.status, health.NEEDS_UPDATING)
+        self.assertEqual(row.installed, "0.15.1")
+        self.assertEqual([part.key for part in row.parts], [None])
+
+    def test_a_recorded_list_whose_manifests_are_all_unreadable_falls_back(self):
+        with helpers.temp_project("1.3.1", integration_version="0.15.1",
+                                  integrations={"kiro-cli": helpers.MISSING_MANIFEST,
+                                                "claude": helpers.MISSING_MANIFEST}) as path:
+            root = project.find_project_root(path)
+            row = health.get_integration_status(root, self.CURRENT)
+        self.assertEqual(row.status, health.NEEDS_UPDATING)
+        self.assertEqual(row.installed, "0.15.1")
+        self.assertEqual([part.key for part in row.parts], [None])
+
+    def test_the_fallback_verdicts_match_the_single_record_table(self):
+        for recorded, expected in (("0.16.5", health.UP_TO_DATE),
+                                   ("0.15.1", health.NEEDS_UPDATING),
+                                   ("0.17.0", health.AHEAD)):
+            with helpers.temp_project("1.3.1", integration_version=recorded) as path:
+                root = project.find_project_root(path)
+                self.assertEqual(health.get_integration_status(root, self.CURRENT).status, expected)
+
+    def test_an_unreadable_project_record_with_no_list_is_unknown(self):
+        with helpers.temp_project("1.3.1", integration_version=helpers.BAD_JSON) as path:
+            root = project.find_project_root(path)
+            row = health.get_integration_status(root, self.CURRENT)
+        self.assertEqual(row.status, health.UNKNOWN)
 
 
 class IntegrationStatus(unittest.TestCase):

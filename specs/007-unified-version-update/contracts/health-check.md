@@ -186,6 +186,17 @@ Neither passes `--force`. `specify integration upgrade` blocks on locally modifi
 design, and silently overriding that on the user's behalf would discard their edits — exactly the class
 of destructive action that belongs behind Spec Kit's own gate rather than behind ours.
 
+> **Superseded by `specs/010-multi-integration-updates` (FR-026–FR-033).** The reasoning above is
+> unchanged and still binding — what changed is the word *silently*. `--force` is now reachable, but only
+> through a disclosure of the exact files that would be overwritten (per integration, and shared Spec Kit
+> infrastructure separately, because the dependency's overwrite is not scoped to the files that caused the
+> block) plus an authorization act performed in the same run: an interactive answer defaulting to *no*, or
+> an explicit `--force`. `--yes` does not authorize it. The property this paragraph protects — no edits are
+> discarded without the user saying so — still holds; the dead end it also created, a project that could
+> not be updated at all with no explanation, does not. `delegate_integration_upgrade` also takes an
+> integration key now, because invoked bare it silently upgrades the default integration only. See
+> `specs/010-multi-integration-updates/contracts/cli-surface.md` § 8.
+
 ---
 
 ## The update walk

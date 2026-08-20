@@ -261,23 +261,34 @@ GLYPH_NONE = f"{PURPLE_DIM}–{RESET}"
 
 
 def health_table(rows) -> None:
-    """Print aligned `label: glyph phrase` rows.
+    """Print aligned `label: glyph phrase` rows, each optionally followed by indented children.
 
-    `rows` is a sequence of `(label, glyph, phrase)` with the glyph and phrase already coloured and
-    formatted by the caller. **One renderer, two callers**: the status table from `spectra version` and
-    the outcome table from `spectra update` have the same shape, and letting them share this keeps them
-    aligned by construction — they print adjacent in a single update run, which is exactly where two
-    implementations would visibly drift.
+    `rows` is a sequence of `(label, glyph, phrase)` — or `(label, glyph, phrase, children)`, where
+    `children` is a sequence of the same triples to render beneath that row. The glyph and phrase are
+    already coloured and formatted by the caller.
+
+    **One renderer, two callers**: the status table from `spectra version` and the outcome table from
+    `spectra update` have the same shape, and letting them share this keeps them aligned by construction —
+    they print adjacent in a single update run, which is exactly where two implementations would visibly
+    drift. Children are aligned to their own width rather than the parent's, so a long component label
+    cannot push a short integration key off to the right.
 
     Columns rather than a box: `panel()` would force the longest version transition to wrap on an
     80-column terminal, and the versions are the part a user reads most closely.
     """
     if not rows:
         return
-    label_w = max(len(label) for label, _, _ in rows)
-    for label, glyph, phrase in rows:
+    rows = [tuple(row) for row in rows]
+    label_w = max(len(row[0]) for row in rows)
+    child_w = max((len(child[0]) for row in rows for child in (row[3] if len(row) > 3 else ())),
+                  default=0)
+    for row in rows:
+        label, glyph, phrase = row[0], row[1], row[2]
         pad = " " * (label_w - len(label))
         print(f"  {label}:{pad} {glyph} {phrase}")
+        for child_label, child_glyph, child_phrase in (row[3] if len(row) > 3 else ()):
+            child_pad = " " * (child_w - len(child_label))
+            print(f"    {child_label}:{child_pad} {child_glyph} {child_phrase}")
 
 
 # --------------------------------------------------------------------------- #

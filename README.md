@@ -303,9 +303,11 @@ Both check **four** things, because all four have to be current for Spectra to w
 | Spectra agents | the Spectra extension installed in this project |
 
 ```text
-Specify CLI:     ✓ up to date (0.16.4)
-Core agents:     ! needs updating (0.12.14 -> 0.16.4)
-Spectra CLI:     ✓ up to date (6.0.0)
+Specify CLI:     ✓ up to date (0.16.5)
+Core agents:     ! needs updating (0.15.1 -> 0.16.5) — kiro-cli, claude
+                   kiro-cli: ✓ up to date (0.16.5)
+                   claude:   ! needs updating (0.15.1 -> 0.16.5)
+Spectra CLI:     ✓ up to date (6.1.0)
 Spectra agents:  ✓ up to date (1.3.1)
 
   You can update by running: spectra update
@@ -313,6 +315,30 @@ Spectra agents:  ✓ up to date (1.3.1)
 
 Anything that can't be checked — no network, no `specify` on `PATH` — is reported as `unknown` rather
 than guessed at, and `spectra update` skips it instead of acting on a state it couldn't establish.
+
+#### Projects with more than one agent installed
+
+A Spec Kit project can have several agent integrations installed at once — `claude` and `kiro-cli`, say —
+with one of them marked as the default. **Core agents covers all of them.** The row is behind when any
+installed integration is behind, shows the oldest version found, and names the ones that need work; when
+they disagree you also get a line each, as above. `spectra update` then upgrades every one of them in a
+single run, and **never changes which agent your project targets** — it names each integration rather than
+switching your default.
+
+Two things follow from that:
+
+- **If Spec Kit refuses an upgrade** because managed files have been modified locally, `spectra update`
+  lists the exact files first — grouped per integration, with shared templates and scripts as their own
+  group — and asks once, defaulting to *no*. Answering yes overwrites them with the bundled versions;
+  answering no leaves those integrations alone and updates everything else. There is no way to preview what
+  diverged, so the choice really is overwrite or leave it.
+- **`--force` authorizes that overwrite** without being asked, for scripted runs. `--yes` deliberately does
+  not: it approves the update plan, not the discarding of your edits. A run with no terminal attached and no
+  `--force` overwrites nothing and tells you which flag would.
+
+If an installed integration has no Spectra commands registered for it, `spectra version` says so and names
+the Spec Kit command that would scaffold them — Spectra won't run it for you, because it changes the
+project's default integration for everyone.
 
 Managing the **tool itself** is down to one verb, since `version` and `update` now cover it:
 

@@ -49,6 +49,20 @@ def _spectra_cli(status=health.UP_TO_DATE, installed="5.0.0", latest="5.0.0", de
                                   latest=latest, detail=detail)
 
 
+COMPONENT_LABELS = ("Specify CLI", "Core agents", "Spectra CLI", "Spectra agents")
+
+
+def _is_component_row(line: str) -> bool:
+    """Whether `line` is one of the four component rows.
+
+    Matches on the labels rather than on indentation plus a colon: the coverage advisory is also indented
+    and also contains a colon ("To scaffold them: ..."), so a looser test would count it as a fifth row and
+    fail for the wrong reason.
+    """
+    return (line.startswith("  ") and not line.startswith("    ")
+            and any(line.lstrip().startswith(label + ":") for label in COMPONENT_LABELS))
+
+
 def moving_manifest(path, version="1.3.1"):
     """A `delegate_update` stand-in that actually writes the new version, as a real update would.
 
@@ -76,15 +90,24 @@ def moving_integration(path, version):
 
 @contextlib.contextmanager
 def stack(installed="1.3.1", published="1.3.1", *, integration="0.16.4",
-          self_check=h.SELF_CHECK_UP_TO_DATE, spectra_cli=None, **project_kwargs):
+          self_check=h.SELF_CHECK_UP_TO_DATE, spectra_cli=None, modified=None,
+          **project_kwargs):
     """A whole stack in a known state, so a test can vary exactly one component.
 
     Defaults put three components at "current" and leave the fourth (`installed` vs `published`) to the
     test — which is how a four-component report stays legible to assert against.
+
+    `project_kwargs` reach `temp_project`, so `integrations={...}` builds a multi-integration project and
+    the stubbed `specify` is told the same membership — otherwise the report and the modification probe
+    would disagree about which integrations exist. `modified` seeds the probe's per-integration and
+    shared file lists.
     """
     resolved = spectra_cli if spectra_cli is not None else _spectra_cli()
+    integrations = project_kwargs.get("integrations")
+    keys = tuple(integrations) if integrations else ("claude",)
+    default = project_kwargs.get("default_integration") or keys[0]
     with h.serve_roster(manifest_version=published) as base, h.raw_base(base), \
-            h.fake_specify(self_check), \
+            h.fake_specify(self_check, installed=keys, default=default, modified=modified), \
             mock.patch.object(health, "get_spectra_cli_status", return_value=resolved):
         with h.temp_project(installed, integration_version=integration, **project_kwargs) as path, \
                 h.cwd(path):
@@ -157,6 +180,164 @@ class Verdicts(unittest.TestCase):
         with stack("1.3.1", "1.3.1"):
             _, out = run(["version"])
         self.assertNotIn("spectra cli version", out)
+
+
+class MultiIntegrationRows(unittest.TestCase):
+    """One row for many integrations, with children only when they earn their place."""
+
+    TWO = {"kiro-cli": "0.16.4", "claude": "0.16.4"}
+
+    def test_the_report_still_prints_exactly_four_components(self):
+        with stack("1.3.1", "1.3.1", integrations=self.TWO, default_integration="kiro-cli"):
+            code, out = run(["version"])
+        self.assertEqual(code, cli.EXIT_OK)
+        labels = ("Specify CLI", "Core agents", "Spectra CLI", "Spectra agents")
+        for label in labels:
+            self.assertIn(label, out)
+        # Four component rows, whatever the integrations do beneath them (FR-011). A component row is
+        # indented two spaces; a child is indented four.
+        rows = [line for line in out.splitlines() if _is_component_row(line)]
+        self.assertEqual(len(rows), 4)
+
+    def test_a_behind_integration_is_named_on_the_row(self):
+        with stack("1.3.1", "1.3.1",
+                   integrations={"kiro-cli": "0.16.4", "claude": "0.15.1"},
+                   default_integration="kiro-cli"):
+            code, out = run(["version"])
+        self.assertEqual(code, cli.EXIT_OK)
+        self.assertIn("needs updating", out)
+        self.assertIn("claude", out)
+
+    def test_the_row_shows_the_oldest_version_of_the_two(self):
+        with stack("1.3.1", "1.3.1",
+                   integrations={"kiro-cli": "0.16.4", "claude": "0.15.1"},
+                   default_integration="kiro-cli"):
+            _, out = run(["version"])
+        core = [line for line in out.splitlines() if "Core agents" in line][0]
+        self.assertIn("0.15.1", core)
+
+    def test_non_uniform_integrations_are_broken_out_beneath_the_row(self):
+        with stack("1.3.1", "1.3.1",
+                   integrations={"kiro-cli": "0.16.4", "claude": "0.15.1"},
+                   default_integration="kiro-cli"):
+            _, out = run(["version"])
+        children = [line for line in out.splitlines() if line.startswith("    ")]
+        self.assertEqual(len(children), 2)
+        self.assertTrue(any("kiro-cli" in line for line in children))
+        self.assertTrue(any("claude" in line for line in children))
+
+    def test_uniform_integrations_print_no_children(self):
+        with stack("1.3.1", "1.3.1", integrations=self.TWO, default_integration="kiro-cli"):
+            _, out = run(["version"])
+        self.assertEqual([line for line in out.splitlines() if line.startswith("    ")], [])
+
+    def test_integrations_behind_at_the_same_version_are_still_named_on_the_row(self):
+        # The drifted-project shape: both integrations behind at the same version, so the children are
+        # uniform and the breakdown is correctly suppressed. The row itself must carry the names, or
+        # FR-008 has no place left to be satisfied.
+        with stack("1.3.1", "1.3.1",
+                   integrations={"kiro-cli": "0.15.1", "claude": "0.15.1"},
+                   default_integration="kiro-cli"):
+            _, out = run(["version"])
+        core = [line for line in out.splitlines() if "Core agents" in line][0]
+        self.assertIn("kiro-cli", core)
+        self.assertIn("claude", core)
+        self.assertEqual([line for line in out.splitlines() if line.startswith("    ")], [])
+
+    def test_a_single_integration_row_names_nothing(self):
+        with stack("1.3.1", "1.3.1", integration="0.15.1"):
+            _, out = run(["version"])
+        core = [line for line in out.splitlines() if "Core agents" in line][0]
+        self.assertNotIn("—", core)
+
+    def test_one_run_names_every_behind_integration_without_opening_a_file(self):
+        # SC-009: the developer learns which integrations are behind, and by how much, from one run.
+        with stack("1.3.1", "1.3.1",
+                   integrations={"kiro-cli": "0.15.1", "claude": "0.12.14"},
+                   default_integration="kiro-cli"):
+            _, out = run(["version"])
+        self.assertIn("kiro-cli", out)
+        self.assertIn("claude", out)
+        self.assertIn("0.12.14", out)
+        self.assertIn("0.15.1", out)
+
+
+class SingleIntegrationUnchanged(unittest.TestCase):
+    """The majority case must pay nothing for a minority-case feature (FR-012, SC-005)."""
+
+    def test_no_children_and_no_advisory_for_one_integration(self):
+        with stack("1.3.1", "1.3.1", integration="0.16.4"):
+            code, out = run(["version"])
+        self.assertEqual(code, cli.EXIT_OK)
+        self.assertEqual([line for line in out.splitlines() if line.startswith("    ")], [])
+        self.assertNotIn("registered for", out)
+
+    def test_a_recorded_single_integration_still_prints_one_row(self):
+        with stack("1.3.1", "1.3.1", integration="0.16.4",
+                   integrations={"claude": "0.16.4"}):
+            _, out = run(["version"])
+        self.assertEqual([line for line in out.splitlines() if line.startswith("    ")], [])
+        self.assertIn("Core agents", out)
+
+
+class CoverageAdvisory(unittest.TestCase):
+    """An installed integration with no Spectra commands is named, and nothing is changed."""
+
+    BOTH = {"kiro-cli": "0.16.4", "claude": "0.16.4"}
+
+    def test_an_uncovered_integration_is_named_with_its_remedy(self):
+        with stack("1.3.1", "1.3.1", integrations=self.BOTH, default_integration="kiro-cli",
+                   registered_agents=["kiro-cli"]):
+            code, out = run(["version"])
+        self.assertEqual(code, cli.EXIT_OK)
+        self.assertIn("claude is installed here but has no Spectra commands", out)
+        self.assertIn("specify integration use claude", out)
+        self.assertIn("changes the project's default integration", out)
+
+    def test_full_coverage_says_nothing(self):
+        with stack("1.3.1", "1.3.1", integrations=self.BOTH, default_integration="kiro-cli",
+                   registered_agents=["kiro-cli", "claude"]):
+            code, out = run(["version"])
+        self.assertEqual(code, cli.EXIT_OK)
+        self.assertNotIn("has no Spectra commands", out)
+
+    def test_an_unreadable_registry_says_nothing(self):
+        with stack("1.3.1", "1.3.1", integrations=self.BOTH, default_integration="kiro-cli",
+                   registered_agents=h.BAD_JSON):
+            code, out = run(["version"])
+        self.assertEqual(code, cli.EXIT_OK)
+        self.assertNotIn("has no Spectra commands", out)
+
+    def test_an_absent_registry_says_nothing(self):
+        with stack("1.3.1", "1.3.1", integrations=self.BOTH, default_integration="kiro-cli"):
+            code, out = run(["version"])
+        self.assertEqual(code, cli.EXIT_OK)
+        self.assertNotIn("has no Spectra commands", out)
+
+    def test_a_single_integration_project_never_shows_it(self):
+        with stack("1.3.1", "1.3.1", integration="0.16.4", registered_agents=["kiro-cli"]):
+            code, out = run(["version"])
+        self.assertEqual(code, cli.EXIT_OK)
+        self.assertNotIn("has no Spectra commands", out)
+
+    def test_it_is_rendered_outside_the_four_rows_and_changes_no_state(self):
+        with stack("1.3.1", "1.3.1", integrations=self.BOTH, default_integration="kiro-cli",
+                   registered_agents=["kiro-cli"]) as path:
+            registry = (path / ".specify" / "extensions" / ".registry").read_text()
+            recorded = (path / ".specify" / "integration.json").read_text()
+            code, out = run(["version"])
+            self.assertEqual(registry, (path / ".specify" / "extensions" / ".registry").read_text())
+            self.assertEqual(recorded, (path / ".specify" / "integration.json").read_text())
+        rows = [line for line in out.splitlines() if _is_component_row(line)]
+        self.assertEqual(len(rows), 4)
+        self.assertEqual(code, cli.EXIT_OK)
+
+    def test_it_appears_even_when_the_stack_is_fully_current(self):
+        with stack("1.3.1", "1.3.1", integrations=self.BOTH, default_integration="kiro-cli",
+                   registered_agents=["kiro-cli"]):
+            _, out = run(["version"])
+        self.assertIn("up to date", out)
+        self.assertIn("has no Spectra commands", out)
 
 
 class TheSpecifyCliRow(unittest.TestCase):
@@ -400,6 +581,469 @@ class Confirmation(unittest.TestCase):
         listed = out.split("need updating:")[1].split("Proceed")[0]
         self.assertIn("Spectra agents", listed)
         self.assertNotIn("Core agents", listed)
+
+
+def moving_integrations(path, versions):
+    """A `delegate_integration_upgrade` stand-in that rewrites the named manifests, as an upgrade would.
+
+    `versions` maps integration key to the version its manifest should read afterwards. Records the argv
+    it was called with, so a test can assert both the sequence and that the key was actually passed.
+    """
+    calls = []
+
+    def delegate(key=None, force=False):
+        calls.append((key, force))
+        if key in versions:
+            manifest = path / ".specify" / "integrations" / f"{key}.manifest.json"
+            manifest.write_text(h.integration_manifest(key, versions[key]), encoding="utf-8")
+        return 0
+
+    delegate.calls = calls
+    return delegate
+
+
+class IntegrationWalk(unittest.TestCase):
+    """Every behind integration is upgraded in one run, and nothing else is touched."""
+
+    BOTH_BEHIND = {"kiro-cli": "0.15.1", "claude": "0.15.1"}
+    ONE_BEHIND = {"kiro-cli": "0.16.4", "claude": "0.15.1"}
+
+    def test_every_behind_integration_is_upgraded(self):
+        with stack("1.3.1", "1.3.1", integrations=self.BOTH_BEHIND,
+                   default_integration="kiro-cli") as path:
+            delegate = moving_integrations(path, {"kiro-cli": "0.16.4", "claude": "0.16.4"})
+            with mock.patch.object(extension, "delegate_integration_upgrade",
+                                   side_effect=delegate):
+                code, out = run(["update", "--yes"])
+        self.assertEqual(code, cli.EXIT_OK)
+        self.assertEqual(sorted(key for key, _ in delegate.calls), ["claude", "kiro-cli"])
+
+    def test_an_already_current_integration_is_skipped_not_attempted(self):
+        with stack("1.3.1", "1.3.1", integrations=self.ONE_BEHIND,
+                   default_integration="kiro-cli") as path:
+            delegate = moving_integrations(path, {"claude": "0.16.4"})
+            with mock.patch.object(extension, "delegate_integration_upgrade",
+                                   side_effect=delegate):
+                code, out = run(["update", "--yes"])
+        self.assertEqual(code, cli.EXIT_OK)
+        self.assertEqual([key for key, _ in delegate.calls], ["claude"])
+        self.assertIn("skipped", out)
+
+    def test_the_key_is_named_and_the_default_is_never_switched(self):
+        with stack("1.3.1", "1.3.1", integrations=self.ONE_BEHIND,
+                   default_integration="kiro-cli") as path:
+            recorded = (path / ".specify" / "integration.json").read_text()
+            delegate = moving_integrations(path, {"claude": "0.16.4"})
+            with mock.patch.object(extension, "delegate_integration_upgrade",
+                                   side_effect=delegate):
+                run(["update", "--yes"])
+            after = (path / ".specify" / "integration.json").read_text()
+        # The integration was named rather than made default first, and no force was requested.
+        self.assertEqual(delegate.calls, [("claude", False)])
+        self.assertEqual(recorded, after)
+
+    def test_no_invocation_re_points_or_rescaffolds_an_agent(self):
+        """FR-017, FR-040: naming the key is the whole mechanism; nothing else may be run.
+
+        Captures `subprocess.call`, which is what the delegation helper uses, rather than patching the
+        helper itself — the point is the argv actually constructed. `subprocess.run` is deliberately left
+        alone: the Specify CLI probe uses it, and patching it would blind the check that decides whether
+        the walk runs at all.
+        """
+        argv = []
+        with stack("1.3.1", "1.3.1", integrations=self.BOTH_BEHIND,
+                   default_integration="kiro-cli"):
+            with mock.patch.object(extension, "specify_available", return_value=True), \
+                 mock.patch("subprocess.call", side_effect=lambda a, **k: argv.append(a) or 0):
+                run(["update", "--yes"])
+        flat = " ".join(" ".join(call) for call in argv)
+        self.assertIn("integration upgrade", flat)
+        for forbidden in ("integration use", "integration switch", "extension add",
+                          "extension update"):
+            self.assertNotIn(forbidden, flat)
+
+    def test_the_default_integration_goes_last(self):
+        with stack("1.3.1", "1.3.1", integrations=self.BOTH_BEHIND,
+                   default_integration="kiro-cli") as path:
+            delegate = moving_integrations(path, {"kiro-cli": "0.16.4", "claude": "0.16.4"})
+            with mock.patch.object(extension, "delegate_integration_upgrade",
+                                   side_effect=delegate):
+                run(["update", "--yes"])
+        # kiro-cli is the default, so it is upgraded after claude: its own upgrade is the only one that
+        # refreshes shared infrastructure as its own (research R3).
+        self.assertEqual([key for key, _ in delegate.calls], ["claude", "kiro-cli"])
+
+    def test_a_failing_integration_does_not_stop_the_others(self):
+        attempted = []
+
+        def delegate(key=None, force=False):
+            attempted.append(key)
+            return 1 if key == "claude" else 0
+
+        with stack("1.3.1", "1.3.1", integrations=self.BOTH_BEHIND,
+                   default_integration="kiro-cli"):
+            with mock.patch.object(extension, "delegate_integration_upgrade",
+                                   side_effect=delegate):
+                code, out = run(["update", "--yes"])
+        self.assertEqual(sorted(attempted), ["claude", "kiro-cli"])
+        self.assertEqual(code, cli.EXIT_DELEGATION)
+        self.assertIn("failed", out)
+
+    def test_the_component_reports_the_worst_of_its_children(self):
+        self.assertEqual(health.worst_outcome([health.UPDATED, health.FAILED]), health.FAILED)
+        self.assertEqual(health.worst_outcome([health.SKIPPED, health.UPDATED]), health.UPDATED)
+        self.assertEqual(health.worst_outcome([health.SKIPPED, health.SKIPPED]), health.SKIPPED)
+        self.assertEqual(health.worst_outcome([]), health.SKIPPED)
+
+    def test_an_unknown_integration_is_never_attempted(self):
+        with stack("1.3.1", "1.3.1",
+                   integrations={"kiro-cli": "0.15.1", "claude": h.MISSING_MANIFEST},
+                   default_integration="kiro-cli") as path:
+            delegate = moving_integrations(path, {"kiro-cli": "0.16.4"})
+            with mock.patch.object(extension, "delegate_integration_upgrade",
+                                   side_effect=delegate):
+                code, out = run(["update", "--yes"])
+        self.assertEqual([key for key, _ in delegate.calls], ["kiro-cli"])
+        self.assertEqual(code, cli.EXIT_OK)
+
+    def test_an_interrupt_aborts_the_whole_walk(self):
+        attempted = []
+
+        def delegate(key=None, force=False):
+            attempted.append(key)
+            return 130
+
+        with stack("1.3.1", "1.3.1", integrations=self.BOTH_BEHIND,
+                   default_integration="kiro-cli"):
+            with mock.patch.object(extension, "delegate_integration_upgrade",
+                                   side_effect=delegate), \
+                 mock.patch.object(extension, "delegate_update") as later:
+                code, out = run(["update", "--yes"])
+        self.assertEqual(len(attempted), 1)
+        later.assert_not_called()
+        self.assertEqual(code, cli.EXIT_INTERRUPTED)
+        self.assertIn("Interrupted", out)
+
+    def test_each_integration_is_verified_on_its_own_manifest(self):
+        """FR-022: one integration moving does not vouch for the other."""
+        with stack("1.3.1", "1.3.1", integrations=self.BOTH_BEHIND,
+                   default_integration="kiro-cli") as path:
+            delegate = moving_integrations(path, {"claude": "0.16.4"})  # kiro-cli reports 0 but stalls
+            with mock.patch.object(extension, "delegate_integration_upgrade",
+                                   side_effect=delegate):
+                code, out = run(["update", "--yes"])
+        self.assertIn("unchanged", out)
+        self.assertEqual(code, cli.EXIT_DELEGATION)
+
+    def test_the_plan_names_each_integration_it_will_upgrade(self):
+        with stack("1.3.1", "1.3.1", integrations=self.BOTH_BEHIND,
+                   default_integration="kiro-cli"):
+            with mock.patch("sys.stdin.isatty", return_value=True), \
+                 mock.patch.object(cli.ui, "confirm", return_value=False):
+                _, out = run(["update"])
+        listed = out.split("need updating:")[1].split("Proceed")[0]
+        self.assertIn("kiro-cli", listed)
+        self.assertIn("claude", listed)
+
+    def test_the_round_trip_leaves_every_integration_current(self):
+        """SC-001: update, then ask again, and the row says so."""
+        with stack("1.3.1", "1.3.1", integrations=self.BOTH_BEHIND,
+                   default_integration="kiro-cli") as path:
+            delegate = moving_integrations(path, {"kiro-cli": "0.16.4", "claude": "0.16.4"})
+            with mock.patch.object(extension, "delegate_integration_upgrade",
+                                   side_effect=delegate):
+                code, _ = run(["update", "--yes"])
+            self.assertEqual(code, cli.EXIT_OK)
+            _, out = run(["version"])
+        core = [line for line in out.splitlines() if "Core agents" in line][0]
+        self.assertIn("up to date", core)
+        self.assertEqual([line for line in out.splitlines() if line.startswith("    ")], [])
+
+
+class Disclosure(unittest.TestCase):
+    """Nothing is overwritten without the exact files being shown first, and one informed yes."""
+
+    BEHIND = {"kiro-cli": "0.16.4", "claude": "0.15.1"}
+    BOTH_BEHIND = {"kiro-cli": "0.15.1", "claude": "0.15.1"}
+    CLAUDE_FILES = [".claude/skills/speckit-plan/SKILL.md", ".claude/skills/speckit-tasks/SKILL.md"]
+    SHARED_FILES = [".specify/templates/spec-template.md", ".specify/templates/plan-template.md"]
+
+    def _seeded(self, integrations=None, modified=None, **kwargs):
+        return stack("1.3.1", "1.3.1", integrations=integrations or self.BEHIND,
+                     default_integration="kiro-cli", modified=modified, **kwargs)
+
+    def test_version_never_runs_the_probe(self):
+        """FR-012, research R1: the report stays a pure local read."""
+        argv = []
+        real = health.modification_report
+
+        def spy(*a, **k):
+            argv.append("called")
+            return real(*a, **k)
+
+        with self._seeded():
+            with mock.patch.object(health, "modification_report", side_effect=spy):
+                run(["version"])
+        self.assertEqual(argv, [])
+
+    def test_a_current_integration_with_modified_files_asks_nothing(self):
+        """FR-034: an integration nobody is upgrading cannot trigger a prompt."""
+        with self._seeded(modified={"kiro-cli": [".kiro/prompts/speckit.plan.md"]}) as path:
+            delegate = moving_integrations(path, {"claude": "0.16.4"})
+            with mock.patch.object(cli.ui, "confirm") as confirm, \
+                 mock.patch.object(extension, "delegate_integration_upgrade",
+                                   side_effect=delegate):
+                code, out = run(["update", "--yes"])
+        confirm.assert_not_called()
+        self.assertNotIn("Modified files detected", out)
+        self.assertEqual(code, cli.EXIT_OK)
+
+    def test_shared_only_modifications_with_everything_current_ask_nothing(self):
+        with stack("1.3.1", "1.3.1", integrations={"kiro-cli": "0.16.4", "claude": "0.16.4"},
+                   default_integration="kiro-cli", modified={"speckit": self.SHARED_FILES}):
+            with mock.patch.object(cli.ui, "confirm") as confirm:
+                code, out = run(["update", "--yes"])
+        confirm.assert_not_called()
+        self.assertNotIn("Modified files detected", out)
+        self.assertEqual(code, cli.EXIT_OK)
+
+    def test_the_files_are_listed_before_any_question_is_asked(self):
+        with self._seeded(modified={"claude": self.CLAUDE_FILES, "speckit": self.SHARED_FILES}):
+            with mock.patch("sys.stdin.isatty", return_value=True), \
+                 mock.patch.object(cli.ui, "confirm", side_effect=[True, False]) as confirm:
+                _, out = run(["update"])
+        # Two questions: the plan, then the overwrite. Never more.
+        self.assertEqual(confirm.call_count, 2)
+        for path in self.CLAUDE_FILES + self.SHARED_FILES:
+            self.assertIn(path, out)
+        # Grouped: the integration by name, shared infrastructure as its own group.
+        self.assertIn("claude", out)
+        self.assertIn("Shared Spec Kit infrastructure", out)
+        # The files are on screen before the question is put: the disclosure is printed, and the question
+        # that follows is the overwrite one (`ui.confirm` is mocked, so its prompt never reaches stdout).
+        self.assertIn("Modified files detected", out)
+        self.assertIn("Overwrite these files?", confirm.call_args_list[-1].args[0])
+        self.assertLess(out.index("Modified files detected"),
+                        out.index("There is no way to show what changed"))
+
+    def test_shared_files_are_disclosed_even_though_they_did_not_cause_the_block(self):
+        """Finding F6: the overwrite is not scoped to the files that blocked the upgrade."""
+        with self._seeded(modified={"claude": self.CLAUDE_FILES, "speckit": self.SHARED_FILES}):
+            with mock.patch("sys.stdin.isatty", return_value=True), \
+                 mock.patch.object(cli.ui, "confirm", side_effect=[True, False]):
+                _, out = run(["update"])
+        for path in self.SHARED_FILES:
+            self.assertIn(path, out)
+
+    def test_every_file_is_listed_even_when_there_are_many(self):
+        many = [f".claude/skills/speckit-{n}/SKILL.md" for n in range(30)]
+        with self._seeded(modified={"claude": many}):
+            with mock.patch("sys.stdin.isatty", return_value=True), \
+                 mock.patch.object(cli.ui, "confirm", side_effect=[True, False]):
+                _, out = run(["update"])
+        for path in many:
+            self.assertIn(path, out)
+
+    def test_the_prompt_defaults_to_no(self):
+        with self._seeded(modified={"claude": self.CLAUDE_FILES}):
+            with mock.patch("sys.stdin.isatty", return_value=True), \
+                 mock.patch.object(cli.ui, "confirm") as confirm:
+                confirm.side_effect = lambda prompt, default_yes=True: default_yes
+                code, out = run(["update"])
+        # The overwrite prompt is the second confirm (the first approves the plan); both must be asked
+        # with the default at no for the overwrite.
+        overwrite_call = confirm.call_args_list[-1]
+        self.assertEqual(overwrite_call.kwargs.get("default_yes"), False)
+
+    def test_declining_still_updates_what_needs_no_overwrite(self):
+        with stack("1.3.1", "1.3.1", integrations=self.BOTH_BEHIND,
+                   default_integration="kiro-cli",
+                   modified={"claude": self.CLAUDE_FILES}) as path:
+            delegate = moving_integrations(path, {"kiro-cli": "0.16.4"})
+            with mock.patch("sys.stdin.isatty", return_value=True), \
+                 mock.patch.object(cli.ui, "confirm", side_effect=[True, False]), \
+                 mock.patch.object(extension, "delegate_integration_upgrade",
+                                   side_effect=delegate):
+                code, out = run(["update"])
+        self.assertEqual([key for key, _ in delegate.calls], ["kiro-cli"])
+        self.assertIn("overwrite not authorized", out)
+        self.assertEqual(code, cli.EXIT_OK)
+
+    def test_authorization_is_limited_to_the_integrations_that_need_it(self):
+        """FR-029: an integration upgradeable without an overwrite is never forced."""
+        with stack("1.3.1", "1.3.1", integrations=self.BOTH_BEHIND,
+                   default_integration="kiro-cli",
+                   modified={"claude": self.CLAUDE_FILES}) as path:
+            delegate = moving_integrations(path, {"kiro-cli": "0.16.4", "claude": "0.16.4"})
+            with mock.patch("sys.stdin.isatty", return_value=True), \
+                 mock.patch.object(cli.ui, "confirm", return_value=True), \
+                 mock.patch.object(extension, "delegate_integration_upgrade",
+                                   side_effect=delegate):
+                run(["update"])
+        self.assertEqual(dict(delegate.calls), {"kiro-cli": False, "claude": True})
+
+    def test_the_closing_message_states_the_options_and_advises_no_diff(self):
+        with self._seeded(modified={"claude": self.CLAUDE_FILES}):
+            with mock.patch("sys.stdin.isatty", return_value=True), \
+                 mock.patch.object(cli.ui, "confirm", side_effect=[True, False]):
+                _, out = run(["update"])
+        self.assertIn("--force", out)
+        self.assertIn("claude", out)
+        # FR-035 / finding F9: never advise reviewing a difference that cannot be shown.
+        self.assertNotIn("review the changes", out.lower())
+        self.assertNotIn("diff", out.lower())
+
+    def test_authorization_is_never_remembered_between_runs(self):
+        with self._seeded(modified={"claude": self.CLAUDE_FILES}) as path:
+            delegate = moving_integrations(path, {})
+            with mock.patch("sys.stdin.isatty", return_value=True), \
+                 mock.patch.object(cli.ui, "confirm", return_value=True) as confirm, \
+                 mock.patch.object(extension, "delegate_integration_upgrade",
+                                   side_effect=delegate):
+                run(["update"])
+                first = confirm.call_count
+                run(["update"])
+                self.assertGreater(confirm.call_count, first)
+
+    def test_force_never_reaches_the_delegate_without_an_authorization_act(self):
+        """The in-suite form of SC-003, asserted across every no-authorization path."""
+        seen = []
+
+        def delegate(key=None, force=False):
+            seen.append(force)
+            return 0
+
+        # Declined interactively.
+        with self._seeded(modified={"claude": self.CLAUDE_FILES}):
+            with mock.patch("sys.stdin.isatty", return_value=True), \
+                 mock.patch.object(cli.ui, "confirm", side_effect=[True, False]), \
+                 mock.patch.object(extension, "delegate_integration_upgrade",
+                                   side_effect=delegate):
+                run(["update"])
+        # Non-interactive with --yes but no --force.
+        with self._seeded(modified={"claude": self.CLAUDE_FILES}):
+            with mock.patch("sys.stdin.isatty", return_value=False), \
+                 mock.patch.object(extension, "delegate_integration_upgrade",
+                                   side_effect=delegate):
+                run(["update", "--yes"])
+        # Probe unavailable, so nothing could be established.
+        with self._seeded(modified={"claude": self.CLAUDE_FILES}):
+            with mock.patch.object(health, "modification_report",
+                                   return_value=health.ModificationReport(established=False)), \
+                 mock.patch.object(extension, "delegate_integration_upgrade",
+                                   side_effect=delegate):
+                run(["update", "--yes"])
+        self.assertTrue(seen)
+        self.assertNotIn(True, seen)
+
+    def test_an_unestablished_probe_still_attempts_the_upgrade_unforced(self):
+        """Research R6: not knowing what would be overwritten means not forcing, not stalling."""
+        with self._seeded() as path:
+            delegate = moving_integrations(path, {"claude": "0.16.4"})
+            with mock.patch.object(health, "modification_report",
+                                   return_value=health.ModificationReport(established=False)), \
+                 mock.patch.object(extension, "delegate_integration_upgrade",
+                                   side_effect=delegate):
+                code, out = run(["update", "--yes"])
+        self.assertEqual(delegate.calls, [("claude", False)])
+        self.assertEqual(code, cli.EXIT_OK)
+        self.assertNotIn("Modified files detected", out)
+
+
+class NonInteractive(unittest.TestCase):
+    """Automation updates what it can and destroys nothing (FR-027, FR-031, SC-007)."""
+
+    BEHIND = {"kiro-cli": "0.16.4", "claude": "0.15.1"}
+    FILES = [".claude/skills/speckit-plan/SKILL.md"]
+
+    def _seeded(self, **kwargs):
+        return stack("1.3.1", "1.3.1", integrations=self.BEHIND, default_integration="kiro-cli",
+                     modified={"claude": self.FILES}, **kwargs)
+
+    def test_yes_without_a_terminal_overwrites_nothing_and_names_the_flag(self):
+        with self._seeded() as path:
+            delegate = moving_integrations(path, {})
+            with mock.patch("sys.stdin.isatty", return_value=False), \
+                 mock.patch.object(extension, "delegate_integration_upgrade",
+                                   side_effect=delegate):
+                code, out = run(["update", "--yes"])
+        self.assertEqual(delegate.calls, [])
+        self.assertIn("--force", out)
+        self.assertIn("overwrite not authorized", out)
+        self.assertEqual(code, cli.EXIT_OK)
+
+    def test_force_without_a_terminal_proceeds_and_still_discloses(self):
+        with self._seeded() as path:
+            delegate = moving_integrations(path, {"claude": "0.16.4"})
+            with mock.patch("sys.stdin.isatty", return_value=False), \
+                 mock.patch.object(extension, "delegate_integration_upgrade",
+                                   side_effect=delegate):
+                code, out = run(["update", "--yes", "--force"])
+        self.assertEqual(delegate.calls, [("claude", True)])
+        self.assertIn("Modified files detected", out)
+        for path_ in self.FILES:
+            self.assertIn(path_, out)
+        self.assertEqual(code, cli.EXIT_OK)
+
+    def test_no_prompt_is_attempted_without_a_terminal(self):
+        with self._seeded():
+            with mock.patch("sys.stdin.isatty", return_value=False), \
+                 mock.patch.object(cli.ui, "confirm") as confirm, \
+                 mock.patch.object(extension, "delegate_integration_upgrade", return_value=0):
+                run(["update", "--yes"])
+        confirm.assert_not_called()
+
+    def test_force_with_nothing_to_overwrite_changes_nothing(self):
+        with stack("1.3.1", "1.3.1", integrations=self.BEHIND, default_integration="kiro-cli") as path:
+            delegate = moving_integrations(path, {"claude": "0.16.4"})
+            with mock.patch.object(extension, "delegate_integration_upgrade",
+                                   side_effect=delegate):
+                code, out = run(["update", "--yes", "--force"])
+        self.assertEqual(delegate.calls, [("claude", False)])
+        self.assertNotIn("Modified files detected", out)
+        self.assertEqual(code, cli.EXIT_OK)
+
+    def test_skipping_for_want_of_authorization_is_not_a_failure(self):
+        with self._seeded() as path:
+            delegate = moving_integrations(path, {})
+            with mock.patch("sys.stdin.isatty", return_value=False), \
+                 mock.patch.object(extension, "delegate_integration_upgrade",
+                                   side_effect=delegate):
+                code, _ = run(["update", "--yes"])
+        self.assertEqual(code, cli.EXIT_OK)
+
+    def test_the_closing_line_does_not_claim_an_update_that_did_not_happen(self):
+        """Exit 0 is right when everything was skipped; claiming success is not."""
+        with self._seeded() as path:
+            delegate = moving_integrations(path, {})
+            with mock.patch("sys.stdin.isatty", return_value=False), \
+                 mock.patch.object(extension, "delegate_integration_upgrade",
+                                   side_effect=delegate):
+                code, out = run(["update", "--yes"])
+        self.assertEqual(code, cli.EXIT_OK)
+        self.assertIn("Nothing was updated", out)
+        self.assertNotIn("Everything that needed updating was updated", out)
+
+    def test_a_partial_run_says_everything_else_was_updated(self):
+        both = {"kiro-cli": "0.15.1", "claude": "0.15.1"}
+        with stack("1.3.1", "1.3.1", integrations=both, default_integration="kiro-cli",
+                   modified={"claude": self.FILES}) as path:
+            delegate = moving_integrations(path, {"kiro-cli": "0.16.4"})
+            with mock.patch("sys.stdin.isatty", return_value=False), \
+                 mock.patch.object(extension, "delegate_integration_upgrade",
+                                   side_effect=delegate):
+                code, out = run(["update", "--yes"])
+        self.assertEqual(code, cli.EXIT_OK)
+        self.assertIn("Everything else was updated", out)
+
+    def test_a_component_row_with_no_attempt_still_gives_a_reason(self):
+        with self._seeded() as path:
+            delegate = moving_integrations(path, {})
+            with mock.patch("sys.stdin.isatty", return_value=False), \
+                 mock.patch.object(extension, "delegate_integration_upgrade",
+                                   side_effect=delegate):
+                _, out = run(["update", "--yes"])
+        self.assertNotIn("skipped (None)", out)
 
 
 class TheWalk(unittest.TestCase):

@@ -91,20 +91,31 @@ class ComponentStatus:
     `detail` is required whenever `status` is :data:`UNKNOWN` — an unknown with no explanation tells a
     user nothing they can act on. `installed` may be set while the status is still unknown: that is the
     ordinary offline case, where the local version reads fine but there is nothing to compare it to.
+
+    `parts` carries the per-integration children of the `Core agents` row and is empty for the other
+    three components. When it is populated, this row's `status`, `installed`, `latest`, and `detail` are
+    all *derived* from it by :func:`aggregate_integration_status` — never set independently — so the row
+    cannot disagree with its own children.
     """
 
-    __slots__ = ("key", "installed", "latest", "status", "detail")
+    __slots__ = ("key", "installed", "latest", "status", "detail", "parts")
 
-    def __init__(self, key, status, installed=None, latest=None, detail=None):
+    def __init__(self, key, status, installed=None, latest=None, detail=None, parts=None):
         self.key = key
         self.status = status
         self.installed = installed
         self.latest = latest
         self.detail = detail
+        self.parts = list(parts) if parts else []
 
     @property
     def label(self) -> str:
         return LABELS.get(self.key, self.key)
+
+    @property
+    def has_parts(self) -> bool:
+        """Whether this row represents several things rather than one."""
+        return bool(self.parts)
 
     @property
     def needs_updating(self) -> bool:
@@ -116,7 +127,75 @@ class ComponentStatus:
 
     def __repr__(self):  # pragma: no cover - diagnostics only
         return (f"ComponentStatus({self.key!r}, {self.status!r}, installed={self.installed!r}, "
-                f"latest={self.latest!r})")
+                f"latest={self.latest!r}, parts={len(self.parts)})")
+
+
+class IntegrationState:
+    """One installed integration, and whether it is current.
+
+    The unit of truth this feature adds. `key` is the integration's own key (`"kiro-cli"`, `"claude"`),
+    and is `None` only in the single-record fallback, where the project records no key at all.
+
+    Reuses `ComponentStatus`'s four-value vocabulary rather than inventing its own, so aggregation has
+    nothing to translate. `detail` is required when `status` is :data:`UNKNOWN`, for the same reason it
+    is on a component.
+
+    `modified` distinguishes three states, and the distinction is load-bearing: `None` means *not
+    established* (nobody asked, or the probe failed), `[]` means established as clean, and a non-empty
+    list means these files would be overwritten. Only `spectra update` ever populates it — the report
+    never runs the probe that fills it.
+    """
+
+    __slots__ = ("key", "installed", "latest", "status", "detail", "is_default", "modified")
+
+    def __init__(self, key, status, installed=None, latest=None, detail=None,
+                 is_default=False, modified=None):
+        self.key = key
+        self.status = status
+        self.installed = installed
+        self.latest = latest
+        self.detail = detail
+        self.is_default = is_default
+        self.modified = modified
+
+    @property
+    def label(self) -> str:
+        """What to call this integration in output. The key is already the user's own word for it."""
+        return self.key or LABELS[INTEGRATION]
+
+    @property
+    def needs_updating(self) -> bool:
+        return self.status == NEEDS_UPDATING
+
+    def __repr__(self):  # pragma: no cover - diagnostics only
+        return (f"IntegrationState({self.key!r}, {self.status!r}, installed={self.installed!r}, "
+                f"latest={self.latest!r}, is_default={self.is_default!r})")
+
+
+class ModificationReport:
+    """Which managed files diverge from what was installed, per integration and for shared files.
+
+    Built once per `spectra update` run and discarded. `established` is `False` when the probe could not
+    be run or parsed at all — and that is not the same as "nothing is modified": not knowing what would
+    be overwritten is precisely the state in which overwriting must not be authorized.
+    """
+
+    __slots__ = ("per_integration", "shared", "established", "detail")
+
+    def __init__(self, per_integration=None, shared=None, established=True, detail=None):
+        self.per_integration = dict(per_integration or {})
+        self.shared = list(shared or [])
+        self.established = established
+        self.detail = detail
+
+    def files_for(self, key):
+        """The modified files recorded for `key`, or an empty list."""
+        return list(self.per_integration.get(key, []))
+
+    def __repr__(self):  # pragma: no cover - diagnostics only
+        return (f"ModificationReport(established={self.established!r}, "
+                f"per_integration={ {k: len(v) for k, v in self.per_integration.items()} }, "
+                f"shared={len(self.shared)})")
 
 
 class HealthReport:
@@ -173,14 +252,21 @@ class UpdateResult:
     `SKIPPED` is load-bearing rather than cosmetic: it is what stops a component we could not establish
     from turning a successful run into a failed one. The exit code answers "did anything I *attempted*
     go wrong?", so something never attempted cannot contribute to it.
+
+    `parts` carries one child result per attempted integration for the `Core agents` component, and is
+    empty for the other three. A child's `key` is the integration's own key, so its `label` is that key —
+    which is the word the user already uses for it. The parent's `outcome` is the **worst** of its
+    children (:data:`FAILED` > :data:`UPDATED` > :data:`SKIPPED`), so one failed integration reaches the
+    exit code while a component of only skips stays inert.
     """
 
-    __slots__ = ("key", "outcome", "detail")
+    __slots__ = ("key", "outcome", "detail", "parts")
 
-    def __init__(self, key, outcome, detail=None):
+    def __init__(self, key, outcome, detail=None, parts=None):
         self.key = key
         self.outcome = outcome
         self.detail = detail
+        self.parts = list(parts) if parts else []
 
     @property
     def label(self) -> str:
@@ -192,6 +278,20 @@ class UpdateResult:
 
     def __repr__(self):  # pragma: no cover - diagnostics only
         return f"UpdateResult({self.key!r}, {self.outcome!r}, detail={self.detail!r})"
+
+
+def worst_outcome(outcomes):
+    """The most serious outcome in `outcomes`, ordered FAILED > UPDATED > SKIPPED.
+
+    A pure function so the roll-up rule is stated once and testable without a walk. An empty sequence is
+    :data:`SKIPPED`: a component with nothing attempted has, correctly, attempted nothing.
+    """
+    outcomes = list(outcomes)
+    if FAILED in outcomes:
+        return FAILED
+    if UPDATED in outcomes:
+        return UPDATED
+    return SKIPPED
 
 
 # --------------------------------------------------------------------------- #
@@ -303,23 +403,31 @@ def get_specify_cli_status(timeout: int = SELF_CHECK_TIMEOUT) -> ComponentStatus
 # --------------------------------------------------------------------------- #
 
 INTEGRATION_FILE = "integration.json"
+INTEGRATIONS_DIR = "integrations"
+
+# The record that lives beside the per-integration manifests but is **not** an integration: it tracks the
+# shared scripts and templates every integration uses. Named here so both the enumeration and the
+# modification report exclude it deliberately rather than by accident.
+SHARED_KEY = "speckit"
 
 
-def read_integration_version(project_root):
-    """The `version` recorded in `.specify/integration.json`, or None.
+def _read_json_object(path):
+    """The JSON object at `path`, or None if it cannot be read as one.
 
-    Missing file, unreadable file, invalid JSON, a non-object top level, and an absent or empty
-    `version` all return None on purpose: to the caller they are one situation — the integration cannot
-    be trusted to report what it is — and they share one remedy.
+    Missing file, unreadable file, invalid JSON, and a non-object top level all return None on purpose:
+    to every caller here they are one situation — the file cannot be trusted to report what it says — and
+    they share one remedy.
     """
-    if project_root is None:
-        return None
-    path = project_root / ".specify" / INTEGRATION_FILE
     try:
         with open(path, encoding="utf-8") as handle:
             data = json.load(handle)
     except (OSError, ValueError):
         return None
+    return data if isinstance(data, dict) else None
+
+
+def _recorded_version(data):
+    """The `version` string in an already-parsed record, or None when absent or empty."""
     if not isinstance(data, dict):
         return None
     recorded = data.get("version")
@@ -328,51 +436,295 @@ def read_integration_version(project_root):
     return recorded.strip() or None
 
 
-def get_integration_status(project_root, specify_status: ComponentStatus) -> ComponentStatus:
-    """Resolve the integration, given the already-resolved Specify CLI status.
+def read_integration_version(project_root, key=None):
+    """The version recorded for one integration, or for the project as a whole.
 
-    Cannot be evaluated independently. The recorded version means "the Spec Kit that installed this
-    integration", so it is only meaningful against a known CLI version — hence an unknown CLI forces an
-    unknown integration rather than a guess from the file alone.
+    Two sources, one question — *what version is installed here?* — and which one answers it depends on
+    whether a `key` is given:
 
-    Two independent ways to be behind:
+    * ``key`` given -> ``.specify/integrations/<key>.manifest.json``, the integration's **own** record.
+      This is the authoritative per-integration version and the only place it exists.
+    * ``key`` omitted -> ``.specify/integration.json``, the **project-level** record. Used by the
+      single-record fallback only, because Spec Kit rewrites it to the current CLI version whenever
+      *any* integration is upgraded — so it cannot represent a project where one integration is stale
+      and another is not.
 
-    * **the CLI is behind** — the file can only ever record what the *old* CLI installed, so the
-      integration is behind too, whatever the file says. Its target is then the CLI's own latest, so
-      the row reads the same transition the upgrade will actually produce.
-    * **the CLI is current but the file disagrees with it** — the user upgraded the CLI and never re-ran
-      the integration upgrade. Locally detectable, and invisible until now.
+    Every failure mode returns None: missing, unreadable, invalid JSON, non-object, absent or empty
+    `version`. To the caller they are one situation with one remedy.
     """
-    recorded = read_integration_version(project_root)
+    if project_root is None:
+        return None
+    if key is None:
+        return _recorded_version(_read_json_object(project_root / ".specify" / INTEGRATION_FILE))
+    path = project_root / ".specify" / INTEGRATIONS_DIR / f"{key}.manifest.json"
+    return _recorded_version(_read_json_object(path))
 
+
+def read_installed_integrations(project_root):
+    """The integration keys this project records as installed, or None meaning *fall back*.
+
+    Read from `installed_integrations` in `.specify/integration.json` with order preserved.
+
+    **Never inferred from the filesystem.** `.specify/integrations/` also holds `speckit.manifest.json`,
+    which is shared infrastructure rather than an integration, so a reader that enumerated that directory
+    would invent an integration that does not exist. The recorded list is the membership, full stop.
+
+    Returns None — rather than an empty list — for every state in which membership cannot be established:
+    no file, unreadable file, no such key, not a list, or a list with nothing usable in it. None is the
+    signal to fall back to the single-record path, and it is deliberately distinct from "a list that
+    happens to be empty", which would mean the same thing but say it less clearly.
+    """
+    if project_root is None:
+        return None
+    data = _read_json_object(project_root / ".specify" / INTEGRATION_FILE)
+    if data is None:
+        return None
+    recorded = data.get("installed_integrations")
+    if not isinstance(recorded, list):
+        return None
+    keys = [key.strip() for key in recorded if isinstance(key, str) and key.strip()]
+    keys = [key for key in keys if key != SHARED_KEY]
+    return keys or None
+
+
+def read_default_integration(project_root):
+    """The project's default integration key, or None when none is recorded.
+
+    Reads `default_integration`, falling back to the legacy `integration` key that older projects carry.
+    None is returned rather than guessing at the first installed key: the default decides walk position
+    and whether the coverage advisory can name a remedy, and inventing one would put words in the
+    project's mouth.
+    """
+    if project_root is None:
+        return None
+    data = _read_json_object(project_root / ".specify" / INTEGRATION_FILE)
+    if data is None:
+        return None
+    for field in ("default_integration", "integration"):
+        value = data.get(field)
+        if isinstance(value, str) and value.strip():
+            return value.strip()
+    return None
+
+
+def _integration_verdict(recorded, specify_status, key=None):
+    """`(status, latest, detail)` for one integration recorded at `recorded`.
+
+    The same two-way reasoning the single-record check has always used, factored out so it is applied
+    identically to one integration or to five:
+
+    * **the CLI is behind** — a record can only ever say what the *old* CLI installed, so the integration
+      is behind too, whatever it says. Its target is then the CLI's own latest, so the row reads the
+      transition the upgrade will actually produce.
+    * **the CLI is current but the record disagrees** — the CLI was upgraded and the integration upgrade
+      was never re-run. Locally detectable, and invisible before this feature.
+    """
     if specify_status.status == UNKNOWN:
-        return ComponentStatus(
-            INTEGRATION, UNKNOWN, installed=recorded,
-            detail="the Specify CLI version is unknown, so there is nothing to compare against.")
-
+        return (UNKNOWN, None,
+                "the Specify CLI version is unknown, so there is nothing to compare against.")
     if recorded is None:
-        return ComponentStatus(
-            INTEGRATION, UNKNOWN,
-            detail=f"no usable version in .specify/{INTEGRATION_FILE}.")
-
+        where = (f"the manifest for '{key}'" if key
+                 else f".specify/{INTEGRATION_FILE}")
+        return UNKNOWN, None, f"no usable version in {where}."
     if specify_status.status == NEEDS_UPDATING:
-        return ComponentStatus(INTEGRATION, NEEDS_UPDATING, installed=recorded,
-                               latest=specify_status.latest,
-                               detail="the Specify CLI is behind, and the integration tracks it.")
+        return (NEEDS_UPDATING, specify_status.latest,
+                "the Specify CLI is behind, and the integration tracks it.")
 
-    # The CLI is current (or ahead): compare the file against what is actually installed.
     installed_cli = specify_status.installed
     comparison = cli_version.compare_versions(recorded, installed_cli or "")
     if comparison < 0:
-        return ComponentStatus(
-            INTEGRATION, NEEDS_UPDATING, installed=recorded, latest=installed_cli,
-            detail="the Specify CLI was upgraded but the integration was not re-run.")
+        return (NEEDS_UPDATING, installed_cli,
+                "the Specify CLI was upgraded but the integration was not re-run.")
     if comparison > 0:
-        return ComponentStatus(
-            INTEGRATION, AHEAD, installed=recorded, latest=installed_cli,
-            detail="the integration is newer than the Specify CLI installed here.")
-    return ComponentStatus(INTEGRATION, UP_TO_DATE, installed=recorded, latest=installed_cli)
+        return (AHEAD, installed_cli,
+                "the integration is newer than the Specify CLI installed here.")
+    return UP_TO_DATE, installed_cli, None
 
+
+def get_integration_states(project_root, specify_status):
+    """One :class:`IntegrationState` per installed integration, or `[]` to mean *fall back*.
+
+    A key recorded as installed but carrying no readable manifest is still returned — as `UNKNOWN` — rather
+    than dropped. A recorded-but-broken integration is exactly the thing a user needs told about, and
+    silently omitting it would shrink the report to the integrations that happen to be healthy.
+    """
+    keys = read_installed_integrations(project_root)
+    if not keys:
+        return []
+    default = read_default_integration(project_root)
+    states = []
+    for key in keys:
+        recorded = read_integration_version(project_root, key)
+        status, latest, detail = _integration_verdict(recorded, specify_status, key=key)
+        states.append(IntegrationState(key, status, installed=recorded, latest=latest,
+                                       detail=detail, is_default=(key == default)))
+    return states
+
+
+def _oldest(versions):
+    """The lowest version in `versions`, ignoring None. None when there is nothing to compare."""
+    readable = [v for v in versions if v]
+    if not readable:
+        return None
+    oldest = readable[0]
+    for candidate in readable[1:]:
+        if cli_version.compare_versions(candidate, oldest) < 0:
+            oldest = candidate
+    return oldest
+
+
+def aggregate_integration_status(states, specify_status) -> ComponentStatus:
+    """Derive the one `Core agents` row from its per-integration children.
+
+    A pure function, so the precedence below is stated once and testable without a project on disk.
+    Evaluated top to bottom, first match wins:
+
+    1. **no integrations** -> `UNKNOWN`. Nothing was enumerated, so nothing is known.
+    2. **any child behind** -> `NEEDS_UPDATING`. Outranks unknown deliberately: a behind integration is
+       *actionable*, and an unreadable sibling must not hide work that can be done.
+    3. **any child unknown** -> `UNKNOWN`. Outranks both currency verdicts, because the row must never
+       claim a currency it has not established (FR-006 permits `UP_TO_DATE` only when **every**
+       integration is current, and an unknown one is not current — it is unknown).
+    4. **every child ahead** -> `AHEAD`.
+    5. **otherwise** -> `UP_TO_DATE`, which covers all-current and a mix of current and ahead. "Ahead" is
+       a flavour of not-behind, and this row answers "is anything stale here?".
+
+    The row's version is the **oldest readable** child version: "is my stack current?" is answered by the
+    weakest link, and an unreadable child contributes no version to that comparison (it is reported
+    through rule 3 instead).
+    """
+    states = list(states)
+
+    # The single-record fallback: one unnamed child, whose fields *are* the row's. Kept verbatim rather
+    # than routed through the rules below so the older layout's wording is unchanged.
+    if len(states) == 1 and states[0].key is None:
+        only = states[0]
+        return ComponentStatus(INTEGRATION, only.status, installed=only.installed,
+                               latest=only.latest, detail=only.detail, parts=states)
+
+    if not states:
+        return ComponentStatus(
+            INTEGRATION, UNKNOWN,
+            detail="no installed integrations are recorded for this project.")
+
+    oldest = _oldest(state.installed for state in states)
+    behind = [state for state in states if state.status == NEEDS_UPDATING]
+    if behind:
+        target = _oldest(state.latest for state in behind) or specify_status.installed
+        names = ", ".join(state.key for state in behind)
+        return ComponentStatus(INTEGRATION, NEEDS_UPDATING, installed=oldest, latest=target,
+                               detail=f"behind: {names}.", parts=states)
+
+    unknown = [state for state in states if state.status == UNKNOWN]
+    if unknown:
+        names = ", ".join(state.key for state in unknown)
+        return ComponentStatus(
+            INTEGRATION, UNKNOWN, installed=oldest, latest=specify_status.installed,
+            detail=f"the state of {names} could not be established.", parts=states)
+
+    if all(state.status == AHEAD for state in states):
+        return ComponentStatus(INTEGRATION, AHEAD, installed=oldest,
+                               latest=specify_status.installed, parts=states)
+
+    return ComponentStatus(INTEGRATION, UP_TO_DATE, installed=oldest,
+                           latest=specify_status.installed, parts=states)
+
+
+def get_integration_status(project_root, specify_status: ComponentStatus) -> ComponentStatus:
+    """Resolve the integration component, given the already-resolved Specify CLI status.
+
+    Cannot be evaluated independently. A recorded version means "the Spec Kit that installed this", so it
+    is only meaningful against a known CLI version — hence an unknown CLI forces an unknown integration
+    rather than a guess from the files alone.
+
+    **Plural first, singular as a fallback.** Every installed integration is enumerated and judged on its
+    own manifest, and the row is derived from all of them. Only when membership cannot be established —
+    or when nothing it names has a readable manifest — does this fall back to the project-level `version`
+    field and today's single-integration behaviour. The fallback is detected by *absence of data*, never
+    by comparing `specify` version numbers, so it also covers a layout that predates per-integration
+    records without a constant to keep up to date.
+    """
+    states = get_integration_states(project_root, specify_status)
+    if states and any(state.installed for state in states):
+        return aggregate_integration_status(states, specify_status)
+
+    recorded = read_integration_version(project_root)
+    status, latest, detail = _integration_verdict(recorded, specify_status)
+    only = IntegrationState(None, status, installed=recorded, latest=latest, detail=detail,
+                            is_default=True)
+    return aggregate_integration_status([only], specify_status)
+
+
+# --------------------------------------------------------------------------- #
+# What has diverged (the update path only)
+# --------------------------------------------------------------------------- #
+
+# How long `specify integration status --json` gets. It only reads local files and hashes them, so this
+# is generous; the bound exists so a hung child cannot hang the update.
+STATUS_TIMEOUT = 20
+
+
+def modification_report(project_root=None, timeout: int = STATUS_TIMEOUT) -> ModificationReport:
+    """Which managed files diverge from what was installed. Never raises.
+
+    Asks `specify integration status --json`, which is read-only and exits 0 in every state — including
+    the one where it reports its own `warning` — so **the exit code is not the signal**; the parsed
+    payload is. The human-formatted table is never read: a machine-readable form exists, and decisions
+    that can destroy a file must not depend on prose that is free to be reworded.
+
+    This is the one input `spectra version` never gathers. It costs a subprocess, and the report has no
+    use for it — only an update that is about to overwrite something does.
+
+    `established=False` covers every way the answer could not be obtained: no `specify`, a timeout, a
+    non-zero exit, unparseable output. It is deliberately distinct from "nothing is modified", because not
+    knowing what would be overwritten is precisely the state in which nothing may be overwritten.
+
+    The shared-infrastructure record (`speckit`) is routed to `shared` rather than treated as an
+    integration, and any key the project does not record as installed is ignored — the same rule the
+    enumeration follows, applied to the same trap.
+    """
+    if not specify_available():
+        return ModificationReport(established=False,
+                                  detail="`specify` is not on PATH, so modification state is unknown.")
+    try:
+        proc = subprocess.run(["specify", "integration", "status", "--json"],
+                              capture_output=True, text=True, timeout=timeout)
+    except subprocess.TimeoutExpired:
+        return ModificationReport(established=False,
+                                  detail=f"`specify integration status` did not finish within {timeout}s.")
+    except OSError as exc:
+        return ModificationReport(established=False,
+                                  detail=f"`specify integration status` could not be run ({exc}).")
+    if proc.returncode != 0:
+        return ModificationReport(
+            established=False,
+            detail=f"`specify integration status` exited with code {proc.returncode}.")
+    try:
+        data = json.loads(proc.stdout or "")
+    except ValueError:
+        return ModificationReport(
+            established=False,
+            detail="`specify integration status --json` did not print JSON this version understands.")
+    if not isinstance(data, dict):
+        return ModificationReport(established=False,
+                                  detail="`specify integration status --json` printed no object.")
+
+    recorded = read_installed_integrations(project_root) if project_root is not None else None
+    manifests = data.get("manifests")
+    manifests = manifests if isinstance(manifests, dict) else {}
+
+    per_integration, shared = {}, []
+    for key, entry in manifests.items():
+        if not isinstance(entry, dict):
+            continue
+        files = [f for f in (entry.get("modified_files") or []) if isinstance(f, str)]
+        if not files:
+            continue
+        if key == SHARED_KEY:
+            shared = files
+        elif recorded is None or key in recorded:
+            per_integration[key] = files
+    return ModificationReport(per_integration=per_integration, shared=shared, established=True)
 
 # --------------------------------------------------------------------------- #
 # 3 · Spectra CLI (this command)
@@ -482,8 +834,72 @@ def _update_specify_cli() -> int:
     return extension.delegate_self_upgrade()
 
 
-def _update_integration() -> int:
-    return extension.delegate_integration_upgrade()
+def _update_integration(component: ComponentStatus, authorized_keys) -> UpdateResult:
+    """Upgrade every behind integration in `component`, one child result each.
+
+    Ordering is the one design decision here: **non-default integrations first, the default last**.
+    Upgrading a non-default key installs shared infrastructure aligned to the *default*, while upgrading
+    the default key refreshes it as its own and re-registers extension and preset commands. Ending on the
+    default therefore makes the last write to shared infrastructure the correct one, rather than leaving a
+    non-default upgrade to overwrite it.
+
+    `force` is never inferred here. It is set only for keys the caller has already collected an
+    authorization act for, so this function cannot become a second route to an overwrite.
+    """
+    # The single-record fallback: one unnamed integration, upgraded bare and reported as one row with no
+    # children. Byte-identical to the behaviour before this feature existed, which is what FR-012 asks of
+    # every project that has not recorded per-integration state.
+    if len(component.parts) == 1 and component.parts[0].key is None:
+        code = extension.delegate_integration_upgrade()
+        if code == INTERRUPTED:
+            raise Interrupted(INTEGRATION)
+        if code == 0:
+            return UpdateResult(INTEGRATION, UPDATED)
+        return UpdateResult(INTEGRATION, FAILED, detail=f"exited with code {code}")
+
+    targets = [state for state in component.parts if state.status == NEEDS_UPDATING]
+    targets.sort(key=lambda state: bool(state.is_default))
+
+    children = []
+    for state in component.parts:
+        if state.status != NEEDS_UPDATING:
+            children.append(UpdateResult(state.key, SKIPPED, detail=_skip_reason(state)))
+
+    for state in targets:
+        if state.key is not None and state.key in _blocked_keys(component, authorized_keys):
+            children.append(UpdateResult(state.key, SKIPPED, detail="overwrite not authorized"))
+            continue
+        force = bool(state.key and state.key in authorized_keys)
+        code = extension.delegate_integration_upgrade(state.key, force=force)
+        if code == INTERRUPTED:
+            raise Interrupted(INTEGRATION)
+        if code == 0:
+            children.append(UpdateResult(state.key, UPDATED))
+        else:
+            children.append(UpdateResult(state.key, FAILED, detail=f"exited with code {code}"))
+
+    # Report children in the order the report showed them, not the order they were attempted: the reader
+    # is matching this table against the one above it.
+    order = {state.key: index for index, state in enumerate(component.parts)}
+    children.sort(key=lambda child: order.get(child.key, 0))
+    outcome = worst_outcome(child.outcome for child in children)
+    # A plural row needs its own reason when nothing was attempted, or it renders as `skipped (None)`.
+    detail = None
+    if outcome == SKIPPED:
+        detail = ("no integration was upgraded" if any(child.detail for child in children)
+                  else _skip_reason(component))
+    return UpdateResult(INTEGRATION, outcome, detail=detail, parts=children)
+
+
+def _blocked_keys(component: ComponentStatus, authorized_keys):
+    """Behind integrations with modified files that were **not** authorized for overwrite.
+
+    `modified` is only ever populated on the update path, and only for integrations the run is about to
+    upgrade, so an integration nobody asked about can never land here.
+    """
+    return {state.key for state in component.parts
+            if state.status == NEEDS_UPDATING and state.modified
+            and state.key not in authorized_keys}
 
 
 def _update_spectra_cli(component: ComponentStatus) -> int:
@@ -498,9 +914,10 @@ def _update_spectra_extension(assume_yes: bool = False) -> int:
 
 # Keyed by component. Each takes the component plus whether the user has already consented, so the one
 # delegate that faces an unskippable downstream prompt can answer it. ORDER sequences the walk.
+# `INTEGRATION` is absent on purpose: it is plural, so it returns a whole `UpdateResult` with children
+# rather than a single exit code, and is dispatched separately in `apply_updates`.
 _ACTIONS = {
     SPECIFY_CLI: lambda component, assume_yes=False: _update_specify_cli(),
-    INTEGRATION: lambda component, assume_yes=False: _update_integration(),
     SPECTRA_CLI: lambda component, assume_yes=False: _update_spectra_cli(component),
     SPECTRA_EXTENSION: lambda component, assume_yes=False: _update_spectra_extension(assume_yes),
 }
@@ -512,7 +929,7 @@ class Interrupted(Exception):
     """The user stopped a delegated command. Aborts the walk rather than recording a failure."""
 
 
-def _skip_reason(component: ComponentStatus) -> str:
+def _skip_reason(component) -> str:
     if component.status == UP_TO_DATE:
         return "already up to date"
     if component.status == AHEAD:
@@ -520,7 +937,8 @@ def _skip_reason(component: ComponentStatus) -> str:
     return "status could not be determined"
 
 
-def apply_updates(report: HealthReport, *, announce=None, assume_yes: bool = False):
+def apply_updates(report: HealthReport, *, announce=None, assume_yes: bool = False,
+                  authorized_keys=None):
     """Update every component that needs it, in canonical order. Returns one result per component.
 
     Three properties, each required by the spec rather than chosen:
@@ -538,13 +956,36 @@ def apply_updates(report: HealthReport, *, announce=None, assume_yes: bool = Fal
     `assume_yes` is passed to the delegates that face a prompt of their own. `specify extension update`
     asks for confirmation and offers no flag to skip it, so without this a non-interactive run would
     abort on that step alone.
+
+    `authorized_keys` is the set of integration keys the caller has obtained an overwrite authorization
+    for, in this run. **This function never resolves authorization itself** — it does not prompt, read a
+    TTY, or consult a flag — so it stays testable without a terminal and there is exactly one place where
+    an overwrite can be authorized.
     """
+    authorized_keys = set(authorized_keys or ())
     results = []
     # Walk `report.components` rather than ORDER. Both are canonical order — `check_all` builds the
     # report from ORDER — but reading it from the report means the sequence updates run in *cannot*
     # drift from the sequence that was just shown to the user. One source, not two.
     for component in report.components:
         key = component.key
+
+        # The integration component is plural: it may have work to do for some of its children while
+        # others are current, so its own status is not the whole story.
+        if key == INTEGRATION and component.has_parts:
+            if any(state.status == NEEDS_UPDATING for state in component.parts):
+                if announce is not None:
+                    announce(component)
+                try:
+                    results.append(_update_integration(component, authorized_keys))
+                except extension.DelegationError as exc:
+                    results.append(UpdateResult(key, FAILED, detail=str(exc)))
+                except KeyboardInterrupt:
+                    raise Interrupted(key)
+            else:
+                results.append(UpdateResult(key, SKIPPED, detail=_skip_reason(component)))
+            continue
+
         if component.status != NEEDS_UPDATING:
             results.append(UpdateResult(key, SKIPPED, detail=_skip_reason(component)))
             continue
