@@ -113,20 +113,20 @@ a second run and confirm nothing was activated (quickstart Scenario 4).
 
 ### Tests for User Story 2
 
-- [ ] T030 [P] [US2] Add tests to `tests/test_version_update.py` for the coverage question: asked exactly once, defaulting to no, with the disclosure naming the integrations and the default to be restored (FR-025, FR-026)
-- [ ] T031 [P] [US2] Add a test to `tests/test_version_update.py` asserting `--yes` proceeds with no prompt, and that `--force` is never consulted for coverage — no overwrite prompt or flag originates from the coverage path, and no modified managed file is overwritten by it (FR-027, FR-009, SC-005)
-- [ ] T032 [P] [US2] Add a declined-run test to `tests/test_version_update.py`: nothing activated, default unchanged, uncovered integrations named with `spectra install` as the remedy the user can run verbatim, and the exit code unaffected (FR-029, FR-030, SC-007)
-- [ ] T033 [P] [US2] Add a no-TTY test to `tests/test_version_update.py`: nothing activated and the skip names `--yes` as what would authorize it (FR-028)
-- [ ] T034 [P] [US2] Add a test to `tests/test_version_update.py` asserting coverage is evaluated even when the Spectra agents were already current and nothing was updated (FR-024)
-- [ ] T035 [P] [US2] Add a test to `tests/test_version_update.py` asserting the coverage row group renders in the outcome table with one child line per integration, that **no** fifth row appears in the health table, and that the health table, its verdicts, the overwrite disclosure, and the per-integration upgrade rows are unchanged from the previous release (FR-031, FR-032, research R7)
+- [X] T030 [P] [US2] Add tests to `tests/test_version_update.py` for the coverage question: asked exactly once, defaulting to no, with the disclosure naming the integrations and the default to be restored (FR-025, FR-026)
+- [X] T031 [P] [US2] Add a test to `tests/test_version_update.py` asserting `--yes` proceeds with no prompt, and that `--force` is never consulted for coverage — no overwrite prompt or flag originates from the coverage path, and no modified managed file is overwritten by it (FR-027, FR-009, SC-005)
+- [X] T032 [P] [US2] Add a declined-run test to `tests/test_version_update.py`: nothing activated, default unchanged, uncovered integrations named with `spectra install` as the remedy the user can run verbatim, and the exit code unaffected (FR-029, FR-030, SC-007)
+- [X] T033 [P] [US2] Add a no-TTY test to `tests/test_version_update.py`: nothing activated and the skip names `--yes` as what would authorize it (FR-028)
+- [X] T034 [P] [US2] Add a test to `tests/test_version_update.py` asserting coverage is evaluated even when the Spectra agents were already current and nothing was updated (FR-024)
+- [X] T035 [P] [US2] Add a test to `tests/test_version_update.py` asserting the coverage row group renders in the outcome table with one child line per integration, that **no** fifth row appears in the health table, and that the health table, its verdicts, the overwrite disclosure, and the per-integration upgrade rows are unchanged from the previous release (FR-031, FR-032, research R7)
 
 ### Implementation for User Story 2
 
-- [ ] T036 [US2] Add the coverage step to `cmd_update` in `spectra_cli/cli.py` at position 6 of contracts/cli-surface.md § 3 — after the post-walk re-read, before the outcome table
-- [ ] T037 [US2] Implement the coverage question in `spectra_cli/cli.py`: one prompt defaulting to no, `--yes` as the only authorization, no prompt and no activation without a TTY (FR-025, FR-027, FR-028)
-- [ ] T038 [US2] Render the coverage outcome as a fifth row group in the outcome table using the existing `_outcome_row` / child-row helpers in `spectra_cli/cli.py` (FR-032)
-- [ ] T039 [US2] Wire the coverage result into the failure and exit-code handling in `cmd_update` so a failed activation or `NOT_RESTORED` returns `EXIT_DELEGATION` while a decline changes nothing (FR-029, research R8)
-- [ ] T040 [US2] Update `_say_what_happened` in `spectra_cli/cli.py` so the closing line does not claim completeness when coverage was declined, matching the rule it already applies to a declined overwrite
+- [X] T036 [US2] Add the coverage step to `cmd_update` in `spectra_cli/cli.py` at position 6 of contracts/cli-surface.md § 3 — after the post-walk re-read, before the outcome table
+- [X] T037 [US2] Implement the coverage question in `spectra_cli/cli.py`: one prompt defaulting to no, `--yes` as the only authorization, no prompt and no activation without a TTY (FR-025, FR-027, FR-028)
+- [X] T038 [US2] Render the coverage outcome as a fifth row group in the outcome table using the existing `_outcome_row` / child-row helpers in `spectra_cli/cli.py` (FR-032)
+- [X] T039 [US2] Wire the coverage result into the failure and exit-code handling in `cmd_update` so a failed activation or `NOT_RESTORED` returns `EXIT_DELEGATION` while a decline changes nothing (FR-029, research R8)
+- [X] T040 [US2] Update `_say_what_happened` in `spectra_cli/cli.py` so the closing line does not claim completeness when coverage was declined, matching the rule it already applies to a declined overwrite
 
 **Checkpoint**: Coverage survives an update. The regression where the extension update deletes the
 non-default agent's commands is closed.
@@ -144,17 +144,17 @@ integration (quickstart Scenario 2).
 
 ### Tests for User Story 3
 
-- [ ] T041 [P] [US3] Add tests to `tests/test_install.py`: an already-present extension is reported as present, is not re-downloaded, and the run exits 0 after coverage — one command, no dependency documentation needed (FR-020, FR-023, SC-004)
-- [ ] T042 [P] [US3] Add a test to `tests/test_install.py` asserting the already-present decision is made from project state, with no dependency message text anywhere in the code path (FR-021)
-- [ ] T043 [P] [US3] Add a test to `tests/test_install.py`: an extension step that fails for another reason still exits non-zero, and coverage still runs when an extension is present from an earlier run, reported separately (FR-022)
-- [ ] T044 [P] [US3] Add a test to `tests/test_install.py`: an extension step that fails with nothing installed skips coverage as inapplicable and reports only the extension failure (FR-022)
-- [ ] T045 [P] [US3] Add a test to `tests/test_install.py` asserting an `INCOMPLETE` extension folder is treated as absent, so the add is attempted (research R6)
+- [X] T041 [P] [US3] Add tests to `tests/test_install.py`: an already-present extension is reported as present, is not re-downloaded, and the run exits 0 after coverage — one command, no dependency documentation needed (FR-020, FR-023, SC-004)
+- [X] T042 [P] [US3] Add a test to `tests/test_install.py` asserting the already-present decision is made from project state, with no dependency message text anywhere in the code path (FR-021)
+- [X] T043 [P] [US3] Add a test to `tests/test_install.py`: an extension step that fails for another reason still exits non-zero, and coverage still runs when an extension is present from an earlier run, reported separately (FR-022)
+- [X] T044 [P] [US3] Add a test to `tests/test_install.py`: an extension step that fails with nothing installed skips coverage as inapplicable and reports only the extension failure (FR-022)
+- [X] T045 [P] [US3] Add a test to `tests/test_install.py` asserting an `INCOMPLETE` extension folder is treated as absent, so the add is attempted (research R6)
 
 ### Implementation for User Story 3
 
-- [ ] T046 [US3] Add the pre-attempt presence check to `add_catalog` in `spectra_cli/install.py` using the T007 helper, per extension id from `catalog_extension_ids()`, skipping the add for ids already present (FR-020, FR-021, research R6)
-- [ ] T047 [US3] Print the already-present message from contracts/cli-surface.md § 2 and continue to step 4, without claiming anything was installed or downloaded (FR-020)
-- [ ] T048 [US3] Make `run_install` in `spectra_cli/install.py` return the clarified exit contract: zero for covered or stated-skip, non-zero for an attempted-and-failed coverage, and the extension failure's code preserved when it fails — so no run reports success after an attempted coverage step left an integration uncovered (FR-017, FR-022, SC-012, spec § Clarifications)
+- [X] T046 [US3] Add the pre-attempt presence check to `add_catalog` in `spectra_cli/install.py` using the T007 helper, per extension id from `catalog_extension_ids()`, skipping the add for ids already present (FR-020, FR-021, research R6)
+- [X] T047 [US3] Print the already-present message from contracts/cli-surface.md § 2 and continue to step 4, without claiming anything was installed or downloaded (FR-020)
+- [X] T048 [US3] Make `run_install` in `spectra_cli/install.py` return the clarified exit contract: zero for covered or stated-skip, non-zero for an attempted-and-failed coverage, and the extension failure's code preserved when it fails — so no run reports success after an attempted coverage step left an integration uncovered (FR-017, FR-022, SC-012, spec § Clarifications)
 
 **Checkpoint**: Every project that predates this feature can be repaired by one command.
 
@@ -171,18 +171,18 @@ activation to fail and confirm the recovery command is printed (quickstart Scena
 
 ### Tests for User Story 4
 
-- [ ] T049 [P] [US4] Add a test to `tests/test_coverage.py`: an activation that fails still restores the default, the remaining targets are still attempted, and the failure is attributed to its integration (FR-015, FR-016, FR-035)
-- [ ] T050 [P] [US4] Add an interrupt test to `tests/test_coverage.py`: `KeyboardInterrupt` mid-rotation restores the default, raises `coverage.Interrupted`, and leaves already-covered integrations covered (FR-016, FR-036)
-- [ ] T051 [P] [US4] Add a failed-restore test to `tests/test_coverage.py`: `restoration` is `NOT_RESTORED` and `current_default` differs from `original_default` (FR-034)
-- [ ] T052 [P] [US4] Add a test to `tests/test_install.py` asserting the `NOT_RESTORED` output names the current default, the original, and the verbatim recovery command, and that the run exits 4 — no run ends with a changed default without printing the command that restores it (FR-034, SC-008, research R8)
-- [ ] T053 [P] [US4] Add a test to `tests/test_install.py` asserting an interrupt exits 130 and is reported as an interruption, not a failure — then run `spectra install` again in the same interrupted project and assert it completes coverage, so the interrupted state is provably repairable rather than merely tidy (FR-036, SC-010)
-- [ ] T054 [P] [US4] Add a test to `tests/test_coverage.py` asserting no activation is attempted when no default is recorded, with the reason reported (FR-012)
+- [X] T049 [P] [US4] Add a test to `tests/test_coverage.py`: an activation that fails still restores the default, the remaining targets are still attempted, and the failure is attributed to its integration (FR-015, FR-016, FR-035)
+- [X] T050 [P] [US4] Add an interrupt test to `tests/test_coverage.py`: `KeyboardInterrupt` mid-rotation restores the default, raises `coverage.Interrupted`, and leaves already-covered integrations covered (FR-016, FR-036)
+- [X] T051 [P] [US4] Add a failed-restore test to `tests/test_coverage.py`: `restoration` is `NOT_RESTORED` and `current_default` differs from `original_default` (FR-034)
+- [X] T052 [P] [US4] Add a test to `tests/test_install.py` asserting the `NOT_RESTORED` output names the current default, the original, and the verbatim recovery command, and that the run exits 4 — no run ends with a changed default without printing the command that restores it (FR-034, SC-008, research R8)
+- [X] T053 [P] [US4] Add a test to `tests/test_install.py` asserting an interrupt exits 130 and is reported as an interruption, not a failure — then run `spectra install` again in the same interrupted project and assert it completes coverage, so the interrupted state is provably repairable rather than merely tidy (FR-036, SC-010)
+- [X] T054 [P] [US4] Add a test to `tests/test_coverage.py` asserting no activation is attempted when no default is recorded, with the reason reported (FR-012)
 
 ### Implementation for User Story 4
 
-- [ ] T055 [US4] Implement the `NOT_RESTORED` reporting in `spectra_cli/install.py` and `spectra_cli/cli.py` per contracts/cli-surface.md § 1, the only place `specify integration use` is printed as advice (FR-034, FR-040)
-- [ ] T056 [US4] Implement the interrupt path in both callers: report the interruption, return `EXIT_INTERRUPTED`, and never present it as a component failure (FR-036, research R8)
-- [ ] T057 [US4] Verify by inspection that every `return` and `raise` in `coverage.apply` passes through the `finally`, and record that check in the module docstring so a later edit cannot quietly bypass it (FR-016)
+- [X] T055 [US4] Implement the `NOT_RESTORED` reporting in `spectra_cli/install.py` and `spectra_cli/cli.py` per contracts/cli-surface.md § 1, the only place `specify integration use` is printed as advice (FR-034, FR-040)
+- [X] T056 [US4] Implement the interrupt path in both callers: report the interruption, return `EXIT_INTERRUPTED`, and never present it as a component failure (FR-036, research R8)
+- [X] T057 [US4] Verify by inspection that every `return` and `raise` in `coverage.apply` passes through the `finally`, and record that check in the module docstring so a later edit cannot quietly bypass it (FR-016)
 
 **Checkpoint**: The restoration guarantee holds on all four failure paths and is proven by test rather
 than by reading.
@@ -198,15 +198,15 @@ the output against the previous release; only version numbers may differ (quicks
 
 ### Tests for User Story 5
 
-- [ ] T058 [P] [US5] Add a test to `tests/test_install.py` asserting a single-integration covered project prints `[1/3]`…`[3/3]`, no step 4, and performs no activation (FR-038, SC-006)
-- [ ] T059 [P] [US5] Add a test to `tests/test_version_update.py` asserting a single-integration covered project's update output and prompts are unchanged — no coverage question, no coverage row (FR-037, FR-038)
-- [ ] T060 [P] [US5] Add a test to `tests/test_install.py` and `tests/test_version_update.py` asserting a multi-integration project where every integration is covered produces no coverage output in either command (FR-037)
-- [ ] T061 [P] [US5] Add a test to `tests/test_cli_surface.py` asserting the rendered help and `OPTIONS` are unchanged — no new flag, no new environment variable (FR-018, FR-047)
+- [X] T058 [P] [US5] Add a test to `tests/test_install.py` asserting a single-integration covered project prints `[1/3]`…`[3/3]`, no step 4, and performs no activation (FR-038, SC-006)
+- [X] T059 [P] [US5] Add a test to `tests/test_version_update.py` asserting a single-integration covered project's update output and prompts are unchanged — no coverage question, no coverage row (FR-037, FR-038)
+- [X] T060 [P] [US5] Add a test to `tests/test_install.py` and `tests/test_version_update.py` asserting a multi-integration project where every integration is covered produces no coverage output in either command (FR-037)
+- [X] T061 [P] [US5] Add a test to `tests/test_cli_surface.py` asserting the rendered help and `OPTIONS` are unchanged — no new flag, no new environment variable (FR-018, FR-047)
 
 ### Implementation for User Story 5
 
-- [ ] T062 [US5] Confirm the silence is a property of the empty plan rather than of each caller, and add the assertion to `tests/test_coverage.py` that an empty plan yields no `activations` (research R11)
-- [ ] T063 [US5] Extend the source scan in `tests/test_no_hardcoded_agents.py` to cover `spectra_cli/coverage.py`: no integration key as a literal (FR-046), no `integration install` / `integration remove` / `integration switch` invocation anywhere in the module (FR-045), and no network or credential import (FR-048)
+- [X] T062 [US5] Confirm the silence is a property of the empty plan rather than of each caller, and add the assertion to `tests/test_coverage.py` that an empty plan yields no `activations` (research R11)
+- [X] T063 [US5] Extend the source scan in `tests/test_no_hardcoded_agents.py` to cover `spectra_cli/coverage.py`: no integration key as a literal (FR-046), no `integration install` / `integration remove` / `integration switch` invocation anywhere in the module (FR-045), and no network or credential import (FR-048)
 
 **Checkpoint**: The feature is invisible to the projects it does not serve.
 
@@ -223,14 +223,14 @@ code unaffected (quickstart Scenario 8).
 
 ### Tests for User Story 6
 
-- [ ] T064 [P] [US6] Update the advisory tests in `tests/test_version_update.py` (where they live today, alongside the `write_registry` fixture in `tests/helpers.py` — **not** `tests/test_health.py`) to expect `Add them with: spectra install` and to assert the two lines about changing the project's default are gone (FR-039, FR-040)
-- [ ] T065 [P] [US6] Add a test to `tests/test_version_update.py` asserting the advisory stays silent when coverage is unknown, when everything is covered, and when fewer than two integrations are installed (FR-041)
-- [ ] T066 [P] [US6] Add a test to `tests/test_version_update.py` asserting the advisory changes nothing in the project and does not affect the exit code (FR-042)
+- [X] T064 [P] [US6] Update the advisory tests in `tests/test_version_update.py` (where they live today, alongside the `write_registry` fixture in `tests/helpers.py` — **not** `tests/test_health.py`) to expect `Add them with: spectra install` and to assert the two lines about changing the project's default are gone (FR-039, FR-040)
+- [X] T065 [P] [US6] Add a test to `tests/test_version_update.py` asserting the advisory stays silent when coverage is unknown, when everything is covered, and when fewer than two integrations are installed (FR-041)
+- [X] T066 [P] [US6] Add a test to `tests/test_version_update.py` asserting the advisory changes nothing in the project and does not affect the exit code (FR-042)
 
 ### Implementation for User Story 6
 
-- [ ] T067 [US6] Reword `_show_coverage_advisory` in `spectra_cli/cli.py` per contracts/cli-surface.md § 4, removing the `specify integration use` remedy and the two lines about changing the default for everyone, so one command run tells a developer which agents have Spectra and what to do about the ones that do not (FR-039, FR-040, SC-009)
-- [ ] T068 [US6] Confirm in `spectra_cli/cli.py` that the advisory remains below the four rows in `_show_health`'s output and never becomes a fifth row in the health table (FR-042, research R7)
+- [X] T067 [US6] Reword `_show_coverage_advisory` in `spectra_cli/cli.py` per contracts/cli-surface.md § 4, removing the `specify integration use` remedy and the two lines about changing the default for everyone, so one command run tells a developer which agents have Spectra and what to do about the ones that do not (FR-039, FR-040, SC-009)
+- [X] T068 [US6] Confirm in `spectra_cli/cli.py` that the advisory remains below the four rows in `_show_health`'s output and never becomes a fifth row in the health table (FR-042, research R7)
 
 **Checkpoint**: All six stories are independently functional.
 

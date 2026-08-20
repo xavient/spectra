@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import contextlib
 import io
+import json
 import sys
 import unittest
 from pathlib import Path
@@ -25,7 +26,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import helpers as h  # noqa: E402
-from spectra_cli import cli, extension, health, version as cli_version  # noqa: E402
+from spectra_cli import cli, extension, health, ui, version as cli_version  # noqa: E402
 
 
 def run(argv):
@@ -91,7 +92,7 @@ def moving_integration(path, version):
 @contextlib.contextmanager
 def stack(installed="1.3.1", published="1.3.1", *, integration="0.16.4",
           self_check=h.SELF_CHECK_UP_TO_DATE, spectra_cli=None, modified=None,
-          **project_kwargs):
+          cover_effect=False, use_fails=(), argv_log="argv.log", **project_kwargs):
     """A whole stack in a known state, so a test can vary exactly one component.
 
     Defaults put three components at "current" and leave the fourth (`installed` vs `published`) to the
@@ -101,17 +102,32 @@ def stack(installed="1.3.1", published="1.3.1", *, integration="0.16.4",
     the stubbed `specify` is told the same membership — otherwise the report and the modification probe
     would disagree about which integrations exist. `modified` seeds the probe's per-integration and
     shared file lists.
+
+    `cover_effect` makes the stub's `integration use` *act*: it registers the activated agent and rewrites
+    the recorded default, the way the real command does. Without it a rotation exits 0 while nothing
+    changes, so the coverage step would appear to succeed while its verification had nothing to verify.
+    `use_fails` names integrations whose activation fails, which is how the failed-activation and
+    failed-restore paths are reached. The project is created *before* the stub so its root can be handed to
+    the effect.
     """
     resolved = spectra_cli if spectra_cli is not None else _spectra_cli()
     integrations = project_kwargs.get("integrations")
     keys = tuple(integrations) if integrations else ("claude",)
     default = project_kwargs.get("default_integration") or keys[0]
-    with h.serve_roster(manifest_version=published) as base, h.raw_base(base), \
-            h.fake_specify(self_check, installed=keys, default=default, modified=modified), \
-            mock.patch.object(health, "get_spectra_cli_status", return_value=resolved):
+    with h.serve_roster(manifest_version=published) as base, h.raw_base(base):
         with h.temp_project(installed, integration_version=integration, **project_kwargs) as path, \
                 h.cwd(path):
-            yield path
+            with h.fake_specify(self_check, installed=keys, default=default, modified=modified,
+                                argv_log=(Path(path) / argv_log) if argv_log else None,
+                                use_effect=path if cover_effect else None,
+                                use_fails=use_fails), \
+                    mock.patch.object(health, "get_spectra_cli_status", return_value=resolved):
+                yield path
+
+
+def use_calls(path, name="argv.log"):
+    """The integration keys the stubbed `specify integration use` was called with, in order."""
+    return h.integration_use_calls(Path(path) / name)
 
 
 # --------------------------------------------------------------------------- #
@@ -286,13 +302,20 @@ class CoverageAdvisory(unittest.TestCase):
     BOTH = {"kiro-cli": "0.16.4", "claude": "0.16.4"}
 
     def test_an_uncovered_integration_is_named_with_its_remedy(self):
+        """The remedy is `spectra install` since feature 011 — the install now closes the gap itself.
+
+        It used to name the dependency's `integration use`, warning in the same breath that it changes the
+        project's default for everyone. That warning was correct, which is what made the advice useless: a
+        remedy nobody should run is not a remedy (FR-039, FR-040).
+        """
         with stack("1.3.1", "1.3.1", integrations=self.BOTH, default_integration="kiro-cli",
                    registered_agents=["kiro-cli"]):
             code, out = run(["version"])
         self.assertEqual(code, cli.EXIT_OK)
         self.assertIn("claude is installed here but has no Spectra commands", out)
-        self.assertIn("specify integration use claude", out)
-        self.assertIn("changes the project's default integration", out)
+        self.assertIn("Add them with: spectra install", out)
+        self.assertNotIn("specify integration use", out)
+        self.assertNotIn("changes the project's default integration", out)
 
     def test_full_coverage_says_nothing(self):
         with stack("1.3.1", "1.3.1", integrations=self.BOTH, default_integration="kiro-cli",
@@ -1189,6 +1212,179 @@ class TheLoopCloses(unittest.TestCase):
         self.assertEqual(code, cli.EXIT_OK)
         self.assertIn("up to date", after)
         self.assertNotIn("You can update by running", after)
+
+
+class CoverageInTheUpdate(unittest.TestCase):
+    """`spectra update` re-establishes coverage after the walk instead of silently deleting it.
+
+    The regression this closes is the dependency's, not ours: updating an extension unregisters it for
+    **every** agent and re-registers it for the default alone (BRD-007 F5). So a project a developer had
+    fixed by hand lost that work on the next maintenance run, with no message and no failure.
+    """
+
+    BOTH = {"kiro-cli": "0.16.4", "claude": "0.16.4"}
+
+    def test_the_question_is_asked_once_and_defaults_to_no(self):
+        """FR-025, FR-026 — and the disclosure names both the agents and the default to restore."""
+        with stack("1.3.1", "1.3.1", integrations=self.BOTH, default_integration="kiro-cli",
+                   registered_agents=["kiro-cli"], cover_effect=True) as path:
+            with mock.patch("sys.stdin.isatty", return_value=True), \
+                    mock.patch.object(ui, "confirm", return_value=False) as confirm:
+                code, out = run(["update"])
+            self.assertEqual(confirm.call_count, 1)
+            self.assertFalse(confirm.call_args.kwargs.get("default_yes", True))
+            self.assertIn("Spectra's commands are missing for: claude", out)
+            self.assertIn("the project's default for a moment", out)
+            self.assertIn("kiro-cli", out)
+            self.assertEqual(use_calls(path), [])
+            self.assertEqual(code, cli.EXIT_OK)
+
+    def test_yes_authorizes_without_a_prompt(self):
+        """FR-027. And `--force` is never consulted for coverage (FR-009)."""
+        with stack("1.3.1", "1.3.1", integrations=self.BOTH, default_integration="kiro-cli",
+                   registered_agents=["kiro-cli"], cover_effect=True) as path:
+            with mock.patch.object(ui, "confirm",
+                                   side_effect=AssertionError("must not prompt with --yes")):
+                code, out = run(["update", "--yes"])
+            self.assertEqual(code, cli.EXIT_OK)
+            self.assertEqual(use_calls(path), ["claude", "kiro-cli"])
+            self.assertIn("Agent coverage", out)
+            for argv in h.read_argv_log(Path(path) / "argv.log"):
+                self.assertNotIn("--force", argv)
+
+    def test_declining_leaves_the_project_alone_and_names_the_remedy(self):
+        """FR-029, FR-030, SC-007 — a decline is an abstention, not a failure."""
+        with stack("1.3.1", "1.3.1", integrations=self.BOTH, default_integration="kiro-cli",
+                   registered_agents=["kiro-cli"], cover_effect=True) as path:
+            with mock.patch("sys.stdin.isatty", return_value=True), \
+                    mock.patch.object(ui, "confirm", return_value=False):
+                code, out = run(["update"])
+            self.assertEqual(code, cli.EXIT_OK)
+            self.assertEqual(use_calls(path), [])
+            self.assertIn("still missing for: claude", out)
+            self.assertIn("spectra install", out)
+            self.assertEqual(_default_of(path), "kiro-cli")
+
+    def test_no_terminal_and_no_yes_activates_nothing_and_names_the_flag(self):
+        """FR-028 — automation authorizes nothing it was not explicitly told to."""
+        with stack("1.3.1", "1.3.1", integrations=self.BOTH, default_integration="kiro-cli",
+                   registered_agents=["kiro-cli"], cover_effect=True) as path:
+            with mock.patch("sys.stdin", io.StringIO("")):
+                code, out = run(["update"])
+            self.assertEqual(code, cli.EXIT_OK)
+            self.assertEqual(use_calls(path), [])
+            self.assertIn("--yes", out)
+
+    def test_coverage_is_evaluated_even_when_nothing_needed_updating(self):
+        """FR-024. The loss may have been caused by an earlier run, so every run checks."""
+        with stack("1.3.1", "1.3.1", integrations=self.BOTH, default_integration="kiro-cli",
+                   registered_agents=["kiro-cli"], cover_effect=True) as path:
+            code, out = run(["update", "--yes"])
+            self.assertEqual(code, cli.EXIT_OK)
+            self.assertIn("up to date", out)
+            self.assertEqual(use_calls(path), ["claude", "kiro-cli"])
+            self.assertEqual(_registered(path), ["claude", "kiro-cli"])
+            self.assertEqual(_default_of(path), "kiro-cli")
+
+    def test_coverage_survives_an_extension_update(self):
+        """The whole point: an update that moves the extension no longer costs the other agent."""
+        with stack("1.0.0", "1.3.1", integrations=self.BOTH, default_integration="kiro-cli",
+                   registered_agents=["kiro-cli"], cover_effect=True) as path:
+            with mock.patch.object(extension, "delegate_update",
+                                   side_effect=moving_manifest(path)):
+                code, out = run(["update", "--yes"])
+            self.assertEqual(code, cli.EXIT_OK)
+            self.assertIn("Agent coverage", out)
+            self.assertEqual(_registered(path), ["claude", "kiro-cli"])
+            self.assertEqual(_default_of(path), "kiro-cli")
+
+    def test_a_fully_covered_project_adds_no_output_and_no_question(self):
+        """FR-037 — and this is the assertion that keeps the majority case free of tax."""
+        with stack("1.3.1", "1.3.1", integrations=self.BOTH, default_integration="kiro-cli",
+                   registered_agents=["kiro-cli", "claude"], cover_effect=True) as path:
+            with mock.patch("sys.stdin.isatty", return_value=True), \
+                    mock.patch.object(ui, "confirm",
+                                      side_effect=AssertionError("must not prompt")):
+                code, out = run(["update"])
+            self.assertEqual(code, cli.EXIT_OK)
+            self.assertNotIn("Agent coverage", out)
+            self.assertNotIn("missing for", out)
+            self.assertEqual(use_calls(path), [])
+
+    def test_a_single_integration_project_is_untouched(self):
+        """FR-038, SC-006 — one integration, no coverage question, no coverage row."""
+        with stack("1.3.1", "1.3.1", integration="0.16.4",
+                   registered_agents=["claude"], cover_effect=True) as path:
+            code, out = run(["update"])
+            self.assertEqual(code, cli.EXIT_OK)
+            self.assertNotIn("Agent coverage", out)
+            self.assertEqual(use_calls(path), [])
+
+    def test_the_coverage_row_lists_one_child_per_integration(self):
+        """FR-032 — reported per integration, in the outcome table."""
+        with stack("1.3.1", "1.3.1",
+                   integrations={"kiro-cli": "0.16.4", "claude": "0.16.4", "copilot": "0.16.4"},
+                   default_integration="kiro-cli", registered_agents=["kiro-cli"],
+                   cover_effect=True) as path:
+            code, out = run(["update", "--yes"])
+            self.assertEqual(code, cli.EXIT_OK)
+            self.assertIn("Agent coverage", out)
+            for key in ("kiro-cli", "claude", "copilot"):
+                self.assertTrue(any(line.strip().startswith(key + ":") for line in out.splitlines()),
+                                f"no child row for {key} in:\n{out}")
+
+    def test_no_fifth_row_appears_in_the_health_table(self):
+        """FR-031, research R7 — coverage belongs to the outcome table, never to the currency report."""
+        with stack("1.3.1", "1.3.1", integrations=self.BOTH, default_integration="kiro-cli",
+                   registered_agents=["kiro-cli"], cover_effect=True) as path:
+            _, out = run(["version"])
+            self.assertNotIn("Agent coverage", out)
+            rows = [line for line in out.splitlines() if _is_component_row(line)]
+            self.assertEqual(len(rows), 4)
+
+    def test_a_failed_activation_fails_the_run(self):
+        """An attempted coverage step that failed is a failure, like any other attempted component."""
+        with stack("1.3.1", "1.3.1", integrations=self.BOTH, default_integration="kiro-cli",
+                   registered_agents=["kiro-cli"], cover_effect=True,
+                   use_fails=("claude",)) as path:
+            code, out = run(["update", "--yes"])
+            self.assertEqual(code, cli.EXIT_DELEGATION)
+            self.assertIn("Agent coverage", out)
+            self.assertEqual(_default_of(path), "kiro-cli")
+
+    def test_a_failed_restore_names_the_recovery_command(self):
+        """FR-034, SC-008."""
+        with stack("1.3.1", "1.3.1", integrations=self.BOTH, default_integration="kiro-cli",
+                   registered_agents=["kiro-cli"], cover_effect=True,
+                   use_fails=("kiro-cli",)) as path:
+            code, out = run(["update", "--yes"])
+            self.assertEqual(code, cli.EXIT_DELEGATION)
+            self.assertIn("Could not set the default integration back to kiro-cli", out)
+            self.assertIn("specify integration use kiro-cli", out)
+
+    def test_the_closing_line_does_not_claim_completeness_after_a_decline(self):
+        """The same restraint the declined-overwrite path already observes."""
+        with stack("1.0.0", "1.3.1", integrations=self.BOTH, default_integration="kiro-cli",
+                   registered_agents=["kiro-cli"], cover_effect=True) as path:
+            with mock.patch("sys.stdin.isatty", return_value=True), \
+                    mock.patch.object(extension, "delegate_update",
+                                      side_effect=moving_manifest(path)), \
+                    mock.patch.object(ui, "confirm", side_effect=[True, False]):
+                code, out = run(["update"])
+            self.assertEqual(code, cli.EXIT_OK)
+            self.assertNotIn("Everything that needed updating was updated", out)
+            self.assertIn("Everything else was updated", out)
+
+
+def _default_of(path):
+    return json.loads((Path(path) / ".specify" / "integration.json")
+                      .read_text(encoding="utf-8")).get("default_integration")
+
+
+def _registered(path):
+    data = json.loads((Path(path) / ".specify" / "extensions" / ".registry")
+                      .read_text(encoding="utf-8"))
+    return sorted(data["extensions"]["spectra"]["registered_commands"])
 
 
 if __name__ == "__main__":
