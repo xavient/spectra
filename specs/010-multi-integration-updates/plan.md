@@ -82,7 +82,9 @@ nothing is removed or renamed. Therefore:
   deliberately uncoupled and no agent changed.
 - No git tag is created by this work; tagging is the release step and belongs to the CLI channel.
 - README copy for `spectra version` / `spectra update` needs the multi-integration behaviour and the new
-  flag, since it documents the four-component table verbatim.
+  flag, since it documents the four-component table verbatim. The landing page (`docs/index.html`) carries
+  the same two commands plus a per-version "Changed in" note for CLI behaviour changes (5.0.0, 6.0.0), so
+  it needs the same treatment for 6.1.0.
 
 ### Gate result
 
@@ -136,10 +138,12 @@ tests/
 ├── helpers.py           # MODIFIED — multi-integration project fixture, argument-aware specify stub
 ├── test_health.py       # MODIFIED — enumeration, per-key reads, aggregation precedence
 ├── test_version_update.py # MODIFIED — report rows, walk order, consent paths, exit codes
+├── test_extension.py    # MODIFIED — registered_agents() reader for the coverage advisory
 └── test_cli_surface.py  # MODIFIED — `--force` placement and help text
 
 VERSION                  # MODIFIED — 6.0.0 -> 6.1.0
 README.md                # MODIFIED — multi-integration behaviour and the new flag
+docs/index.html          # MODIFIED — "Keep the whole stack current" copy + a `Changed in 6.1.0` note
 specs/007-unified-version-update/contracts/health-check.md  # MODIFIED — supersession note
 ```
 

@@ -57,3 +57,9 @@
   that establish the dependency's behaviour live in BRD-006 § 2.1 and are cited from there rather than
   restated here, keeping the spec free of dependency internals while leaving the evidence traceable for
   `/speckit.plan`.
+- **`/speckit.analyze` was run after `/speckit.tasks` and its findings were remediated.** 13 findings, no
+  CRITICAL, no constitution conflicts. Two spec wordings were tightened as a result: FR-007 now says
+  *oldest readable* version (aligning it with data-model.md § 2), and FR-037/FR-038 are now scoped to
+  "when an advisory is shown", removing the mismatch with FR-036's SHOULD. The remaining findings were
+  coverage gaps closed in `tasks.md` — the largest being that no task seeded the record disagreement the
+  feature exists to fix.

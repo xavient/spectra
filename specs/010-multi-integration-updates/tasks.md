@@ -70,25 +70,26 @@ oldest version, and names both integrations. Before this story the same project 
 
 ### Tests for User Story 1
 
-- [ ] T013 [P] [US1] Add an `InstalledIntegrations` test class to `tests/test_health.py` covering `read_installed_integrations`: a two-key list, a missing file, invalid JSON, a non-object top level, an empty list, and a project where `speckit.manifest.json` exists but is NOT reported as an integration (FR-002)
-- [ ] T014 [P] [US1] Add a `PerIntegrationVersion` test class to `tests/test_health.py` covering `read_integration_version(root, key)` for a readable manifest, a missing manifest, invalid JSON, a non-object top level, and an absent/empty `version` — all four failures returning `None`
-- [ ] T015 [P] [US1] Add a `PerIntegrationVerdict` test class to `tests/test_health.py` asserting every row of the table in contracts/core-agents.md § 3, including that an unknown Specify CLI forces every integration unknown and that both ways of being behind are distinguished by `detail`
-- [ ] T016 [P] [US1] Add an `Aggregation` test class to `tests/test_health.py` asserting all five precedence rules in contracts/core-agents.md § 4, explicitly including behind-outranks-unknown, unknown-outranks-up-to-date, all-ahead, and the ahead+current mix resolving to `UP_TO_DATE` (research R2)
+- [ ] T013 [P] [US1] Add an `InstalledIntegrations` test class to `tests/test_health.py` covering `read_installed_integrations`: a two-key list, a missing file, invalid JSON, a non-object top level, an empty list, and a project where `speckit.manifest.json` exists but is NOT reported as an integration (FR-001, FR-002)
+- [ ] T014 [P] [US1] Add a `PerIntegrationVersion` test class to `tests/test_health.py` covering `read_integration_version(root, key)` for a readable manifest, a missing manifest, invalid JSON, a non-object top level, and an absent/empty `version` — all four failures returning `None` (FR-003)
+- [ ] T015 [P] [US1] Add a `PerIntegrationVerdict` test class to `tests/test_health.py` asserting every row of the table in contracts/core-agents.md § 3, including that an unknown Specify CLI forces every integration unknown, that every unknown carries a reason, and that both ways of being behind are distinguished by `detail` (FR-005)
+- [ ] T016 [P] [US1] Add an `Aggregation` test class to `tests/test_health.py` asserting all five precedence rules in contracts/core-agents.md § 4, explicitly including behind-outranks-unknown, unknown-outranks-up-to-date, all-ahead, and the ahead+current mix resolving to `UP_TO_DATE` (FR-006, FR-009, FR-010, research R2)
 - [ ] T017 [P] [US1] Add tests to `tests/test_health.py` asserting the row's derived fields: `installed` is the oldest readable child version (FR-007) and `detail` names the behind children (FR-008)
 - [ ] T018 [P] [US1] Add a `Fallback` test class to `tests/test_health.py` asserting the single-record path (contracts/core-agents.md § 6) triggers on absent `installed_integrations` and on present-but-unreadable manifests, produces one child with `key=None`, and matches today's verdicts exactly (research R8)
-- [ ] T019 [P] [US1] Add tests to `tests/test_version_update.py` asserting the report still prints exactly four rows for a two-integration project (FR-011), that breakdown lines appear only when integrations are non-uniform, and that a uniform two-integration project prints no children (FR-013)
-- [ ] T020 [P] [US1] Add a regression test to `tests/test_version_update.py` asserting a single-integration project's `spectra version` output contains no child lines and no advisory — the in-suite half of SC-005
+- [ ] T019 [P] [US1] Add a `RecordPrecedence` test class to `tests/test_health.py` asserting the per-integration manifests win over the project-level record: seed `.specify/integration.json` with `version` at `0.16.5` while one manifest reads `0.15.1`, and assert `Core agents` reports needs-updating and names that integration (FR-004, BRD-006 finding F2). This is the regression the feature exists for and the sharpest instance of SC-002 — the project-level field is rewritten on any single upgrade, so an implementation that still reads it first must fail here
+- [ ] T020 [P] [US1] Add tests to `tests/test_version_update.py` asserting the report still prints exactly four rows for a two-integration project (FR-011), that breakdown lines appear only when integrations are non-uniform, and that a uniform two-integration project prints no children (FR-013) — one run tells the developer which integrations are behind without opening a file (SC-009)
+- [ ] T021 [P] [US1] Add a regression test to `tests/test_version_update.py` asserting a single-integration project's `spectra version` output contains no child lines and no advisory — the in-suite half of SC-005
 
 ### Implementation for User Story 1
 
-- [ ] T021 [US1] Implement `read_installed_integrations(project_root)` in `spectra_cli/health.py` reading `installed_integrations` from `.specify/integration.json`, preserving order, returning `None` to mean "fall back", and never globbing `.specify/integrations/` (contracts/core-agents.md § 2)
-- [ ] T022 [US1] Implement `read_integration_version(project_root, key)` in `spectra_cli/health.py` reading `version` from `.specify/integrations/<key>.manifest.json`, collapsing all five failure modes to `None`, with a docstring recording why they are one situation
-- [ ] T023 [US1] Implement `read_default_integration(project_root)` in `spectra_cli/health.py` reading `default_integration` then falling back to `integration`, returning `None` when neither is recorded
-- [ ] T024 [US1] Implement `get_integration_states(project_root, specify_status)` in `spectra_cli/health.py` returning one `IntegrationState` per enumerated key, applying the § 3 verdict table via `version.compare_versions`, and marking `is_default`
-- [ ] T025 [US1] Implement `aggregate_integration_status(states, specify_status)` in `spectra_cli/health.py` as a pure function applying the § 4 precedence table and deriving `installed`, `latest`, and `detail` from the children (depends on T024)
-- [ ] T026 [US1] Rewire `get_integration_status(project_root, specify_status)` in `spectra_cli/health.py` to enumerate, judge, and aggregate — falling back to today's single-record path when enumeration yields nothing usable — keeping its existing signature so `check_all` is unchanged (depends on T021–T025)
-- [ ] T027 [US1] Add `_integration_child_rows(component)` to `spectra_cli/cli.py` producing one `(label, glyph, phrase)` tuple per child, reusing `_status_row`'s phrasing so parent and child wording cannot drift
-- [ ] T028 [US1] Wire the child rows into `_show_health()` in `spectra_cli/cli.py`, gated on the FR-013 visibility rule (more than one integration AND non-uniform), passing them to the extended `ui.health_table()` (depends on T012, T027)
+- [ ] T022 [US1] Implement `read_installed_integrations(project_root)` in `spectra_cli/health.py` reading `installed_integrations` from `.specify/integration.json`, preserving order, returning `None` to mean "fall back", and never globbing `.specify/integrations/` (contracts/core-agents.md § 2)
+- [ ] T023 [US1] Implement `read_integration_version(project_root, key)` in `spectra_cli/health.py` reading `version` from `.specify/integrations/<key>.manifest.json`, collapsing all five failure modes to `None`, with a docstring recording why they are one situation
+- [ ] T024 [US1] Implement `read_default_integration(project_root)` in `spectra_cli/health.py` reading `default_integration` then falling back to `integration`, returning `None` when neither is recorded
+- [ ] T025 [US1] Implement `get_integration_states(project_root, specify_status)` in `spectra_cli/health.py` returning one `IntegrationState` per enumerated key, applying the § 3 verdict table via `version.compare_versions`, and marking `is_default`
+- [ ] T026 [US1] Implement `aggregate_integration_status(states, specify_status)` in `spectra_cli/health.py` as a pure function applying the § 4 precedence table and deriving `installed`, `latest`, and `detail` from the children (depends on T025)
+- [ ] T027 [US1] Rewire `get_integration_status(project_root, specify_status)` in `spectra_cli/health.py` to enumerate, judge, and aggregate — falling back to today's single-record path when enumeration yields nothing usable — keeping its existing signature so `check_all` is unchanged (depends on T022–T026)
+- [ ] T028 [US1] Add `_integration_child_rows(component)` to `spectra_cli/cli.py` producing one `(label, glyph, phrase)` tuple per child, reusing `_status_row`'s phrasing so parent and child wording cannot drift
+- [ ] T029 [US1] Wire the child rows into `_show_health()` in `spectra_cli/cli.py`, gated on the FR-013 visibility rule (more than one integration AND non-uniform), passing them to the extended `ui.health_table()` (depends on T012, T028)
 
 **Checkpoint**: `spectra version` tells the truth about every installed integration. Nothing about
 updating has changed yet, and the story is independently valuable.
@@ -106,25 +107,26 @@ byte-identical before and after.
 
 ### Tests for User Story 2
 
-- [ ] T029 [P] [US2] Add an `IntegrationWalk` test class to `tests/test_version_update.py` asserting every behind integration is upgraded in one run and integrations already current are skipped with a reason, not attempted (FR-014, FR-015)
-- [ ] T030 [P] [US2] Add tests to `tests/test_version_update.py` capturing the delegated argv and asserting it is `specify integration upgrade <key>` per behind integration — with no `--force` and no `integration use` anywhere in the captured calls (FR-017)
-- [ ] T031 [P] [US2] Add a test to `tests/test_version_update.py` asserting `default_integration` in `.specify/integration.json` is unchanged after a successful run, a failed run, and an interrupted run (FR-017)
-- [ ] T032 [P] [US2] Add a test to `tests/test_version_update.py` asserting walk order places the default integration last when it is among the targets (research R3, FR-018)
-- [ ] T033 [P] [US2] Add tests to `tests/test_version_update.py` asserting a failed integration does not stop the walk, the component's outcome is the worst of its children, and the command exits `EXIT_DELEGATION` (4) (FR-019, FR-023, data-model.md § 5)
-- [ ] T034 [P] [US2] Add a test to `tests/test_version_update.py` asserting an unknown integration is never attempted, is reported skipped, and does not affect the exit code (FR-015, FR-023)
-- [ ] T035 [P] [US2] Add a test to `tests/test_version_update.py` asserting exit code 130 from any child aborts the whole walk — including the components after `Core agents` (FR-020)
-- [ ] T036 [P] [US2] Add a test to `tests/test_version_update.py` asserting per-integration verification: a child whose delegate returns 0 without moving its manifest version renders "reported success, but the version is unchanged" while its sibling renders as updated (FR-022)
-- [ ] T037 [P] [US2] Add a test to `tests/test_version_update.py` asserting the confirmation plan names each integration to be upgraded with its version transition (FR-016)
+- [ ] T030 [P] [US2] Add an `IntegrationWalk` test class to `tests/test_version_update.py` asserting every behind integration is upgraded in one run and integrations already current are skipped with a reason, not attempted (FR-014, FR-015)
+- [ ] T031 [P] [US2] Add tests to `tests/test_version_update.py` capturing the delegated argv and asserting it is `specify integration upgrade <key>` per behind integration — with no `--force`, and with no invocation that would re-point or rescaffold an agent (`integration use`, `integration switch`, `extension add`, `extension update`) anywhere in the captured calls (FR-017, FR-040)
+- [ ] T032 [P] [US2] Add a test to `tests/test_version_update.py` asserting `default_integration` in `.specify/integration.json` is unchanged after a successful run, a failed run, and an interrupted run (FR-017)
+- [ ] T033 [P] [US2] Add a test to `tests/test_version_update.py` asserting walk order places the default integration last when it is among the targets (research R3, FR-018)
+- [ ] T034 [P] [US2] Add tests to `tests/test_version_update.py` asserting a failed integration does not stop the walk, the component's outcome is the worst of its children, and the command exits `EXIT_DELEGATION` (4) (FR-019, FR-023, data-model.md § 5)
+- [ ] T035 [P] [US2] Add a test to `tests/test_version_update.py` asserting an unknown integration is never attempted, is reported skipped, and does not affect the exit code (FR-015, FR-023)
+- [ ] T036 [P] [US2] Add a test to `tests/test_version_update.py` asserting exit code 130 from any child aborts the whole walk — including the components after `Core agents` (FR-020)
+- [ ] T037 [P] [US2] Add a test to `tests/test_version_update.py` asserting per-integration verification: a child whose delegate returns 0 without moving its manifest version renders "reported success, but the version is unchanged" while its sibling renders as updated (FR-022)
+- [ ] T038 [P] [US2] Add a test to `tests/test_version_update.py` asserting the confirmation plan names each integration to be upgraded with its version transition (FR-016)
+- [ ] T039 [P] [US2] Add a round-trip test to `tests/test_version_update.py` asserting that after a successful `spectra update` in a project with two behind integrations, a fresh `spectra version` reports `Core agents` up to date with no breakdown — the in-suite form of SC-001
 
 ### Implementation for User Story 2
 
-- [ ] T038 [US2] Change `delegate_integration_upgrade(key=None, force=False)` in `spectra_cli/extension.py` to append the key then `--force` when given, keeping the bare invocation reachable for the fallback path, per contracts/core-agents.md § 8
-- [ ] T039 [US2] Replace the docstring on `delegate_integration_upgrade` in `spectra_cli/extension.py`: record that `--force` is now reachable, that it is reachable **only** from an authorized `OverwritePlan`, and that the protected property is unchanged — superseding the note it currently carries (contracts/cli-surface.md § 8)
-- [ ] T040 [US2] Add an `authorized_keys` parameter to `apply_updates()` in `spectra_cli/health.py` (default empty set) and document that the walk never resolves authorization itself
-- [ ] T041 [US2] Implement the per-integration inner loop for the `INTEGRATION` component in `apply_updates()` in `spectra_cli/health.py`: target the behind children, order non-default first and default last, delegate per key, record a child `UpdateResult` each, continue past failures, and re-raise `Interrupted` on 130 (depends on T038, T040)
-- [ ] T042 [US2] Implement the worst-of roll-up (`FAILED` > `UPDATED` > `SKIPPED`) for the component's own outcome in `spectra_cli/health.py`, and record skipped children with their specific reason (depends on T041)
-- [ ] T043 [US2] Extend `_confirm_updates()` in `spectra_cli/cli.py` so the `Core agents` line names the integrations that will be upgraded (FR-016)
-- [ ] T044 [US2] Extend `_outcome_row()` in `spectra_cli/cli.py` to emit child rows for the `Core agents` component, each re-reading that integration's manifest version so "success but unchanged" is decided per integration (FR-021, FR-022)
+- [ ] T040 [US2] Change `delegate_integration_upgrade(key=None, force=False)` in `spectra_cli/extension.py` to append the key then `--force` when given, keeping the bare invocation reachable for the fallback path, per contracts/core-agents.md § 8
+- [ ] T041 [US2] Replace the docstring on `delegate_integration_upgrade` in `spectra_cli/extension.py`: record that `--force` is now reachable, that it is reachable **only** from an authorized `OverwritePlan`, and that the protected property is unchanged — superseding the note it currently carries (contracts/cli-surface.md § 8)
+- [ ] T042 [US2] Add an `authorized_keys` parameter to `apply_updates()` in `spectra_cli/health.py` (default empty set) and document that the walk never resolves authorization itself
+- [ ] T043 [US2] Implement the per-integration inner loop for the `INTEGRATION` component in `apply_updates()` in `spectra_cli/health.py`: target the behind children, order non-default first and default last, delegate per key, record a child `UpdateResult` each, continue past failures, and re-raise `Interrupted` on 130 (depends on T040, T042)
+- [ ] T044 [US2] Implement the worst-of roll-up (`FAILED` > `UPDATED` > `SKIPPED`) for the component's own outcome in `spectra_cli/health.py`, and record skipped children with their specific reason (depends on T043)
+- [ ] T045 [US2] Extend `_confirm_updates()` in `spectra_cli/cli.py` so the `Core agents` line names the integrations that will be upgraded (FR-016)
+- [ ] T046 [US2] Extend `_outcome_row()` in `spectra_cli/cli.py` to emit child rows for the `Core agents` component, each re-reading that integration's manifest version so "success but unchanged" is decided per integration (FR-021, FR-022)
 
 **Checkpoint**: A multi-integration project can be brought fully current by one command, with no project
 configuration touched.
@@ -142,26 +144,27 @@ reported skipped, and the exit code is 0.
 
 ### Tests for User Story 3
 
-- [ ] T045 [P] [US3] Add a `ModificationReport` test class to `tests/test_health.py` asserting the `speckit` entry is routed to `shared` and never appears as an integration key (FR-002), that keys absent from the installed list are ignored, and that a clean project yields empty lists with `established=True`
-- [ ] T046 [P] [US3] Add tests to `tests/test_health.py` asserting `established=False` when `specify` is absent, when the call times out, when it exits non-zero, and when its output is unparseable — with both lists empty in every case (research R6)
-- [ ] T047 [P] [US3] Add a test to `tests/test_version_update.py` asserting `spectra version` never runs `integration status` — the probe belongs to the update path only (FR-012, research R1)
-- [ ] T048 [P] [US3] Add tests to `tests/test_version_update.py` asserting candidate reduction: an integration with modified files that is already current produces no disclosure and no prompt (FR-034), and shared-only modifications with every integration current produce neither
-- [ ] T049 [P] [US3] Add a test to `tests/test_version_update.py` asserting the disclosure lists every affected file, grouped per integration and with shared infrastructure as its own group, and that it is printed **before** any prompt (FR-025)
-- [ ] T050 [P] [US3] Add a test to `tests/test_version_update.py` asserting the prompt defaults to no: an empty answer authorizes nothing and overwrites nothing (FR-026)
-- [ ] T051 [P] [US3] Add a test to `tests/test_version_update.py` asserting a declined overwrite still upgrades the integrations that need none, reports the rest as `skipped (overwrite not authorized)`, and exits 0 (FR-030)
-- [ ] T052 [P] [US3] Add a test to `tests/test_version_update.py` asserting authorization is limited to candidates — an integration upgradeable without an overwrite is never delegated with `--force` (FR-029)
-- [ ] T053 [P] [US3] Add a test to `tests/test_version_update.py` asserting the closing message states the two real options and contains no advice to review a difference (FR-035, finding F9), and that a second run asks again (FR-033)
-- [ ] T054 [P] [US3] Add a guard test to `tests/test_version_update.py` asserting no code path emits `--force` in the delegated argv unless an authorization act was recorded in the same run — the in-suite form of SC-003
+- [ ] T047 [P] [US3] Add a `ModificationReport` test class to `tests/test_health.py` asserting the `speckit` entry is routed to `shared` and never appears as an integration key (FR-002), that keys absent from the installed list are ignored, that only `--json` invocations are captured so no human-formatted status output is ever parsed (FR-041), and that a clean project yields empty lists with `established=True` (FR-024)
+- [ ] T048 [P] [US3] Add tests to `tests/test_health.py` asserting `established=False` when `specify` is absent, when the call times out, when it exits non-zero, and when its output is unparseable — with both lists empty in every case (research R6)
+- [ ] T049 [P] [US3] Add a test to `tests/test_version_update.py` asserting `spectra version` never runs `integration status` — the probe belongs to the update path only (FR-012, research R1)
+- [ ] T050 [P] [US3] Add tests to `tests/test_version_update.py` asserting candidate reduction: an integration with modified files that is already current produces no disclosure and no prompt (FR-034), and shared-only modifications with every integration current produce neither
+- [ ] T051 [P] [US3] Add a test to `tests/test_version_update.py` asserting the disclosure lists every affected file, grouped per integration and with shared infrastructure as its own group, and that it is printed **before** any prompt (FR-025)
+- [ ] T052 [P] [US3] Add a test to `tests/test_version_update.py` seeding a divergence that covers every managed file in the project and asserting the disclosure lists all of them, in full and untruncated (spec Edge Cases, "very large divergence")
+- [ ] T053 [P] [US3] Add a test to `tests/test_version_update.py` asserting the prompt defaults to no: an empty answer authorizes nothing and overwrites nothing (FR-026)
+- [ ] T054 [P] [US3] Add a test to `tests/test_version_update.py` asserting a declined overwrite still upgrades the integrations that need none, reports the rest as `skipped (overwrite not authorized)`, and exits 0 (FR-030) — the updated-with-declared-skips half of SC-006
+- [ ] T055 [P] [US3] Add a test to `tests/test_version_update.py` asserting authorization is limited to candidates — an integration upgradeable without an overwrite is never delegated with `--force` (FR-029)
+- [ ] T056 [P] [US3] Add a test to `tests/test_version_update.py` asserting the closing message states the two real options and contains no advice to review a difference (FR-035, finding F9), and that a second run asks again (FR-033)
+- [ ] T057 [P] [US3] Add a guard test to `tests/test_version_update.py` asserting no code path emits `--force` in the delegated argv unless an authorization act was recorded in the same run — the in-suite form of SC-003
 
 ### Implementation for User Story 3
 
-- [ ] T055 [US3] Implement `modification_report(timeout=...)` in `spectra_cli/health.py` running `specify integration status --json`, routing `speckit` to `shared`, ignoring non-integration keys, and never raising — returning `established=False` on every failure path (contracts/core-agents.md § 5)
-- [ ] T056 [US3] Implement the `OverwritePlan` structure in `spectra_cli/cli.py` with `candidates`, `shared`, `authorized`, and `source`, per data-model.md § 4
-- [ ] T057 [US3] Implement candidate reduction in `spectra_cli/cli.py`: intersect the modification report with the integrations the walk is about to upgrade, so an integration that is not being upgraded can never trigger a prompt (FR-034) (depends on T055, T056)
-- [ ] T058 [US3] Implement the disclosure renderer in `spectra_cli/cli.py`: per-integration groups, the shared-infrastructure group, the full file list, and the closing sentence stating the two options — matching contracts/cli-surface.md § 5 (depends on T057)
-- [ ] T059 [US3] Implement authorization resolution in `spectra_cli/cli.py` per the contracts/cli-surface.md § 5 matrix, using `ui.confirm(..., default_yes=False)` for the interactive branch and refusing to authorize anything when `established` is `False` (depends on T058)
-- [ ] T060 [US3] Pass the resolved `authorized` set from `cmd_update()` into `health.apply_updates()` in `spectra_cli/cli.py`, and record unauthorized candidates as skipped with the remedy (depends on T040, T059)
-- [ ] T061 [US3] Add the closing remedy message to `cmd_update()` in `spectra_cli/cli.py` naming each integration left behind, its version, and both options (FR-030, FR-035)
+- [ ] T058 [US3] Implement `modification_report(timeout=...)` in `spectra_cli/health.py` running `specify integration status --json`, routing `speckit` to `shared`, ignoring non-integration keys, and never raising — returning `established=False` on every failure path (FR-024, contracts/core-agents.md § 5)
+- [ ] T059 [US3] Implement the `OverwritePlan` structure in `spectra_cli/cli.py` with `candidates`, `shared`, `authorized`, and `source`, per data-model.md § 4
+- [ ] T060 [US3] Implement candidate reduction in `spectra_cli/cli.py`: intersect the modification report with the integrations the walk is about to upgrade, so an integration that is not being upgraded can never trigger a prompt (FR-034) (depends on T058, T059)
+- [ ] T061 [US3] Implement the disclosure renderer in `spectra_cli/cli.py`: per-integration groups, the shared-infrastructure group, the full file list, and the closing sentence stating the two options — matching contracts/cli-surface.md § 5 (depends on T060)
+- [ ] T062 [US3] Implement authorization resolution in `spectra_cli/cli.py` per the contracts/cli-surface.md § 5 matrix, using `ui.confirm(..., default_yes=False)` for the interactive branch and refusing to authorize anything when `established` is `False` (depends on T061)
+- [ ] T063 [US3] Pass the resolved `authorized` set from `cmd_update()` into `health.apply_updates()` in `spectra_cli/cli.py`, and record unauthorized candidates as skipped with the remedy (depends on T042, T062)
+- [ ] T064 [US3] Add the closing remedy message to `cmd_update()` in `spectra_cli/cli.py` naming each integration left behind, its version, and both options (FR-030, FR-035)
 
 **Checkpoint**: A project with modified managed files can be updated on the user's terms, and cannot lose
 a file without an informed yes.
@@ -178,17 +181,17 @@ confirm no file was overwritten, `--force` is named, nothing hung, and the exit 
 
 ### Tests for User Story 4
 
-- [ ] T062 [P] [US4] Add a `NonInteractive` test class to `tests/test_version_update.py` asserting `--yes` with no TTY overwrites nothing, skips the affected integrations, and names `--force` in the output (FR-027, FR-031)
-- [ ] T063 [P] [US4] Add a test to `tests/test_version_update.py` asserting `--force` with no TTY proceeds **and** still prints the disclosure (FR-032)
-- [ ] T064 [P] [US4] Add a test to `tests/test_version_update.py` asserting no prompt is attempted when stdin is not a TTY — the run cannot block (FR-031)
-- [ ] T065 [P] [US4] Add a test to `tests/test_version_update.py` asserting `--force` with no candidates changes nothing and writes no additional files (spec US4 scenario 5)
-- [ ] T066 [P] [US4] Add tests to `tests/test_cli_surface.py` asserting `--force` is accepted by `spectra update`, rejected with `EXIT_USAGE` (2) at the top level and on other subcommands, and that its help line states the consequence (FR-028, contracts/cli-surface.md § 2)
+- [ ] T065 [P] [US4] Add a `NonInteractive` test class to `tests/test_version_update.py` asserting `--yes` with no TTY overwrites nothing, skips the affected integrations, and names `--force` in the output (FR-027, FR-031, SC-007)
+- [ ] T066 [P] [US4] Add a test to `tests/test_version_update.py` asserting `--force` with no TTY proceeds **and** still prints the disclosure (FR-032)
+- [ ] T067 [P] [US4] Add a test to `tests/test_version_update.py` asserting no prompt is attempted when stdin is not a TTY — the run cannot block (FR-031)
+- [ ] T068 [P] [US4] Add a test to `tests/test_version_update.py` asserting `--force` with no candidates changes nothing and writes no additional files (spec US4 scenario 5)
+- [ ] T069 [P] [US4] Add tests to `tests/test_cli_surface.py` asserting `--force` is accepted by `spectra update`, rejected with `EXIT_USAGE` (2) at the top level and on other subcommands, and that its help line states the consequence (FR-028, contracts/cli-surface.md § 2)
 
 ### Implementation for User Story 4
 
-- [ ] T067 [US4] Register `--force` on the `update` subparser only in `build_parser()` in `spectra_cli/cli.py`, deliberately not in `_add_shared`, per research R5
-- [ ] T068 [US4] Add the `--force` help line to the options panel copy in `spectra_cli/cli.py`, stating that it overwrites locally modified managed files rather than that it forces something (FR-028)
-- [ ] T069 [US4] Read the flag as `bool(getattr(args, "force", False))` in `cmd_update()` in `spectra_cli/cli.py`, since the attribute is absent from other subcommand namespaces (depends on T059, T067)
+- [ ] T070 [US4] Register `--force` on the `update` subparser only in `build_parser()` in `spectra_cli/cli.py`, deliberately not in `_add_shared`, per research R5
+- [ ] T071 [US4] Add the `--force` help line to the options panel copy in `spectra_cli/cli.py`, stating that it overwrites locally modified managed files rather than that it forces something (FR-028)
+- [ ] T072 [US4] Read the flag as `bool(getattr(args, "force", False))` in `cmd_update()` in `spectra_cli/cli.py`, since the attribute is absent from other subcommand namespaces (depends on T062, T070)
 
 **Checkpoint**: Unattended runs are non-destructive by default and destructive only on an explicit,
 named flag.
@@ -205,14 +208,14 @@ only, run `spectra version` and confirm the advisory names `claude`, the remedy,
 
 ### Tests for User Story 5
 
-- [ ] T070 [P] [US5] Add a `RegisteredAgents` test class to `tests/test_extension.py` covering `registered_agents`: a two-agent map, a one-agent map, a missing registry, unreadable JSON, no `spectra` entry, and an empty command map — the last four returning `None`
-- [ ] T071 [P] [US5] Add tests to `tests/test_version_update.py` asserting the advisory names the uncovered integration, the `specify integration use <key>` remedy, and the default-integration side effect (FR-037); is absent when coverage is complete or the registry is unreadable (FR-039); and never changes the exit code (FR-038)
-- [ ] T072 [P] [US5] Add a test to `tests/test_version_update.py` asserting the advisory is rendered outside the four rows and that a single-integration project never shows it (FR-038, FR-012)
+- [ ] T073 [P] [US5] Add a `RegisteredAgents` test class to `tests/test_extension.py` covering `registered_agents`: a two-agent map, a one-agent map, a missing registry, unreadable JSON, no `spectra` entry, and an empty command map — the last four returning `None` (FR-036)
+- [ ] T074 [P] [US5] Add tests to `tests/test_version_update.py` asserting the advisory names every uncovered integration, the `specify integration use <key>` remedy, and the default-integration side effect (FR-037, SC-008); is absent when coverage is complete, when the registry is unreadable (FR-039), and when no default integration is recorded; and never changes the exit code (FR-038)
+- [ ] T075 [P] [US5] Add a test to `tests/test_version_update.py` asserting the advisory is rendered outside the four rows and that a single-integration project never shows it (FR-038, FR-012)
 
 ### Implementation for User Story 5
 
-- [ ] T073 [US5] Implement `registered_agents(project_root)` in `spectra_cli/extension.py` reading `extensions.spectra.registered_commands` from `.specify/extensions/.registry` and returning its keys, or `None` for every unreadable or absent case (contracts/core-agents.md § 7)
-- [ ] T074 [US5] Implement the advisory renderer in `spectra_cli/cli.py`, called from `cmd_version()` after the table and any update hint, naming each uncovered integration and its remedy, suppressed entirely when `registered_agents` returns `None` (depends on T073)
+- [ ] T076 [US5] Implement `registered_agents(project_root)` in `spectra_cli/extension.py` reading `extensions.spectra.registered_commands` from `.specify/extensions/.registry` and returning its keys, or `None` for every unreadable or absent case (FR-036, contracts/core-agents.md § 7)
+- [ ] T077 [US5] Implement the advisory renderer in `spectra_cli/cli.py`, called from `cmd_version()` after the table and any update hint, naming each uncovered integration and its remedy, suppressed entirely when `registered_agents` returns `None` (depends on T076)
 
 **Checkpoint**: All five stories are independently functional.
 
@@ -220,15 +223,16 @@ only, run `spectra version` and confirm the advisory names `claude`, the remedy,
 
 ## Phase 8: Polish & Cross-Cutting Concerns
 
-- [ ] T075 Bump the root `VERSION` from `6.0.0` to `6.1.0` — minor, because `--force` is additive and nothing is removed (plan.md § Principle VI obligations)
-- [ ] T076 Record the supersession in `specs/007-unified-version-update/contracts/health-check.md`: annotate the "Neither passes `--force`" paragraph with a pointer to `specs/010-multi-integration-updates/contracts/cli-surface.md` § 8, keeping the original reasoning visible
-- [ ] T077 Update `README.md` § "Keeping everything up to date": the four-component table copy, the multi-integration behaviour of `Core agents`, and the new `--force` flag on `spectra update`
-- [ ] T078 [P] Verify `spectra/extension.yml` and `catalog.json` versions are **unchanged** and `python3 tools/generate_agent_docs.py --check` is green — no agent or roster data moved (plan.md, Principle V)
-- [ ] T079 [P] Confirm every new docstring records its decision rather than restating its code, matching the module's existing style: aggregation precedence in `health.py`, authorization gating in `extension.py`, disclosure grouping in `cli.py`
-- [ ] T080 Run the full suite on both CI interpreters (`python3.9` and `python3.12` if available locally, otherwise confirm via CI) and confirm no pre-existing test was modified to accommodate the change
-- [ ] T081 Execute every scenario in `specs/010-multi-integration-updates/quickstart.md`, including the byte-identical diff against the 6.0.0 release for a single-integration project (SC-005) and the read-only checks in `~/Projects/willow`
-- [ ] T082 Confirm the three explicit exclusions still hold: no fifth report row (FR-011), no new top-level command, and no persisted overwrite setting anywhere on disk (FR-033)
-- [ ] T083 Clean up the scratch directories the quickstart creates (`/tmp/spectra-multi`, `/tmp/spectra-solo`, `/tmp/spectra-legacy`, `/tmp/prev`) and confirm `git status` is clean apart from intended changes
+- [ ] T078 Bump the root `VERSION` from `6.0.0` to `6.1.0` — minor, because `--force` is additive and nothing is removed (plan.md § Principle VI obligations)
+- [ ] T079 Record the supersession in `specs/007-unified-version-update/contracts/health-check.md`: annotate the "Neither passes `--force`" paragraph with a pointer to `specs/010-multi-integration-updates/contracts/cli-surface.md` § 8, keeping the original reasoning visible
+- [ ] T080 Update `README.md` § "Keeping everything up to date": the four-component table copy, the multi-integration behaviour of `Core agents`, and the new `--force` flag on `spectra update`
+- [ ] T081 Update `docs/index.html` § "Keep the whole stack current" with the multi-integration behaviour of `Core agents` and a `Changed in 6.1.0` note naming `--force`, matching the existing `5.0.0` / `6.0.0` convention in that block
+- [ ] T082 [P] Verify `spectra/extension.yml` and `catalog.json` versions are **unchanged** and `python3 tools/generate_agent_docs.py --check` is green — no agent or roster data moved (plan.md, Principle V)
+- [ ] T083 [P] Confirm every new docstring records its decision rather than restating its code, matching the module's existing style: aggregation precedence in `health.py`, authorization gating in `extension.py`, disclosure grouping in `cli.py`
+- [ ] T084 Run the full suite on both CI interpreters (`python3.9` and `python3.12` if available locally, otherwise confirm via CI), confirm no pre-existing test was modified to accommodate the change, and assert the Specify CLI, Spectra CLI, and Spectra agents rows are byte-identical in a multi-integration project (FR-042)
+- [ ] T085 Execute every scenario in `specs/010-multi-integration-updates/quickstart.md`, including the byte-identical diff against the 6.0.0 release for a single-integration project (SC-005) and the read-only checks in `~/Projects/willow`. Scenario 4 is the evidence for SC-004 (four commands become one) and Scenario 5 on the F3 fixture is the evidence for SC-006, since `~/Projects/willow` itself must not be mutated
+- [ ] T086 Confirm the three explicit exclusions still hold: no fifth report row (FR-011), no new top-level command, and no persisted overwrite setting anywhere on disk (FR-033)
+- [ ] T087 Clean up the scratch directories the quickstart creates (`/tmp/spectra-multi`, `/tmp/spectra-solo`, `/tmp/spectra-legacy`, `/tmp/prev`) and confirm `git status` is clean apart from intended changes
 
 ---
 
@@ -245,8 +249,8 @@ only, run `spectra version` and confirm the advisory names `claude`, the remedy,
 - **US4 (Phase 6)**: Depends on US3 — it is the non-interactive resolution of the same authorization.
 - **US5 (Phase 7)**: Depends on US1 only. **Independent of US2–US4** and can be built or shipped at any
   point after the report exists.
-- **Polish (Phase 8)**: Depends on all shipped stories. T075–T077 can be done earlier if a release is cut
-  mid-way, but T081 needs everything.
+- **Polish (Phase 8)**: Depends on all shipped stories. T078–T080 can be done earlier if a release is cut
+  mid-way, but T085 needs everything.
 
 ### Story Dependency Graph
 
@@ -271,31 +275,32 @@ Phase 2 (fixtures + structures)
 - Tests are written first and MUST fail before the implementation tasks in that phase.
 - Readers before judges: `read_*` before `get_integration_states` before `aggregate_*`.
 - Detection before presentation: `health.py` before `cli.py` in every phase.
-- Authorization before delegation: no task may pass `force=True` before T059 exists.
+- Authorization before delegation: no task may pass `force=True` before T062 exists.
 
 ### Parallel Opportunities
 
 - T009–T011 are three separate structures in one file section — do them in one sitting, or in parallel by
   different people if the file is split by conflict-free hunks.
 - Every test task within a phase is `[P]`: they touch different test classes.
-- T013–T020 (eight US1 test classes) parallelize fully.
-- US5 (T070–T074) can run in parallel with all of US2–US4 once US1 lands.
-- T078 and T079 are independent of each other and of T080.
+- T013–T021 (nine US1 test classes) parallelize fully.
+- US5 (T073–T077) can run in parallel with all of US2–US4 once US1 lands.
+- T082 and T083 are independent of each other and of T084.
 
 ---
 
 ## Parallel Example: User Story 1 tests
 
 ```bash
-# Eight independent test classes, three files, no shared state:
+# Nine independent test classes, two files, no shared state:
 Task: "InstalledIntegrations in tests/test_health.py"          # T013
 Task: "PerIntegrationVersion in tests/test_health.py"          # T014
 Task: "PerIntegrationVerdict in tests/test_health.py"          # T015
 Task: "Aggregation in tests/test_health.py"                    # T016
 Task: "Derived row fields in tests/test_health.py"             # T017
 Task: "Fallback in tests/test_health.py"                       # T018
-Task: "Four rows + breakdown in tests/test_version_update.py"  # T019
-Task: "Single-integration regression in tests/test_version_update.py"  # T020
+Task: "RecordPrecedence in tests/test_health.py"                # T019
+Task: "Four rows + breakdown in tests/test_version_update.py"  # T020
+Task: "Single-integration regression in tests/test_version_update.py"  # T021
 ```
 
 ## Parallel Example: two developers after US1
@@ -305,7 +310,7 @@ Task: "Single-integration regression in tests/test_version_update.py"  # T020
 Phase 4 (US2)  ->  Phase 5 (US3)  ->  Phase 6 (US4)
 
 # Developer B — the advisory, fully independent:
-Phase 7 (US5)  ->  T077 README copy  ->  T078 catalog/roster verification
+Phase 7 (US5)  ->  T080 README copy  ->  T082 catalog/roster verification
 ```
 
 ---
@@ -339,9 +344,9 @@ single-integration project.
 ## Notes
 
 - **[P] tasks** = different files or different test classes, no dependencies.
-- **The riskiest task in the list is T059** (authorization resolution). It is the only place that can
-  cause irreversible loss, T054 is its guard test, and both should be reviewed together.
-- **Never edit an existing test to make a new behaviour pass.** T080 exists to catch exactly that; a
+- **The riskiest task in the list is T062** (authorization resolution). It is the only place that can
+  cause irreversible loss, T057 is its guard test, and both should be reviewed together.
+- **Never edit an existing test to make a new behaviour pass.** T084 exists to catch exactly that; a
   pre-existing test that fails is a signal the single-integration path changed, which FR-012 forbids.
 - **`--force` has one caller.** If a second appears, the SC-003 guarantee is gone.
 - Commit after each task or logical group; stop at any checkpoint to validate a story on its own.

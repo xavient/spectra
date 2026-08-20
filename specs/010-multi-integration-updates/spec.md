@@ -200,7 +200,7 @@ integration, the remedy, and the side effect, and that nothing was changed.
 **Reporting**
 
 - **FR-006**: "Core agents" MUST report "needs updating" when any installed integration is behind, and MUST report "up to date" only when every installed integration is current.
-- **FR-007**: The "Core agents" row MUST show the oldest installed version found among the installed integrations, alongside the target version.
+- **FR-007**: The "Core agents" row MUST show the oldest **readable** version among the installed integrations, alongside the target version. An integration whose version cannot be read contributes no version to that comparison; it is reported through FR-005 instead.
 - **FR-008**: The "Core agents" row MUST name the integrations that are behind.
 - **FR-009**: "Core agents" MUST report "ahead" only when every installed integration is ahead of the installed tool version.
 - **FR-010**: "Core agents" MUST report unknown when no installed integration's state can be established, and MUST NOT report up to date in that case.
@@ -239,8 +239,8 @@ integration, the remedy, and the side effect, and that nothing was changed.
 **Coverage advisory**
 
 - **FR-036**: System SHOULD detect installed integrations that have no Spectra commands registered for them.
-- **FR-037**: The advisory MUST name the uncovered integration, give the exact remedy command, and state that the remedy changes the project's default integration.
-- **FR-038**: The advisory MUST be rendered outside the four component rows, MUST NOT appear when coverage is complete, and MUST NOT affect the exit code.
+- **FR-037**: When an advisory is shown, it MUST name the uncovered integration, give the exact remedy command, and state that the remedy changes the project's default integration.
+- **FR-038**: When an advisory is shown, it MUST be rendered outside the four component rows and MUST NOT affect the exit code. No advisory MUST be shown when every installed integration is covered.
 - **FR-039**: When the registration state cannot be read, no advisory MUST be shown and coverage MUST NOT be guessed.
 
 **Boundaries**
