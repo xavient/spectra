@@ -17,6 +17,7 @@ the established approach in this repository, not a shortcut.
 
 from __future__ import annotations
 
+import json
 import re
 import shutil
 import subprocess
@@ -102,6 +103,41 @@ def compare(installed: str, published: str) -> str:
     return UP_TO_DATE
 
 
+def registered_agents(project_root):
+    """The agents Spectra's commands are registered for, or None when that cannot be established.
+
+    Read from `extensions.spectra.registered_commands` in `.specify/extensions/.registry` — a map keyed by
+    agent, which Spec Kit maintains. Recorded state, not an inference about the dependency's policy, so
+    the answer holds regardless of *why* an agent is missing from it.
+
+    **None means "say nothing".** A missing registry, unreadable JSON, no `spectra` entry, or an entry with
+    no command map are all states in which coverage is unknown — and an unknown must not be reported as
+    "no agents covered", which would tell a healthy project it had a problem. This repository is itself an
+    example: it is the extension's source rather than a consumer of it, so it has no `spectra` entry and
+    must stay silent.
+    """
+    if project_root is None:
+        return None
+    path = Path(project_root) / ".specify" / "extensions" / ".registry"
+    try:
+        with open(path, encoding="utf-8") as handle:
+            data = json.load(handle)
+    except (OSError, ValueError):
+        return None
+    if not isinstance(data, dict):
+        return None
+    extensions = data.get("extensions")
+    if not isinstance(extensions, dict):
+        return None
+    entry = extensions.get(EXTENSION_ID)
+    if not isinstance(entry, dict):
+        return None
+    commands = entry.get("registered_commands")
+    if not isinstance(commands, dict) or not commands:
+        return None
+    return {agent for agent in commands if isinstance(agent, str) and agent}
+
+
 # --------------------------------------------------------------------------- #
 # Delegating to Spec Kit
 # --------------------------------------------------------------------------- #
@@ -154,19 +190,35 @@ def delegate_self_upgrade() -> int:
     return _delegate(["specify", "self", "upgrade"])
 
 
-def delegate_integration_upgrade() -> int:
-    """`specify integration upgrade`. Returns its exit code.
+def delegate_integration_upgrade(key: str | None = None, force: bool = False) -> int:
+    """`specify integration upgrade [key] [--force]`. Returns its exit code.
 
-    Invoked bare: the optional trailing key defaults to the project's current integration, which is
-    exactly what we want to upgrade.
+    **`key` names the integration to upgrade, and that is the whole mechanism.** Invoked bare, the
+    upgrade resolves to the project's *default* integration and silently leaves every other installed one
+    stale — which is the bug this feature exists to fix. Naming the key upgrades a non-default integration
+    without re-pointing the project, so Spectra never has to change which agent a project targets.
 
-    **`--force` is deliberately not passed.** Spec Kit blocks this upgrade when it detects locally
-    modified managed files, and overriding that on the user's behalf would silently discard their edits.
-    That gate belongs to Spec Kit, and a user who means to override it can say so directly — the same
-    reasoning that keeps the removal confirmation in `delegate_remove` on Spec Kit's side rather than
-    duplicated here.
+    **`--force` is reachable, and gated.** An earlier contract
+    (`specs/007-unified-version-update/contracts/health-check.md`) recorded that it was deliberately never
+    passed: Spec Kit blocks this upgrade when it detects locally modified managed files, and *silently*
+    overriding that would discard the user's edits. That reasoning is unchanged and still binding — what
+    changed is that the blanket refusal also produced a dead end, a project that could not be updated at
+    all with no explanation of why.
+
+    So the override is now reachable through exactly one path: `cmd_update` discloses the precise files
+    that would be overwritten — per integration, and shared Spec Kit infrastructure separately, because
+    the overwrite is not scoped to the files that caused the block — and obtains an authorization act in
+    the same run, either an interactive answer defaulting to *no* or an explicit `--force`. **No other
+    caller may pass `force=True`**; if a second one appears, the guarantee that nothing is overwritten
+    without an informed yes is gone. See
+    `specs/010-multi-integration-updates/contracts/cli-surface.md` § 8.
     """
-    return _delegate(["specify", "integration", "upgrade"])
+    argv = ["specify", "integration", "upgrade"]
+    if key:
+        argv.append(key)
+    if force:
+        argv.append("--force")
+    return _delegate(argv)
 
 
 def delegate_remove(force: bool = False) -> int:

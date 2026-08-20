@@ -314,5 +314,39 @@ class ExitCodes(unittest.TestCase):
         self.assertEqual(code, 130)
 
 
+class ForceFlag(unittest.TestCase):
+    """`--force` belongs to `update` alone, and its help states the consequence (FR-028)."""
+
+    def test_update_accepts_it(self):
+        parser = cli.build_parser()
+        self.assertTrue(parser.parse_args(["update", "--force"]).force)
+
+    def test_update_without_it_leaves_the_attribute_absent(self):
+        parser = cli.build_parser()
+        self.assertFalse(getattr(parser.parse_args(["update"]), "force", False))
+
+    def test_it_is_not_accepted_at_the_top_level(self):
+        code, _ = run(["--force", "update"])
+        self.assertEqual(code, cli.EXIT_USAGE)
+
+    def test_it_is_not_accepted_on_other_commands(self):
+        for command in ("uninstall", "check", "install", "version"):
+            code, _ = run([command, "--force"])
+            self.assertEqual(code, cli.EXIT_USAGE, command)
+
+    def test_the_help_states_the_consequence_not_the_mechanism(self):
+        entry = [row for row in cli.OPTIONS if row[0] == "--force"]
+        self.assertEqual(len(entry), 1)
+        description = entry[0][2].lower()
+        self.assertIn("overwrite", description)
+        self.assertIn("modified", description)
+
+    def test_it_appears_in_the_help_panel(self):
+        buffer = io.StringIO()
+        with contextlib.redirect_stdout(buffer):
+            cli.print_help()
+        self.assertIn("--force", buffer.getvalue())
+
+
 if __name__ == "__main__":
     unittest.main()

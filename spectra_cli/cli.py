@@ -39,6 +39,7 @@ from spectra_cli import extension, health, install, net, project, roster, ui, ve
 # evident to a first-time reader instead of something they have to infer from the verbs.
 OPTIONS = [
     ("--yes", "-y", "Answer yes to prompts (installing, uninstalling)."),
+    ("--force", "", "Overwrite managed files that have been modified locally (spectra update)."),
     ("--no-update-check", "", "Skip the check for a newer spectra command."),
     ("--help", "-h", "Show this message and exit."),
 ]
@@ -135,7 +136,16 @@ def build_parser() -> argparse.ArgumentParser:
 
     subcommands = ap.add_subparsers(dest="command", metavar="COMMAND")
     for name, _ in PROJECT_COMMANDS:
-        _add_shared(subcommands.add_parser(name, add_help=False), suppress=True)
+        parser = subcommands.add_parser(name, add_help=False)
+        _add_shared(parser, suppress=True)
+        if name == "update":
+            # Registered here rather than in `_add_shared` on purpose. `--force` authorizes overwriting a
+            # team's modified files, and it is meaningful for exactly one command; putting it in the
+            # shared set would make `spectra uninstall --force` parse, where "force" already means
+            # something far weaker (skip a confirmation). One word, two weights, is how a destructive
+            # flag gets typed by accident.
+            parser.add_argument("--force", dest="force", action="store_true",
+                                default=argparse.SUPPRESS)
 
     # The tool's own management lives one level down, so no top-level verb can be mistaken for it.
     group = subcommands.add_parser("cli", add_help=False)
@@ -430,12 +440,51 @@ def _detail_phrase(component) -> str:
     return detail[:-1] if detail.endswith(".") else detail
 
 
+def _behind_names(component) -> str:
+    """`" — kiro-cli, claude"` when a plural row is behind, else `""`.
+
+    The row has to name the integrations that are behind (FR-008), and it cannot delegate that to the
+    breakdown: when every integration is behind at the *same* version the children are uniform and the
+    breakdown is correctly suppressed — which is exactly the state a drifted project is usually in. Names
+    on the row are therefore the only place that information is guaranteed to appear.
+
+    Empty for the three singular components and for the single-record fallback, whose one child has no
+    key to name.
+    """
+    names = [part.key for part in component.parts
+             if part.key and part.status == health.NEEDS_UPDATING]
+    return f" — {', '.join(names)}" if names else ""
+
+
+def _integration_child_rows(component):
+    """One `(label, glyph, phrase)` per integration beneath the `Core agents` row.
+
+    Reuses `_status_row`'s phrasing by construction — a child is rendered by the same function as its
+    parent, with the integration's key as the label — so the wording of a child and a row cannot drift
+    apart as one of them is reworded.
+
+    Returns `()` unless the breakdown has earned its place: more than one integration **and** children
+    that are not uniform in version and status (FR-013). A single-integration project therefore renders
+    exactly what it rendered before this feature existed, and a two-integration project that is uniformly
+    current says so in one line instead of three.
+    """
+    parts = component.parts
+    if len(parts) < 2:
+        return ()
+    uniform = len({(part.status, part.installed) for part in parts}) == 1
+    if uniform:
+        return ()
+    return tuple(_status_row(part) for part in parts)
+
+
 def _status_row(component):
     """One `(label, glyph, phrase)` row describing a component's health."""
+    behind_names = _behind_names(component) if isinstance(component, health.ComponentStatus) else ""
     if component.status == health.UP_TO_DATE:
         return (component.label, ui.GLYPH_OK, f"up to date ({ui.bold(component.installed)})")
     if component.status == health.NEEDS_UPDATING:
-        return (component.label, ui.GLYPH_WARN, f"needs updating ({_transition(component)})")
+        return (component.label, ui.GLYPH_WARN,
+                f"needs updating ({_transition(component)}){behind_names}")
     if component.status == health.AHEAD:
         return (component.label, ui.GLYPH_OK,
                 f"ahead of published ({_transition(component)})")
@@ -449,7 +498,7 @@ def _status_row(component):
 
 def _show_health(report) -> None:
     ui.plain()
-    ui.health_table([_status_row(c) for c in report.components])
+    ui.health_table([_status_row(c) + (_integration_child_rows(c),) for c in report.components])
     ui.plain()
 
 
@@ -460,6 +509,40 @@ def _skip_network(args) -> bool:
 # --------------------------------------------------------------------------- #
 # version (the whole stack)
 # --------------------------------------------------------------------------- #
+def _show_coverage_advisory(state, report) -> None:
+    """Name any installed integration that has no Spectra commands, and the remedy — without running it.
+
+    Spec Kit registers an extension's commands for the **active** integration only, and defers the others
+    until one is activated. So in a project with two integrations, a developer on the non-default one has
+    no Spectra commands and nothing explains why. This says why, in the one place they are already looking.
+
+    Three deliberate restraints: it sits **below** the four rows rather than becoming a fifth; it never
+    touches the exit code, because coverage is not a currency verdict; and it stops at naming
+    `specify integration use` instead of running it, because that command changes which agent the whole
+    project targets — a decision that belongs to the team, not to a maintenance command.
+
+    Silent whenever coverage cannot be established (`registered_agents` returning None), and whenever
+    every installed integration is already covered.
+    """
+    core = report.get(health.INTEGRATION)
+    if core is None or len(core.parts) < 2:
+        return
+    covered = extension.registered_agents(state.project_root)
+    if covered is None:
+        return
+    missing = [part.key for part in core.parts if part.key and part.key not in covered]
+    if not missing:
+        return
+
+    have = ", ".join(sorted(covered)) or "no agent"
+    ui.warn(f"Spectra commands are registered for {have} only.")
+    for key in missing:
+        ui.plain(ui.dim(f"  {key} is installed here but has no Spectra commands."))
+    ui.plain(ui.dim(f"  To scaffold them: specify integration use {missing[0]}"))
+    ui.plain(ui.dim("  (this changes the project's default integration for everyone.)"))
+    ui.plain()
+
+
 def cmd_version(args) -> int:
     """Report the status of all four components of the Spectra stack.
 
@@ -494,6 +577,7 @@ def cmd_version(args) -> int:
     else:
         ui.ok("Your whole Spectra stack is up to date.")
         ui.plain()
+    _show_coverage_advisory(state, report)
     return EXIT_OK
 
 
@@ -524,15 +608,39 @@ def _outcome_row(result, before=None, after=None):
     return (result.label, ui.GLYPH_NONE, f"skipped ({result.detail})")
 
 
+def _outcome_child_rows(result, before=None, after=None):
+    """One row per attempted integration beneath the `Core agents` outcome row.
+
+    Each child is verified against **its own** manifest rather than the component's aggregate, so one
+    integration moving cannot vouch for a sibling that stalled (FR-022). Rendered whenever the component
+    has children, unlike the status breakdown: after a run the user is asking "what happened to each
+    one?", and collapsing that to a single line would hide a skip they need to act on.
+    """
+    if not result.parts:
+        return ()
+    was = {state.key: state.installed for state in (before.parts if before else ())}
+    now = {state.key: state.installed for state in (after.parts if after else ())}
+    rows = []
+    for child in result.parts:
+        rows.append(_outcome_row(
+            child,
+            before=health.IntegrationState(child.key, health.UNKNOWN,
+                                           installed=was.get(child.key)),
+            after=health.IntegrationState(child.key, health.UNKNOWN,
+                                          installed=now.get(child.key))))
+    return tuple(rows)
+
+
 def _confirm_updates(args, outdated) -> bool:
     """List what will change and get one confirmation covering all of it.
 
     Only components established as behind are listed — an unknown one is not going to be touched, so
-    naming it here would invite the user to approve something that will not happen.
+    naming it here would invite the user to approve something that will not happen. A plural component
+    also names its behind integrations, because those are what will actually be acted on.
     """
     ui.plain("The following components need updating:")
     for component in outdated:
-        ui.plain(f"  • {component.label}: {_transition(component)}")
+        ui.plain(f"  • {component.label}: {_transition(component)}{_behind_names(component)}")
     ui.plain()
 
     if args.yes:
@@ -541,6 +649,211 @@ def _confirm_updates(args, outdated) -> bool:
         ui.plain("  Re-run with " + ui.bold("--yes") + " to update without being asked.")
         return False
     return ui.confirm("Proceed?")
+
+
+class OverwritePlan:
+    """The overwrite decision for one run: what is at risk, and what the user authorized.
+
+    Exists so "no file is overwritten without an authorization act in the same run" is *inspectable*
+    rather than implicit. `candidates` holds only integrations the walk is **about to upgrade** that have
+    modified files — an integration nobody is touching can never appear here, so it can never be part of
+    what a prompt covers. `authorized` starts empty and is filled by exactly one of the paths in
+    :func:`_resolve_overwrite`; nothing about it is written to disk, so a later run asks again.
+    """
+
+    __slots__ = ("candidates", "shared", "authorized", "source")
+
+    def __init__(self, candidates=None, shared=None):
+        self.candidates = dict(candidates or {})
+        self.shared = list(shared or [])
+        self.authorized = set()
+        self.source = "none"
+
+    @property
+    def needed(self) -> bool:
+        return bool(self.candidates)
+
+
+def _overwrite_plan(report, modifications) -> OverwritePlan:
+    """Reduce a modification report to the integrations this run is about to upgrade (FR-034).
+
+    An unestablished report yields an empty plan: with nothing known about what would be overwritten,
+    there is nothing to disclose and nothing that may be authorized (research R6). The walk then runs
+    unforced and Spec Kit refuses exactly the integrations it must, in its own words.
+    """
+    core = report.get(health.INTEGRATION)
+    if core is None or not modifications.established:
+        return OverwritePlan()
+    behind = [state.key for state in core.parts
+              if state.status == health.NEEDS_UPDATING and state.key]
+    candidates = {key: modifications.files_for(key) for key in behind
+                  if modifications.files_for(key)}
+    return OverwritePlan(candidates, modifications.shared if candidates else [])
+
+
+def _disclose_overwrite(plan) -> None:
+    """List every file the overwrite would replace, grouped, before anything is asked.
+
+    Shared Spec Kit infrastructure is its own group even though it is never what blocked the upgrade: the
+    dependency's overwrite is not scoped to the files that caused the block, so authorizing it for one
+    integration also replaces customized templates and scripts. A disclosure that hid that would be a lie
+    in the one place a lie is most expensive.
+
+    Every affected file is listed rather than summarised. The counts observed in real projects are in the
+    tens, and "and 18 more" is not something a user can consent to.
+    """
+    ui.plain()
+    ui.warn("Modified files detected. Upgrading will overwrite them with the bundled versions.")
+    ui.plain()
+    for key, files in plan.candidates.items():
+        ui.plain(f"  {ui.bold(key)} — {len(files)} managed file(s)")
+        for path in files:
+            ui.plain(ui.dim(f"    {path}"))
+        ui.plain()
+    if plan.shared:
+        ui.plain(f"  {ui.bold('Shared Spec Kit infrastructure')} — {len(plan.shared)} file(s)")
+        for path in plan.shared:
+            ui.plain(ui.dim(f"    {path}"))
+        ui.plain()
+    ui.plain(ui.dim("  There is no way to show what changed in these files, so the choice is to "
+                    "overwrite"))
+    ui.plain(ui.dim("  them or leave these integrations as they are."))
+    ui.plain()
+
+
+def _resolve_overwrite(args, plan) -> OverwritePlan:
+    """Obtain — or decline to obtain — authorization to overwrite the disclosed files.
+
+    Four paths, and only two of them authorize anything:
+
+    * `--force` -> authorized, and the disclosure is still printed for the record.
+    * a terminal, answered yes -> authorized.
+    * a terminal, answered no -> nothing.
+    * no terminal and no `--force` -> nothing, and the flag is named. Never blocks on input.
+
+    `--yes` deliberately does **not** appear in that list. It approves the update plan the user was just
+    shown; discarding their edits is a different act and needs its own.
+    """
+    if not plan.needed:
+        return plan
+    _disclose_overwrite(plan)
+
+    if bool(getattr(args, "force", False)):
+        plan.authorized = set(plan.candidates)
+        plan.source = "flag"
+        ui.info("Overwriting as requested by " + ui.bold("--force") + ".")
+        ui.plain()
+        return plan
+
+    if not sys.stdin.isatty():
+        ui.plain("  Nothing was overwritten. Re-run with " + ui.bold("--force")
+                 + " to overwrite these files.")
+        ui.plain()
+        return plan
+
+    if ui.confirm("Overwrite these files?", default_yes=False):
+        plan.authorized = set(plan.candidates)
+        plan.source = "prompt"
+    ui.plain()
+    return plan
+
+
+def _report_unauthorized(plan, report) -> None:
+    """Name each integration left behind, its version, and both of the options that remain.
+
+    Printed on every exit path, not only the happy one: an integration left at an old version is the most
+    consequential thing a run can leave behind, and burying it under a failure summary is how it gets
+    missed. The version comes from the *post-run* report so it states where the integration actually is
+    now, not where it was when the plan was drawn up.
+    """
+    left = [key for key in plan.candidates if key not in plan.authorized]
+    if not left:
+        return
+    core = report.get(health.INTEGRATION)
+    versions = {state.key: state.installed for state in (core.parts if core else ())}
+    for key in left:
+        at = versions.get(key)
+        where = f" was left at {ui.bold(at)}" if at else " was left as it was"
+        ui.warn(f"{ui.bold(key)}{where}.")
+    ui.plain(ui.dim("  To upgrade it, re-run with --force to overwrite the modified files, or restore "
+                    "them"))
+    ui.plain(ui.dim("  and run spectra update again."))
+    ui.plain()
+
+
+def _mark_modified(report, plan) -> None:
+    """Record on each integration which of its files are modified, so the walk can skip the blocked ones.
+
+    The walk needs to know two things it cannot ask for itself: which integrations have modified files, and
+    which of those the user authorized. The first is written here; the second is passed in separately. That
+    keeps `health.apply_updates` free of prompting, a TTY, and the flag.
+    """
+    core = report.get(health.INTEGRATION)
+    if core is None:
+        return
+    for state in core.parts:
+        if state.key in plan.candidates:
+            state.modified = list(plan.candidates[state.key])
+
+
+def _reported_success_without_moving(result, report, after) -> bool:
+    """Whether `result` claims an update that the re-read version does not support.
+
+    **A plural component is judged on its children, never on its own version.** The row's version is the
+    *oldest* of its integrations, so it cannot move while any of them is still behind — including one the
+    user deliberately declined to overwrite. Judging the aggregate would turn a correct partial success
+    into a reported failure, which is the opposite of what this check is for.
+    """
+    if result.outcome != health.UPDATED:
+        return False
+    before, now = report.get(result.key), after.get(result.key)
+    if result.parts:
+        return _stalled_children(result, before, now)
+    if before is None or now is None:
+        return False
+    return bool(before.installed and now.installed and before.installed == now.installed)
+
+
+def _stalled_children(result, before, after) -> bool:
+    """Whether any child reported success while its own recorded version stayed put.
+
+    Checked per integration rather than on the component, because the component's version is the *oldest*
+    of its children — so one integration moving forward can change the aggregate while another silently
+    stalls. That is precisely how a stale sibling would become invisible again.
+    """
+    was = {state.key: state.installed for state in (before.parts if before else ())}
+    now = {state.key: state.installed for state in (after.parts if after else ())}
+    for child in result.parts:
+        if child.outcome != health.UPDATED:
+            continue
+        old, new = was.get(child.key), now.get(child.key)
+        if old and new and old == new:
+            return True
+    return False
+
+
+def _say_what_happened(results, plan) -> None:
+    """Close a successful run with a sentence that is true of *this* run.
+
+    "Everything that needed updating was updated" is the right line only when nothing was left behind. A
+    declined overwrite exits 0 — correctly, because a skip is neither success nor failure — but claiming a
+    complete update in that state would be the same overstatement this feature exists to remove from the
+    report.
+    """
+    updated = [r for r in results if r.outcome == health.UPDATED]
+    updated += [child for r in results for child in r.parts if child.outcome == health.UPDATED]
+    left_behind = [key for key in plan.candidates if key not in plan.authorized]
+
+    if left_behind and not updated:
+        ui.warn("Nothing was updated.")
+        ui.plain()
+        return
+    if left_behind:
+        ui.ok("Everything else was updated.")
+    else:
+        ui.ok("Everything that needed updating was updated.")
+    ui.plain(ui.dim("  Restart your AI agent so it picks up any new commands."))
+    ui.plain()
 
 
 def cmd_update(args) -> int:
@@ -580,12 +893,20 @@ def cmd_update(args) -> int:
         ui.info("Nothing was changed.")
         return EXIT_DECLINED
 
+    # Between the approved plan and the first write: find out what would be destroyed, show it, and ask
+    # once. This ordering is the only one that can disclose real files while the run is still free to stop
+    # at no cost — after the walk starts, some integrations may already have been upgraded.
+    plan = _resolve_overwrite(args, _overwrite_plan(report, health.modification_report(
+        state.project_root)))
+    _mark_modified(report, plan)
+
     def announce(component):
         ui.plain()
         ui.info(f"Updating {component.label} …")
 
     try:
-        results = health.apply_updates(report, announce=announce, assume_yes=bool(args.yes))
+        results = health.apply_updates(report, announce=announce, assume_yes=bool(args.yes),
+                                       authorized_keys=plan.authorized)
     except health.Interrupted:
         ui.plain()
         ui.fail("Interrupted; the remaining components were left alone.")
@@ -599,21 +920,20 @@ def cmd_update(args) -> int:
     after = health.check_all(project.classify(), skip_network=_skip_network(args))
     ui.health_table([
         _outcome_row(result, before=report.get(result.key), after=after.get(result.key))
+        + (_outcome_child_rows(result, before=report.get(result.key),
+                               after=after.get(result.key)),)
         for result in results
     ])
     ui.plain()
 
     failed = [r for r in results if r.failed]
-    stalled = [r for r in results
-               if r.outcome == health.UPDATED
-               and (b := report.get(r.key)) is not None
-               and (a := after.get(r.key)) is not None
-               and b.installed and a.installed and b.installed == a.installed]
+    stalled = [r for r in results if _reported_success_without_moving(r, report, after)]
 
     if failed:
         ui.fail(f"{len(failed)} of {len(report.outdated)} updates failed.")
         ui.plain(ui.dim("  The components that succeeded were still updated."))
         ui.plain()
+        _report_unauthorized(plan, after)
         return EXIT_DELEGATION
 
     if stalled:
@@ -623,11 +943,11 @@ def cmd_update(args) -> int:
                         "means it"))
         ui.plain(ui.dim("  disagrees with us about what is installed — check the component by hand."))
         ui.plain()
+        _report_unauthorized(plan, after)
         return EXIT_DELEGATION
 
-    ui.ok("Everything that needed updating was updated.")
-    ui.plain(ui.dim("  Restart your AI agent so it picks up any new commands."))
-    ui.plain()
+    _report_unauthorized(plan, after)
+    _say_what_happened(results, plan)
     return EXIT_OK
 
 

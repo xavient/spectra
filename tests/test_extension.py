@@ -89,6 +89,45 @@ class Compare(unittest.TestCase):
         self.assertEqual(len({extension.UP_TO_DATE, extension.OUT_OF_DATE, extension.AHEAD}), 3)
 
 
+class RegisteredAgents(unittest.TestCase):
+    """Which agents carry Spectra's commands — and every way that can be unknowable."""
+
+    def _read(self, registered):
+        with h.temp_project("1.3.1", integration_version="0.16.5",
+                                  integrations={"claude": "0.16.5"},
+                                  registered_agents=registered) as path:
+            return extension.registered_agents(path)
+
+    def test_a_two_agent_map_is_returned_as_a_set(self):
+        self.assertEqual(self._read(["kiro-cli", "claude"]), {"kiro-cli", "claude"})
+
+    def test_a_one_agent_map_is_returned(self):
+        self.assertEqual(self._read(["kiro-cli"]), {"kiro-cli"})
+
+    def test_a_missing_registry_is_unknown(self):
+        with h.temp_project("1.3.1", integration_version="0.16.5",
+                                  integrations={"claude": "0.16.5"}) as path:
+            self.assertIsNone(extension.registered_agents(path))
+
+    def test_unreadable_json_is_unknown(self):
+        self.assertIsNone(self._read(h.BAD_JSON))
+
+    def test_an_empty_command_map_is_unknown_not_uncovered(self):
+        self.assertIsNone(self._read([]))
+
+    def test_no_spectra_entry_is_unknown(self):
+        with h.temp_project("1.3.1", integration_version="0.16.5",
+                                  integrations={"claude": "0.16.5"},
+                                  registered_agents=["claude"]) as path:
+            registry = path / ".specify" / "extensions" / ".registry"
+            registry.write_text('{"schema_version": "1.0", "extensions": {"git": {}}}',
+                                encoding="utf-8")
+            self.assertIsNone(extension.registered_agents(path))
+
+    def test_no_project_root_is_unknown(self):
+        self.assertIsNone(extension.registered_agents(None))
+
+
 class Delegation(unittest.TestCase):
     def test_update_calls_spec_kit_with_the_extension_id(self):
         with mock.patch.object(extension, "specify_available", return_value=True), \
