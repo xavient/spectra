@@ -22,6 +22,7 @@ import copy
 import http.server
 import json
 import os
+import sys
 import tempfile
 import threading
 from pathlib import Path
@@ -146,6 +147,7 @@ def temp_project(installed_version: str | None = "1.3.1", *, is_project: bool = 
 # real version string can never be mistaken for a directive.
 BAD_JSON = object()     # write something that is not JSON
 NO_VERSION = object()   # write valid JSON with no `version` key
+NO_DEFAULT = object()   # write valid JSON that records no default integration
 
 # Sentinel for `temp_project(integrations={...})`: record the key as installed but write no manifest for
 # it. That is "recorded but unverifiable" — a state the enumeration must report as unknown rather than
@@ -165,15 +167,20 @@ def integration_json(version: str = "0.16.4", *, integrations=None, default_inte
     field that can disagree with a stale per-integration manifest.
     """
     keys = list(integrations) if integrations else ["claude"]
-    default = default_integration or keys[0]
-    return json.dumps({
+    payload = {
         "version": version,
         "integration_state_schema": 1,
         "installed_integrations": keys,
         "integration_settings": {k: {"script": "sh", "invoke_separator": "-"} for k in keys},
-        "integration": default,
-        "default_integration": default,
-    }, indent=2) + "\n"
+    }
+    # NO_DEFAULT writes a file that records installed integrations but names no default — a real state
+    # (Spec Kit can leave it after a partial migration) in which nothing may be activated, because there
+    # would be nothing to restore.
+    if default_integration is not NO_DEFAULT:
+        default = default_integration or keys[0]
+        payload["integration"] = default
+        payload["default_integration"] = default
+    return json.dumps(payload, indent=2) + "\n"
 
 
 def write_integration(project_root, version, *, integrations=None, default_integration=None) -> None:
@@ -323,7 +330,8 @@ def integration_status_json(installed=("claude",), *, default=None, modified=Non
 @contextlib.contextmanager
 def fake_specify(output: str = SELF_CHECK_UP_TO_DATE, *, exit_code: int = 0,
                  installed=("claude",), default=None, modified=None,
-                 status_output=None, status_exit_code=0):
+                 status_output=None, status_exit_code=0,
+                 argv_log=None, use_effect=None, use_fails=()):
     """Put a stub `specify` on PATH that answers each subcommand it is actually asked.
 
     Exercises the real subprocess path rather than only `parse_self_check`, so a mistake in how the
@@ -337,26 +345,80 @@ def fake_specify(output: str = SELF_CHECK_UP_TO_DATE, *, exit_code: int = 0,
 
     * ``self check``               -> `output` (one of the SELF_CHECK_* branches)
     * ``integration status --json``-> a JSON payload built from `installed` / `default` / `modified`
+    * ``integration use <key>``    -> applies `use_effect`, fails for keys in `use_fails`
     * anything else                -> exit 0 silently, which is what a delegated upgrade looks like
 
     `modified` maps an integration key (or ``"speckit"`` for shared infrastructure) to the managed files
     that diverge, which is what makes the disclosure and consent paths testable end to end.
     `status_output` replaces the JSON wholesale — pass unparseable text to exercise degradation — and
     `status_exit_code` makes the status call fail outright.
+
+    Three parameters exist for the coverage rotation, and each closes a hole the older stub left:
+
+    ``argv_log``
+        A path. Every invocation appends its arguments as one line, so a test can assert the exact
+        rotation order — and the presence of the restoring call — without parsing human-facing output.
+        Read it with :func:`read_argv_log`.
+    ``use_effect``
+        A project root. When given, ``integration use <key>`` *acts*: it adds `<key>` to
+        `.specify/extensions/.registry` and writes `<key>` as `default_integration` in
+        `.specify/integration.json`, the way the real command does. Without this the stub exits 0 while
+        nothing changes, so post-rotation verification would pass vacuously and a broken restore would be
+        invisible.
+    ``use_fails``
+        Integration keys whose activation exits non-zero. This is how the failed-activation and
+        failed-restore paths are reached — including leaving the default pointing at the wrong agent.
     """
     payload = (status_output if status_output is not None
                else integration_status_json(installed, default=default, modified=modified))
+    fail_keys = " ".join(f'"{key}"' for key in use_fails)
     with tempfile.TemporaryDirectory() as tmp:
         script = Path(tmp) / "specify"
+        helper = Path(tmp) / "use_effect.py"
+        # A tiny Python helper rather than shell JSON surgery: the registry and integration.json are
+        # JSON, and sed-ing them would be the kind of fixture that passes while the product is wrong.
+        helper.write_text(
+            "import json, sys, pathlib\n"
+            "root, key = pathlib.Path(sys.argv[1]), sys.argv[2]\n"
+            "reg = root / '.specify' / 'extensions' / '.registry'\n"
+            "try:\n"
+            "    data = json.loads(reg.read_text())\n"
+            "except (OSError, ValueError):\n"
+            "    data = None\n"
+            "if isinstance(data, dict):\n"
+            "    entry = data.setdefault('extensions', {}).setdefault('spectra', {})\n"
+            "    commands = entry.setdefault('registered_commands', {})\n"
+            "    if isinstance(commands, dict):\n"
+            "        commands[key] = ['speckit.spectra.adr']\n"
+            "        reg.write_text(json.dumps(data, indent=2) + '\\n')\n"
+            "cfg = root / '.specify' / 'integration.json'\n"
+            "try:\n"
+            "    state = json.loads(cfg.read_text())\n"
+            "except (OSError, ValueError):\n"
+            "    state = None\n"
+            "if isinstance(state, dict):\n"
+            "    state['default_integration'] = key\n"
+            "    state['integration'] = key\n"
+            "    cfg.write_text(json.dumps(state, indent=2) + '\\n')\n",
+            encoding="utf-8",
+        )
         script.write_text(
             "#!/bin/sh\n"
-            'if [ "$1" = "self" ] && [ "$2" = "check" ]; then\n'
+            + (f'printf "%s\\n" "$*" >> {argv_log}\n' if argv_log else "")
+            + 'if [ "$1" = "self" ] && [ "$2" = "check" ]; then\n'
             f"  cat <<'SPECTRA_SELF_EOF'\n{output}SPECTRA_SELF_EOF\n"
             f"  exit {exit_code}\n"
             "fi\n"
             'if [ "$1" = "integration" ] && [ "$2" = "status" ]; then\n'
             f"  cat <<'SPECTRA_STATUS_EOF'\n{payload}SPECTRA_STATUS_EOF\n"
             f"  exit {status_exit_code}\n"
+            "fi\n"
+            'if [ "$1" = "integration" ] && [ "$2" = "use" ]; then\n'
+            f"  for failing in {fail_keys or '""'}; do\n"
+            '    if [ "$3" = "$failing" ]; then exit 1; fi\n'
+            "  done\n"
+            + (f'  {sys.executable} {helper} {use_effect} "$3" || exit 1\n' if use_effect else "")
+            + "  exit 0\n"
             "fi\n"
             "exit 0\n",
             encoding="utf-8",
@@ -368,6 +430,29 @@ def fake_specify(output: str = SELF_CHECK_UP_TO_DATE, *, exit_code: int = 0,
             yield script
         finally:
             os.environ["PATH"] = previous
+
+
+def read_argv_log(path):
+    """The `specify` invocations recorded by `fake_specify(argv_log=…)`, oldest first.
+
+    Returns a list of argument lists. Absent log -> empty list, so a test asserting "nothing was invoked"
+    reads the same whether the stub was never called or never asked to log.
+    """
+    try:
+        text = Path(path).read_text(encoding="utf-8")
+    except OSError:
+        return []
+    return [line.split() for line in text.splitlines() if line.strip()]
+
+
+def integration_use_calls(path):
+    """Just the integration keys passed to `specify integration use`, in order.
+
+    The rotation's contract is about that sequence — targets first, the original default last — so tests
+    assert on this rather than on the whole log.
+    """
+    return [argv[2] for argv in read_argv_log(path)
+            if len(argv) >= 3 and argv[0] == "integration" and argv[1] == "use"]
 
 
 @contextlib.contextmanager

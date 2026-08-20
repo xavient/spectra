@@ -31,7 +31,8 @@ import argparse
 import os
 import sys
 
-from spectra_cli import extension, health, install, net, project, roster, ui, version
+from spectra_cli import (coverage, exits, extension, health, install, net, project, roster, ui,
+                         version)
 
 # The help surface, rendered by `print_help()` into Spectra-purple panels rather than by argparse's
 # plain formatter. Keeping the copy here (not in `add_argument(help=...)`) keeps the rendered table and
@@ -85,15 +86,16 @@ REMOVED_FLAGS = {
 
 COMMANDS = PROJECT_COMMANDS  # kept for the subparser loop below
 
-# Exit codes. 0-4 and 130 are already the tool's conventions; 5 is new, and exists so a caller can
-# tell "I could not answer" from "the answer is no".
-EXIT_OK = 0
-EXIT_DECLINED = 1        # the user declined an offered action
-EXIT_USAGE = 2           # bad flag or unknown command (argparse's convention)
-EXIT_UNREACHABLE = 3     # published data could not be retrieved
-EXIT_DELEGATION = 4      # a delegated `specify` or `uv` command failed
-EXIT_PROJECT_STATE = 5   # the project is not in the required state
-EXIT_INTERRUPTED = 130
+# Exit codes. Defined in `spectra_cli/exits.py` and re-exported here, because `install.py` has to return
+# them too and cannot import them from this module — `cli.py` imports `install.py`, so the dependency only
+# runs one way. Re-exporting keeps `cli.EXIT_OK` resolving for everything that already reads it here.
+EXIT_OK = exits.EXIT_OK
+EXIT_DECLINED = exits.EXIT_DECLINED          # the user declined an offered action
+EXIT_USAGE = exits.EXIT_USAGE                # bad flag or unknown command (argparse's convention)
+EXIT_UNREACHABLE = exits.EXIT_UNREACHABLE    # published data could not be retrieved
+EXIT_DELEGATION = exits.EXIT_DELEGATION      # a delegated `specify` or `uv` command failed
+EXIT_PROJECT_STATE = exits.EXIT_PROJECT_STATE  # the project is not in the required state
+EXIT_INTERRUPTED = exits.EXIT_INTERRUPTED
 
 
 class _Parser(argparse.ArgumentParser):
