@@ -254,6 +254,94 @@ bootstrap() {
 }
 
 # --------------------------------------------------------------------------- #
+# Agent coverage — the one thing no unit test can prove
+# --------------------------------------------------------------------------- #
+
+_coverage_report() {
+  # Which agents the registry says have Spectra's commands, and what the project defaults to.
+  python3 - <<'PY'
+import json, pathlib
+reg = pathlib.Path(".specify/extensions/.registry")
+cfg = pathlib.Path(".specify/integration.json")
+try:
+    data = json.loads(reg.read_text())
+    agents = sorted(data["extensions"]["spectra"]["registered_commands"])
+except Exception:
+    agents = "unreadable"
+try:
+    default = json.loads(cfg.read_text()).get("default_integration")
+except Exception:
+    default = "unreadable"
+print(f"  registered for: {agents}")
+print(f"  default:        {default}")
+PY
+}
+
+second_integration() {
+  # Install a second integration so the project looks like a real mixed-agent repository.
+  local key="${1:-kiro-cli}"
+  _require_project || return 1
+  _c "Installing a second integration ($key) …"
+  specify integration install "$key" --force || return 1
+  _coverage_report
+  _warn "Note that only the default integration has Spectra's commands — that is the gap."
+}
+
+coverage_snapshot() {
+  # Byte snapshots of the two committed files a rotation writes. The claim under test is that a
+  # coverage run returns them unchanged, not merely equivalent (spec 011 FR-044, SC-013).
+  _require_project || return 1
+  mkdir -p /tmp/spectra-coverage-snapshot
+  cp .specify/integration.json /tmp/spectra-coverage-snapshot/integration.json
+  cp .specify/init-options.json /tmp/spectra-coverage-snapshot/init-options.json
+  _ok "Snapshotted .specify/integration.json and .specify/init-options.json"
+}
+
+coverage_verify() {
+  # The gate: both files byte-identical, and every installed integration covered.
+  _require_project || return 1
+  local failed=0
+  for f in integration.json init-options.json; do
+    if diff -q "/tmp/spectra-coverage-snapshot/$f" ".specify/$f" >/dev/null 2>&1; then
+      _ok "$f is byte-identical"
+    else
+      _err "$f DIFFERS after the coverage run — this is a defect, not cosmetic"
+      diff "/tmp/spectra-coverage-snapshot/$f" ".specify/$f" || true
+      failed=1
+    fi
+  done
+  python3 - <<'PY' || failed=1
+import json, pathlib, sys
+cfg = json.loads(pathlib.Path(".specify/integration.json").read_text())
+installed = [k for k in cfg.get("installed_integrations", []) if k != "speckit"]
+reg = json.loads(pathlib.Path(".specify/extensions/.registry").read_text())
+covered = set(reg["extensions"]["spectra"]["registered_commands"])
+missing = [k for k in installed if k not in covered]
+if missing:
+    print(f"  \033[38;5;203m✗ uncovered integrations: {missing}\033[0m")
+    sys.exit(1)
+print(f"  \033[38;5;42m✓\033[0m every installed integration is covered: {sorted(covered)}")
+PY
+  [[ $failed -eq 0 ]] && _ok "Coverage gate passed" || _err "Coverage gate FAILED"
+  return $failed
+}
+
+coverage_end_to_end() {
+  # The whole story in one command: two real integrations, install, update, and the gate after each.
+  _require_project || return 1
+  second_integration "${1:-kiro-cli}" || return 1
+  coverage_snapshot
+  _c "spectra install — expect a fourth step covering the second agent …"
+  spectra install || true
+  _coverage_report
+  coverage_verify || return 1
+  _c "spectra update --yes — expect coverage to survive, not to be deleted …"
+  spectra update --yes || true
+  _coverage_report
+  coverage_verify
+}
+
+# --------------------------------------------------------------------------- #
 # Menu
 # --------------------------------------------------------------------------- #
 
@@ -272,6 +360,12 @@ scenarios() {
     stale_integration [ver]     older integration.json   (default 0.12.14)
     stale_agents [ver]          older extension.yml      (default 1.0.0)
     stale_cli [ver]             rebuild your code lower  (default 4.0.0)
+
+  Agent coverage (a mixed-agent repository — the one thing unit tests cannot prove)
+    second_integration [key]    install a second integration (default: kiro-cli)
+    coverage_snapshot           byte-snapshot the two committed files a rotation writes
+    coverage_verify             assert both are byte-identical AND every integration is covered
+    coverage_end_to_end [key]   all of the above: install, gate, update --yes, gate again
 
   Put it back
     stack_reset                 restore all four to current

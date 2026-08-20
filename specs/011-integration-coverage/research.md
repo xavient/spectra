@@ -235,6 +235,13 @@ obligation, not a runtime behaviour. A run-time comparison could only report the
 observed behaviour in the BRD probe was a clean return to the original values (F3), so the expected
 outcome is a passing test that then guards the claim.
 
+**Verdict, 2026-08-20 (task T004).** Measured against Spec Kit CLI 0.16.5 in a disposable
+two-integration project: after activating the second integration and re-activating the original default,
+both `.specify/integration.json` and `.specify/init-options.json` were **byte-identical** to snapshots
+taken before the rotation. FR-044's fallback — naming the affected files and making the step declinable in
+the install — is therefore **not built**, and the claim is guarded by `coverage_verify` in
+`test/scenarios.sh` plus unit assertions in `tests/test_coverage.py` and `tests/test_install.py`.
+
 **Alternatives considered**:
 - *Snapshot and restore the files ourselves* — rejected by FR-007: Spectra does not write the
   dependency's records.

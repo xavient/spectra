@@ -243,3 +243,30 @@ The word "silently" is what changed. Nothing here is silent.
 **Implementation obligation**: edit that paragraph in the 007 contract to record the supersession and
 point at this document. Leaving two contracts in disagreement is the failure mode this note exists to
 prevent — the same treatment feature 009 gave its own reversal.
+
+---
+
+## 9 · Superseded in turn, by feature 011
+
+This contract's own § 4 and spec 010's Out of Scope state that Spectra never changes the project's default
+integration — "not as an end state and not transiently" — and that registering commands for non-default
+integrations is out of scope, with the coverage advisory naming `specify integration use` as a remedy the
+user must run themselves.
+
+**Superseded by `specs/011-integration-coverage/`** (FR-008, FR-014–FR-016, FR-039, FR-040):
+
+- The default integration **may** move during a run, provided the run discloses it first and restores it as
+  its final act — including after a failure or an interrupt. The *end state* is unchanged, which is what the
+  original boundary was protecting.
+- Coverage for non-default integrations is no longer out of scope: `spectra install` closes the gap, and
+  `spectra update` keeps it closed.
+- The advisory now names `spectra install` rather than `specify integration use`, and the two lines warning
+  that the remedy changes the project's default for everyone are removed, because it no longer does.
+
+What is **not** superseded is this contract's § 8: the overwrite authorization remains reachable from
+exactly one call site — the version upgrade. Feature 011 adds no second route, and enforces that by giving
+its own delegation (`extension.delegate_integration_use`) no `force` parameter at all.
+
+The reasoning behind the reversal, and the three dependency findings that made it possible (activation
+accumulates, is reversible within a run, and preserves locally modified files), are recorded in BRD-007
+§ 2.1–2.2. They were not known when this contract was written.

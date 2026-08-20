@@ -238,18 +238,18 @@ code unaffected (quickstart Scenario 8).
 
 ## Phase 9: Polish & Cross-Cutting Concerns
 
-- [ ] T069 Add the end-to-end coverage scenario to `test/scenarios.sh`: build a second real integration, run `spectra install`, and assert both agents' command directories are populated; then run `spectra update` and assert they still are (SC-001, SC-003)
-- [ ] T070 Add the FR-044 gate to `test/scenarios.sh`: snapshot `.specify/integration.json` and `.specify/init-options.json` byte-for-byte before a coverage run against a real Spec Kit and fail on any difference (FR-044, SC-013)
-- [ ] T071 If T070 fails, implement FR-044's fallback — name the affected files in the disclosure and make the coverage step declinable, including in `spectra install` — and record the decision in `research.md` § R9; if it passes, record that instead
-- [ ] T072 [P] Bump `VERSION` from `6.1.0` to `6.2.0` and confirm `spectra/extension.yml` and `catalog.json` are untouched (Principle VI)
-- [ ] T073 [P] Update `README.md` § "Projects with more than one agent installed" and § "Keeping everything up to date": install and update now cover every installed integration, the default is changed only transiently and restored, and the advisory no longer names `specify integration use` (FR-050)
-- [ ] T074 [P] Add the recovery step for an abandoned run to `README.md` — the one-line `specify integration use <original>` — so a default left changed is diagnosable without support (FR-050, BRD-007 § 12)
-- [ ] T075 [P] Add a "Changed in 6.2.0" note to `docs/index.html` alongside the existing 6.1.0, 6.0.0, and 5.0.0 notes (FR-050, Principle VI)
-- [ ] T076 [P] Add the supersession cross-note to `specs/010-multi-integration-updates/contracts/cli-surface.md` § Supersession pointing at this feature's contract, so the two do not disagree about whether the default may move (contracts/cli-surface.md § 7)
-- [ ] T077 [P] Add `requires.speckit_version` confirmation to the task notes: record 0.16.5 as the version this behaviour was verified against, without introducing any run-time version gate (FR-051)
-- [ ] T078 Run `python3 -m unittest discover -s tests` and confirm the count rose from 455 with no failures; a run that adds tests but leaves the total at 455 has exercised nothing. Zero pre-existing tests may be deleted or weakened — that is what holds FR-031 (FR-031)
-- [ ] T079 Run every quickstart scenario by hand, including the interrupt and failed-restore paths, and record the observed exit codes against the table in contracts/cli-surface.md
-- [ ] T080 Run `python3 tools/generate_agent_docs.py --check` and confirm it stays green — no agent changed, so no generated region may move (Principle V)
+- [X] T069 Add the end-to-end coverage scenario to `test/scenarios.sh`: build a second real integration, run `spectra install`, and assert both agents' command directories are populated; then run `spectra update` and assert they still are (SC-001, SC-003)
+- [X] T070 Add the FR-044 gate to `test/scenarios.sh`: snapshot `.specify/integration.json` and `.specify/init-options.json` byte-for-byte before a coverage run against a real Spec Kit and fail on any difference (FR-044, SC-013)
+- [X] T071 ~~If T070 fails, implement FR-044's fallback~~ **Not needed: T004 and the live end-to-end both measured byte-identical configuration, recorded in research.md § R9.** If T070 fails — name the affected files in the disclosure and make the coverage step declinable, including in `spectra install` — and record the decision in `research.md` § R9; if it passes, record that instead
+- [X] T072 [P] Bump `VERSION` from `6.1.0` to `6.2.0` and confirm `spectra/extension.yml` and `catalog.json` are untouched (Principle VI)
+- [X] T073 [P] Update `README.md` § "Projects with more than one agent installed" and § "Keeping everything up to date": install and update now cover every installed integration, the default is changed only transiently and restored, and the advisory no longer names `specify integration use` (FR-050)
+- [X] T074 [P] Add the recovery step for an abandoned run to `README.md` — the one-line `specify integration use <original>` — so a default left changed is diagnosable without support (FR-050, BRD-007 § 12)
+- [X] T075 [P] Add a "Changed in 6.2.0" note to `docs/index.html` alongside the existing 6.1.0, 6.0.0, and 5.0.0 notes (FR-050, Principle VI)
+- [X] T076 [P] Add the supersession cross-note to `specs/010-multi-integration-updates/contracts/cli-surface.md` § Supersession pointing at this feature's contract, so the two do not disagree about whether the default may move (contracts/cli-surface.md § 7)
+- [X] T077 [P] Add `requires.speckit_version` confirmation to the task notes: record 0.16.5 as the version this behaviour was verified against, without introducing any run-time version gate (FR-051)
+- [X] T078 Run `python3 -m unittest discover -s tests` and confirm the count rose from 455 with no failures; a run that adds tests but leaves the total at 455 has exercised nothing. Zero pre-existing tests may be deleted or weakened — that is what holds FR-031 (FR-031)
+- [X] T079 Run every quickstart scenario by hand, including the interrupt and failed-restore paths, and record the observed exit codes against the table in contracts/cli-surface.md
+- [X] T080 Run `python3 tools/generate_agent_docs.py --check` and confirm it stays green — no agent changed, so no generated region may move (Principle V)
 
 ---
 
