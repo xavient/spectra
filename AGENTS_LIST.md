@@ -28,12 +28,15 @@ These ship in the `spectra` extension today. Install them all at once with
 
 **`speckit.spectra.adr`** — Create a context-aware Architecture Decision Record grounded in your codebase,
 prior ADRs, and the project constitution. It gathers project context, asks up to five clarifying
-questions, writes the ADR under `Docs/ADR/`, and flags any constitution update the decision implies.
+questions, writes the ADR under `docs/adr/` — or the artifact root your constitution declares — and flags
+any constitution update the decision implies.
 
 - **Arguments** — a one-or-two-sentence description of the decision. If omitted, the command asks you
   for one before drafting.
 - **Use it when** — you're making a significant architecture or technology choice and want it captured
   and checked against the constitution as you decide.
+- **Where it writes** — `docs/adr/` by default, or the `Artifact root:` your constitution declares. It
+  checks whether `docs/` is a published site source (Pages, MkDocs, Docusaurus) and asks first if it is.
 - **Example (Claude)** —
   ```
   /speckit-spectra-adr We should standardize on PostgreSQL for all primary data stores
@@ -133,16 +136,20 @@ only** — there is no hook — since a reviewer should not be the author.
 
 **`speckit.spectra.brd`** — Turn a raw business requirement into a structured, **specify-ready** BRD. It
 accepts the requirement as inline text or a document (`.docx`, `.pdf`, `.md`, `.txt`), reads project
-context (the shipped template, constitution, existing `/brds`, prior specs) to ground it, asks up to
-five clarifying questions only when the requirement has material gaps, and writes one `NNN-<title>.md`
-under `/brds` — never inventing requirements (genuine unknowns become Open Questions). It then tells you
-to run the specify command with the BRD; its only write is the BRD file.
+context (the shipped template, constitution, existing BRDs under `docs/brd/`, prior specs) to ground it,
+asks up to five clarifying questions only when the requirement has material gaps, and writes one
+`NNN-<title>.md` under `docs/brd/` — never inventing requirements (genuine unknowns become Open
+Questions). It then tells you to run the specify command with the BRD; its only write is the BRD file.
 
 - **Arguments** — the business requirement as text, or a path to a requirement document. When both are
   given, the document is primary and the text is guidance. With no input, it asks for a requirement or
   a path.
 - **Use it when** — you have a rough business need (in your head or in a `.docx`/`.pdf`) and want a
   structured, reviewable BRD to feed into `specify`, instead of pasting a loose paragraph straight in.
+- **Where it writes** — `docs/brd/` by default. Declare `Artifact root: documents/` in the constitution to
+  move it, and every Spectra document agent follows. Because `docs/` is GitHub Pages' only non-root branch
+  source and the default source directory for MkDocs and Docusaurus, the command checks for that setup and
+  asks before writing a BRD somewhere it would be published.
 - **Examples (Claude)** —
   ```
   /speckit-spectra-brd Support agents need to merge duplicate customer tickets while preserving history

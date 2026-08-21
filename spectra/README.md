@@ -57,9 +57,9 @@ command doesn't show up, restart your agent so it re-scans its command/skill dir
 Takes a short description of a decision and then:
 
 1. Reads your project context — the constitution (`.specify/memory/constitution.md`), existing ADRs
-   under `Docs/ADR/`, specs under `specs/`, and the relevant source code.
+   under `docs/adr/`, specs under `specs/`, and the relevant source code.
 2. Asks up to **5** clarifying questions, specific to your project, before drafting anything.
-3. Determines the next ADR number, drafts the ADR, and writes it to `Docs/ADR/ADR-NNN-<title>.md`.
+3. Determines the next ADR number, drafts the ADR, and writes it to `docs/adr/ADR-NNN-<title>.md`.
 4. Checks the decision against your constitution and, if significant, **recommends** a constitution
    update and offers to make it.
 5. Suggests (does not run) the optional git commands to commit the new ADR.
@@ -71,8 +71,25 @@ Usage (Claude):
 ```
 
 The argument is a one-or-two-sentence description of the decision; if omitted, the command asks you
-for one before drafting. ADRs are written to `Docs/ADR/` (created automatically), numbered
+for one before drafting. ADRs are written to `docs/adr/` (created automatically), numbered
 zero-padded to three digits.
+
+**Somewhere other than `docs/`?** One line in `.specify/memory/constitution.md` moves every Spectra
+document agent at once:
+
+```text
+Artifact root: documents/
+```
+
+The command reads that line and writes to `documents/adr/` instead. It offers the line but never adds it
+for you. It also checks whether `docs/` is a published site source in your project — `mkdocs.yml`,
+`docusaurus.config.*`, `docs/_config.yml`, `docs/.nojekyll`, `docs/index.html`, `docs/conf.py`, or a Pages
+configuration pointing at `docs` — and asks before defaulting there, since that would publish the ADR or
+add it to a generated docs build.
+
+Upgrading from an older version? If the project still has a `Docs/ADR/` folder from before 1.6.0, the
+command reads it for context and continues its numbering, tells you once where ADRs live now, and offers a
+`git mv` you can run. It never moves or edits anything in the old folder.
 
 ---
 
@@ -214,10 +231,10 @@ requirement into a structured, **specify-ready** BRD. It:
 1. Reads the requirement — inline text, or a `.docx`/`.pdf`/`.md`/`.txt` document whose text it
    extracts (when both are supplied, the document is primary and the text is guidance). Unreadable or
    image-only files are reported, not fabricated.
-2. Reads project context — the shipped BRD template, the constitution, existing BRDs under `/brds`, and
-   prior specs — to ground and deconflict, without adding scope the requirement didn't state.
+2. Reads project context — the shipped BRD template, the constitution, existing BRDs under `docs/brd/`,
+   and prior specs — to ground and deconflict, without adding scope the requirement didn't state.
 3. Asks up to **5** clarifying questions, but only when the requirement has material gaps.
-4. Writes one BRD to `/brds/NNN-<title>.md` (folder created automatically, numbered zero-padded to
+4. Writes one BRD to `docs/brd/NNN-<title>.md` (folder created automatically, numbered zero-padded to
    three digits, never overwriting), following the canonical template — genuine unknowns become Open
    Questions and adopted defaults become Assumptions.
 5. Reports the path and tells you to run the Spec Kit **specify** command with the BRD.
@@ -238,6 +255,16 @@ Or point it at a document:
 ```
 
 With no input it asks for a requirement or a file path.
+
+BRDs land in `docs/brd/` by default, and the same one-line override applies — `Artifact root: documents/`
+in `.specify/memory/constitution.md` sends them to `documents/brd/` instead. The command checks whether
+`docs/` is a published site source before defaulting there and asks first if it is; a BRD carries
+stakeholders, revenue targets, and competitive rationale, so publishing one by accident is the mistake
+worth one question. Unanswered, it picks the non-publishing folder.
+
+Upgrading from an older version? A `brds/` folder from before 1.6.0 is read for context and numbering, so
+the next BRD continues the sequence; the command says once where BRDs live now and offers a `git mv`.
+Nothing in the old folder is moved or modified.
 
 ## License
 

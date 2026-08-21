@@ -3,6 +3,61 @@
 All notable changes to the `spectra` extension are documented here. This project follows
 [Semantic Versioning](https://semver.org/).
 
+## [1.6.0] - 2026-08-21
+
+### Changed
+- **ADRs and BRDs now go to one place: `docs/adr/` and `docs/brd/`.** `speckit.spectra.adr` used to write
+  `Docs/ADR/ADR-NNN-*.md` and `speckit.spectra.brd` used to write `/brds/NNN-*.md` — two different parent
+  folders, two different capitalizations, and one path that named the filesystem root rather than the
+  project. Both now write under a single root, project-relative and lowercase, one subfolder per artifact
+  type. Filenames are unchanged: `docs/adr/ADR-NNN-<title>.md` and `docs/brd/NNN-<title>.md`. The root
+  itself is a project setting — see **Added** below.
+
+  The lowercasing is a fix, not a preference. `Docs/ADR/` is a distinct directory on Linux but silently
+  aliases into an existing `docs/` folder on a case-insensitive macOS filesystem, so the same command
+  produced different layouts on different machines.
+
+- **Existing projects keep their numbering, and their old folder.** Both commands still read the earlier
+  locations — `Docs/ADR/` (matched case-insensitively), `brds/`, and `docs/<artifact>/` when a project
+  declares a different root — for context and for the next number, so the sequence after this update
+  continues from the highest artifact found across old and new instead of restarting at `001`. Those folders
+  are read-only to the agent: it reports them once, offers a `git mv` you can run, and moves nothing itself.
+  If a new ADR supersedes one that still lives in an earlier folder, the supersession is recorded in the new
+  ADR and reported to you rather than written into the old file.
+
+- **Every write scope is unchanged in size.** `brd` still writes exactly one file; `adr` still writes one
+  ADR plus, only with your agreement, the superseded-status line and a constitution edit.
+
+### Added
+- **A project can move the artifact root with one line.** `docs/` is the default, not a hard-coded path.
+  Put this in `.specify/memory/constitution.md` and every Spectra document agent — these two and every one
+  we ship later — writes there instead:
+
+  ```text
+  Artifact root: documents/
+  ```
+
+  The commands offer that line but never write it themselves: producing a document is not a licence to edit
+  governance.
+
+- **A publication check before defaulting into `docs/`.** `docs/` is GitHub Pages' only non-root branch
+  source and the default source directory for MkDocs and Docusaurus, so on some projects writing there
+  publishes the document or breaks a docs build. Both commands now look for that signal — `mkdocs.yml`,
+  `docusaurus.config.*`, `docs/_config.yml`, `docs/.nojekyll`, `docs/index.html`, `docs/conf.py`, or a Pages
+  configuration pointing at `docs` — and when they find one with no declared root, they say so before
+  writing, recommend `documents/`, and ask. Unanswered, they take the non-publishing option: a misplaced
+  private file is one `git mv` away, while a BRD served on the public web cannot be recalled from caches or
+  forks. The question does not count against either command's five-question limit, because it is about
+  where to write rather than what to record.
+
+- **Constitution Principle VII — Document Artifacts Live Under One Declared Root** (constitution 1.6.0).
+  Every command producing a durable Markdown deliverable writes it to `<artifact-root>/<artifact>/` with a
+  lowercase kebab-case slug, one artifact type per folder, three-digit numbering. Spec Kit's own
+  `.specify/` and `specs/` are carved out, so `speckit.spectra.domain-analyzer` writing
+  `.specify/memory/domain-analysis.md` stays compliant — that is context for another command, not a
+  deliverable. The point is forward-looking: the roster has a dozen more document producers under
+  development, and each one now inherits its output location instead of choosing a new top-level folder.
+
 ## [1.5.0] - 2026-08-19
 
 ### Changed
