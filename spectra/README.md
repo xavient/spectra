@@ -149,9 +149,9 @@ and ordering; only genuinely new candidates are appended under a dated heading.
 
 ## `speckit.spectra.create-pr` — Create PR
 
-Closes the loop after `implement`: it **offers** to open a pull request for the completed spec,
-targeting the **correct base branch** for your project's branching/promotion strategy, and returns
-the PR link. When you accept the offer (or run it on demand) it:
+Opens a pull request for the branch you are on — optionally linked to an issue, with the body built from
+your project's **PR template** — and returns the link. It runs on demand from any branch, and is also
+offered automatically by the `after_implement` hook. When you accept the offer (or run it directly) it:
 
 1. **Gates on `gh` first.** If `gh` is missing or unauthenticated it **stops before anything else** —
    before the constitution is read, before a target branch is derived, before any `git` command — saying
@@ -159,29 +159,66 @@ the PR link. When you accept the offer (or run it on demand) it:
    mutated on that path.
 2. Confirms the remote is on GitHub. A missing remote, or one on another host, stops with a scope
    statement rather than a `gh` fallback that could not work.
-3. Validates the **source branch** (one-branch-per-spec): refuses to open a PR from `main`, a
-   detached HEAD, or a non-spec branch.
+3. Checks the branch. Only two refusals: a **detached HEAD**, and a branch that is **already the base**.
+   A `fix/…` or chore branch is fine — a spec branch just contributes more material to the body.
 4. Detects an **existing open PR** and returns its link instead of opening a duplicate.
-5. Determines the **target (base) branch** from the constitution's *Version Control & Branching
-   Strategy* section and the branching config — honoring a defined promotion flow, or proposing the
-   repository default branch with confirmation when none is defined.
-6. Surfaces uncommitted changes and, on your confirmation, pushes the branch.
-7. Opens the PR with `gh` (**ready-for-review by default**, `--draft` on request) using a title and
-   body derived from the spec, and returns the PR URL.
+5. Determines the **base branch**. A promotion flow documented in the constitution's *Version Control &
+   Branching Strategy* section or `.specify/extensions/git/git-config.yml` is used and cited. With nothing
+   documented it *proposes* one — the branch yours appears to be cut from, else the repository default —
+   and asks you at the final gate.
+6. **Offers to commit and push** when the working tree is dirty: it lists the files and asks whether to
+   commit and push first. Say yes and it behaves like an ordinary commit-and-push; say no and the PR is
+   opened from committed work with the exclusion stated. Clean tree, unpushed commits — it asks to push.
+7. **Asks for a linked issue** if you did not pass `--issue`, and accepts a skip.
+8. **Resolves the PR template**, fills it from the real diff (plus `spec.md`/`plan.md`/`tasks.md` on a
+   spec branch), and reports which template it used.
+9. **Asks once, with everything on the table**: source → base and where the base came from, the issue or
+   nothing, draft or ready, the template path, and anything it has already done. Nothing is created before
+   you say yes — and you can redirect the base right there ("no, use dev").
+10. Opens the PR with `gh` (**ready-for-review by default**, `--draft` on request) and returns the URL.
 
-Its only mutations are the Git/remote actions required to open the PR; it never edits your source,
-spec, or constitution. It is also offered automatically by the `after_implement` hook.
+Its mutations are the Git and remote actions needed to open the PR — including a commit **when you ask for
+one** — and nothing else: never your source, spec, plan, tasks, or constitution.
 
 Usage (Claude):
 
 ```
 /speckit-spectra-create-pr
+/speckit-spectra-create-pr --issue 42
+/speckit-spectra-create-pr --draft --base dev
 ```
 
 Optional arguments:
 
+- `--issue <url-or-number>` — the issue this PR addresses. Omit it and you are asked once; skip the
+  question and no issue section is written.
 - `--draft` — open the PR as a draft instead of ready-for-review.
-- `--base <branch>` — override the derived base branch (still confirmed before opening).
+- `--base <branch>` — use this base branch (still shown in the final summary).
+
+### One thing to know about linked issues
+
+GitHub interprets closing keywords **only when a PR targets the repository's default branch**. On any other
+base they are ignored: no link is created and merging closes nothing. So the command writes `Closes #42`
+only when the base *is* the default branch. Targeting a `dev` in a promotion flow, it writes a plain `#42`
+reference instead — which still records a cross-reference on the issue — and tells you auto-close will not
+happen on this merge. An issue in another repository is referenced by full URL, never with a keyword.
+
+### Change the shape of your PRs
+
+The body's structure comes from `pr-template.md`. Override it exactly like the ADR and BRD templates:
+
+```bash
+mkdir -p .specify/templates/overrides
+cp .specify/extensions/spectra/templates/pr-template.md .specify/templates/overrides/pr-template.md
+```
+
+Commit it, and every PR the command opens follows your structure — resolution order, the reported template
+path, and the survives-updates guarantee are identical to the ADR agent's, described
+[above](#change-the-shape-of-your-adrs). Sections you delete stay deleted.
+
+The shipped template has **no self-certification checklist** on purpose: an agent cannot honestly tick "I
+have self-reviewed the full diff". If your override adds one, the command leaves those boxes unchecked and
+tells you it left them for you.
 
 **GitHub only** in this version (via the `gh` CLI), and `gh` is required at run time rather than
 optional: without it the command stops with the remedy instead of half-running. Failures *after* that

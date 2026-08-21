@@ -33,6 +33,7 @@ CONSTITUTION = h.repo_file(".specify", "memory", "constitution.md")
 DOCUMENT_COMMANDS = {
     "adr.md": "adr-template",
     "brd.md": "brd-template",
+    "create-pr.md": "pr-template",
 }
 
 # The resolution stack, in priority order. Every document command must name all of it.

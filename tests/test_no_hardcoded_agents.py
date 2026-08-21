@@ -98,6 +98,67 @@ class TheRosterIsReadAtRunTime(unittest.TestCase):
         self.assertIn("Invented By The Test Only", buffer.getvalue())
 
 
+# --- helpers for the f-string floor check ---------------------------------------------------------------
+# Deliberately textual. The point of this check is to hold on an interpreter whose tokenizer disagrees with
+# the floor, so it cannot delegate to that tokenizer.
+
+_F_PREFIX = re.compile(r"""(?<![\w"'])(?:[fF][rRbB]?|[rRbB][fF])('''|\"\"\"|'|")""")
+
+
+def _f_string_literals(line):
+    """(delimiter, body) for each f-string literal on one line; unterminated literals are skipped."""
+    found = []
+    position = 0
+    while True:
+        match = _F_PREFIX.search(line, position)
+        if match is None:
+            return found
+        delimiter = match.group(1)
+        start = match.end()
+        index = start
+        while index < len(line):
+            if line[index] == "\\":
+                index += 2
+                continue
+            if line.startswith(delimiter, index):
+                found.append((delimiter[0], line[start:index]))
+                break
+            index += 1
+        position = max(index, start) + 1
+
+
+def _replacement_fields(body):
+    """`(text, terminated)` for each `{...}` field of an f-string body; `{{`/`}}` escapes ignored.
+
+    `terminated` is the interesting half. When a field's `}` is missing, the literal was almost certainly
+    closed early by a same-type quote *inside* the field — the PEP 701 construct that parses on 3.12+ and is a
+    `SyntaxError` on 3.9. A genuinely unclosed brace is a bug either way.
+    """
+    fields = []
+    index = 0
+    while index < len(body):
+        if body[index] == "{":
+            if body.startswith("{{", index):
+                index += 2
+                continue
+            depth = 1
+            index += 1
+            start = index
+            terminated = False
+            while index < len(body):
+                if body[index] == "{":
+                    depth += 1
+                elif body[index] == "}":
+                    depth -= 1
+                    if depth == 0:
+                        terminated = True
+                        break
+                index += 1
+            fields.append((body[start:index], terminated))
+        index += 1
+    return fields
+
+
 class EverySourceFileParsesOnTheOldestSupportedPython(unittest.TestCase):
     """`pyproject.toml` claims `>=3.9`, and CI runs 3.9 — so the *grammar* has to hold there too.
 
@@ -128,6 +189,53 @@ class EverySourceFileParsesOnTheOldestSupportedPython(unittest.TestCase):
         """If `requires-python` moves, this test must move with it — not be quietly outgrown."""
         declared = h.repo_file("pyproject.toml").read_text(encoding="utf-8")
         self.assertIn('requires-python = ">=3.9"', declared)
+
+    def test_no_f_string_nests_its_own_quote_or_a_backslash(self):
+        """The one thing `feature_version` cannot see, checked textually instead.
+
+        `ast.parse(..., feature_version=(3, 9))` does not reproduce the *old f-string tokenizer*: on 3.12+
+        the new one accepts same-type nested quotes and backslashes inside replacement fields (PEP 701) no
+        matter what `feature_version` says. So the sibling test above passes on a modern machine and fails in
+        CI on 3.9 — which is exactly what happened twice: once with an escaped quote in a fixture, once with a
+        message whose replacement field re-used the enclosing double quote around a literal, each taking down
+        whole modules at import time.
+
+        This check does not need an interpreter's opinion. It reads the f-string literals and asserts their
+        replacement fields are closed on the line, and contain neither the delimiter that ends the literal nor
+        a backslash. (It cannot carry a worked example: written out, the example would trip the check — which
+        is itself the demonstration.)
+        """
+        offences = []
+        for root in self.ROOTS:
+            for path in sorted(h.repo_file(root).glob("*.py")):
+                source = path.read_text(encoding="utf-8")
+                for line_no, line in enumerate(source.splitlines(), 1):
+                    for delimiter, body in _f_string_literals(line):
+                        for field, terminated in _replacement_fields(body):
+                            where = "%s:%d" % (path.name, line_no)
+                            if not terminated:
+                                offences.append(
+                                    "%s: f-string field %r is not closed on this line — usually a "
+                                    "same-type quote inside it (PEP 701, Python 3.12+)" % (where, field)
+                                )
+                            elif delimiter in field:
+                                offences.append(
+                                    "%s: f-string field %r reuses its own %s quote "
+                                    "(PEP 701, Python 3.12+)" % (where, field, delimiter)
+                                )
+                            elif "\\" in field:
+                                offences.append(
+                                    "%s: f-string field %r contains a backslash "
+                                    "(PEP 701, Python 3.12+)" % (where, field)
+                                )
+        self.assertEqual(
+            offences,
+            [],
+            "these f-strings only parse on 3.12+, and the floor is "
+            + ".".join(map(str, self.OLDEST))
+            + ":\n"
+            + "\n".join(offences),
+        )
 
 
 class CoverageCarriesNoAgentKnowledge(unittest.TestCase):

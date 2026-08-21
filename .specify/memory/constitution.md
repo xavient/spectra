@@ -1,6 +1,34 @@
 <!--
 SYNC IMPACT REPORT
 ==================
+Version: 1.7.0 → 1.7.1
+Bump type: PATCH — a clarification. No new obligation; no principle added, removed, or redefined.
+Rationale: Principle VIII requires a template for "every command that produces a durable Markdown
+  deliverable". Applying it to `speckit.spectra.create-pr` exposed an ambiguity: a pull request body is a
+  Markdown document a human reads, but it is emitted to GitHub rather than written into the artifact root.
+  A literal reader could argue VIII does not reach it, which would leave PR bodies as the one document
+  Spectra composes with no template and no override — exactly the gap VIII exists to close.
+
+  The clarification says the obvious thing explicitly: a deliverable is the document, not the destination.
+  A file in `docs/adr/` is one; so is a PR body, a review comment, or an issue description. Only Principle
+  VII's *location* rules are limited to files on disk.
+
+Modified principles:
+  VIII — one paragraph added stating that emitted documents count as deliverables
+Added sections: (none)
+Removed sections: (none)
+
+Templates & docs in sync:
+  - spectra/templates/pr-template.md ✅ — new: the PR body structure, overridable like adr/brd
+  - spectra/commands/create-pr.md ✅ — resolves pr-template through the stack and reports the path
+  - spectra/extension.yml, catalog.json, spectra/CHANGELOG.md, docs/packages/spectra.zip ✅ — 1.8.0
+  - spectra/README.md, AGENTS_LIST.md, docs/index.html, test/README.md ✅ — the override documented
+  - tests/test_document_templates.py ✅ — pr-template joins the guarded set
+  - specs/014-create-pr-template/ ✅ — spec, plan, tasks
+
+Follow-up TODOs: (none)
+
+--- Previous report ---
 Version: 1.6.0 → 1.7.0
 Bump type: MINOR — one new principle. No existing principle redefined or removed.
 Rationale: Principle VII settled *where* a produced document goes. Nothing said anything about *how it
@@ -504,7 +532,6 @@ inside the write scope it promises.
 Where Principle VII settles **where** a produced document goes, this settles **how it is shaped**. Every
 command that produces a durable Markdown deliverable MUST take its structure from a **template**, and that
 template MUST be:
-
 - **Shipped as an asset**, not embedded as a literal in the command file — one file per document type under
   `spectra/templates/`, named `<artifact>-template.md`;
 - **Registered** in `spectra/extension.yml` under `provides.templates` with `name`, `file`, and
@@ -513,6 +540,11 @@ template MUST be:
   `.specify/presets/<preset-id>/templates/<name>.md` → `.specify/extensions/<ext-id>/templates/<name>.md` →
   `.specify/templates/<name>.md` → the command's own inline skeleton as the last resort. A command MUST NOT
   hard-code a single template path, and MUST take the first readable, non-empty layer.
+
+**"Deliverable" means the document, not the destination.** A file written into the artifact root is one; so is a
+Markdown document a command **emits** without saving locally — a pull request body, a review comment, an issue
+description. If a human reads it and a command composed it, it is shaped by a template. Only the *location*
+rules of Principle VII are limited to files on disk.
 
 **The project override is the supported customization point.** `.specify/templates/overrides/<name>.md` is
 committed, applies to the whole team, and sits outside the extension tree — so it survives
@@ -648,4 +680,4 @@ and why, and MUST update this file together with any dependent templates and doc
 binding. Complexity that violates a principle MUST be justified or removed; unjustified violations
 block merge.
 
-**Version**: 1.7.0 | **Ratified**: 2026-07-12 | **Last Amended**: 2026-08-21
+**Version**: 1.7.1 | **Ratified**: 2026-07-12 | **Last Amended**: 2026-08-21

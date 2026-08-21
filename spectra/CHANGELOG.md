@@ -3,6 +3,75 @@
 All notable changes to the `spectra` extension are documented here. This project follows
 [Semantic Versioning](https://semver.org/).
 
+## [1.8.0] - 2026-08-21
+
+### Added
+- **`speckit.spectra.create-pr` takes an optional `--issue`.** Pass a number or a URL (`--issue 42`,
+  `--issue https://github.com/owner/repo/issues/42`) and the PR links to it. Omit it and the command asks once;
+  skip the question and the PR is opened with no issue section at all. A reference that `gh issue view` cannot
+  resolve is reported and dropped rather than written into the body broken.
+
+  **The link is written differently depending on the base branch, and that is not cosmetic.** GitHub interprets
+  closing keywords *only* when a PR targets the repository's default branch — on any other base the keywords are
+  ignored, no link is created, and merging closes nothing. So a `Closes #42` on a PR into `dev` would look
+  correct and do nothing. The command writes a closing keyword only when the base is the default branch;
+  otherwise it writes a plain `#42` reference, which still records a cross-reference on the issue, and tells you
+  auto-close will not happen on this merge. An issue in another repository is referenced by full URL, never with
+  a keyword.
+
+- **The PR body now comes from an overridable template.** `templates/pr-template.md` ships with the extension,
+  is registered in `provides.templates`, and resolves through the same stack as the ADR and BRD templates:
+  project override → presets → extension → core → an inline skeleton. Drop
+  `.specify/templates/overrides/pr-template.md` into your project and every PR follows your structure —
+  committed, team-wide, and surviving extension updates.
+
+  Sections: Summary, Related Issues, Type of Change, Changes, How to Test, Screenshots / Evidence, Breaking
+  Changes, Notes for Reviewers. **Deliberately no self-certification checklist** — an agent cannot honestly tick
+  "I have self-reviewed the full diff". If your override reintroduces one, the command leaves those boxes
+  unchecked and says it left them for you.
+
+- **One final confirmation before anything is created.** The command summarizes source → base and where the base
+  came from, the linked issue or nothing, draft or ready, the resolved template path, and anything it has
+  already done — then asks once. Confirmations that used to be scattered now happen in one place.
+
+### Changed
+- **Uncommitted work is offered a commit instead of a warning.** Previously the command surfaced a dirty tree,
+  warned that the PR would exclude it, and explicitly would not commit. It now lists the files and asks *"there
+  are uncommitted changes, should I proceed with committing and pushing first?"* — and on a yes behaves like any
+  ordinary commit-and-push request. Rails: the file list is shown before staging, credential-shaped names
+  (`.env`, `*.pem`, `id_rsa`, `credentials*`) are called out for a specific go-ahead, nothing is blind-`git
+  add -A`'d beyond what you saw, and `--no-verify` is never used — a hook that rejects the commit stops the run
+  with the hook's own message. Answer no and the PR is opened from committed work with the exclusion stated
+  plainly.
+
+  This widens the command's write scope, which is worth saying out loud: it may now create a commit on your
+  behalf, with your explicit consent, in addition to pushing and opening the PR. It still never edits source,
+  the spec, the plan, the tasks, or the constitution.
+
+- **The base branch: documented intent wins, and a guess is confirmed rather than assumed.** A promotion flow in
+  the constitution or `.specify/extensions/git/git-config.yml` is used and cited, as before. With nothing
+  documented, the command proposes a base — the branch this one appears to have been cut from, else the default
+  branch — and asks at the final gate: *"This PR will be created to merge into `main`. Is that correct?"* You can
+  redirect it in the same breath, and the corrected base is re-checked on the remote before use.
+
+  The reason it asks rather than decides: **Git records no parent branch.** `@{upstream}` is the tracking branch,
+  and `git merge-base --fork-point` reads the reflog, so it yields nothing in a fresh clone or CI checkout and
+  nothing useful when two candidates share a commit.
+
+- **It works from any branch now.** The one-branch-per-spec refusal is gone: a `fix/…` or chore branch can open a
+  PR. Only two refusals remain — detached HEAD, and a branch that is already the resolved base. A spec branch is
+  still better served: it contributes `spec.md`, `plan.md`, and `tasks.md` to the body, where other branches
+  contribute their commits. Either way the **Changes** section comes from the real diff
+  (`git diff --name-status <base>...HEAD`), not from a restatement of the plan.
+
+- Constitution **1.7.1** clarifies Principle VIII: a deliverable is the document, not the destination, so a PR
+  body a command emits is shaped by a template exactly as a file written to disk is. Only Principle VII's
+  *location* rules are limited to files.
+
+Every earlier guarantee is intact: the hard `gh` gate before anything else, GitHub-only scope, the duplicate-PR
+check, `--head` always explicit, `--body-file -` for the body, and post-gate degradation that states exactly what
+was mutated.
+
 ## [1.7.0] - 2026-08-21
 
 ### Added

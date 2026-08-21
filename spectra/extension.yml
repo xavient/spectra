@@ -3,7 +3,7 @@ schema_version: "1.0"
 extension:
   id: "spectra"
   name: "Spectra"
-  version: "1.7.0"
+  version: "1.8.0"
   description: "TELUS Digital - Agentic software engineering across the entire SDLC."
   category: "workflow"
   effect: "read-write"
@@ -38,7 +38,7 @@ provides:
       description: "Analyze the project, infer its domain, and write an opt-in proposal of candidate guardrails for SME review and handoff to /speckit-constitution."
     - name: "speckit.spectra.create-pr"
       file: "commands/create-pr.md"
-      description: "Offer to open a correctly-targeted GitHub PR for the current spec branch after implementation, deriving the base from the promotion strategy and returning the PR URL."
+      description: "Open a correctly-targeted GitHub PR for the current branch — optionally linked to an issue via --issue — with the body built from the overridable pr-template, one final confirmation before anything is created, and the PR URL returned."
     - name: "speckit.spectra.brd"
       file: "commands/brd.md"
       description: "Transform a raw business requirement (inline text or a .docx/.pdf/.md/.txt document) into a structured, specify-ready BRD under docs/brd/ (or the project's declared artifact root), asking clarifying questions when needed, then hand off to the specify command."
@@ -58,6 +58,9 @@ provides:
     - name: "brd-template"
       file: "templates/brd-template.md"
       description: "Canonical Business Requirements Document structure produced by speckit.spectra.brd. Override at .specify/templates/overrides/brd-template.md."
+    - name: "pr-template"
+      file: "templates/pr-template.md"
+      description: "Pull request body structure used by speckit.spectra.create-pr. Override at .specify/templates/overrides/pr-template.md."
 
 hooks:
   after_implement:
