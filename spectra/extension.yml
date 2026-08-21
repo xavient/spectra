@@ -3,7 +3,7 @@ schema_version: "1.0"
 extension:
   id: "spectra"
   name: "Spectra"
-  version: "1.8.0"
+  version: "1.9.0"
   description: "TELUS Digital - Agentic software engineering across the entire SDLC."
   category: "workflow"
   effect: "read-write"
@@ -44,7 +44,7 @@ provides:
       description: "Transform a raw business requirement (inline text or a .docx/.pdf/.md/.txt document) into a structured, specify-ready BRD under docs/brd/ (or the project's declared artifact root), asking clarifying questions when needed, then hand off to the specify command."
     - name: "speckit.spectra.review-pr"
       file: "commands/review-pr.md"
-      description: "Review a GitHub pull request against the spec, plan, tasks, ADRs, and constitution it carries, then publish a single human-curated review containing only the severity-ranked findings the reviewer individually selected."
+      description: "Review a GitHub pull request against its spec, its linked issue (optional, via --issue), the ADRs, and the constitution, then publish one human-curated review — an overridable summary body plus line-anchored comments with applicable code suggestions — containing only the findings the reviewer individually selected."
 
   # The section structure of every document Spectra produces. Both are resolved through Spec Kit's template
   # stack, so a project overrides one by dropping its own copy at .specify/templates/overrides/<name>.md —
@@ -61,6 +61,9 @@ provides:
     - name: "pr-template"
       file: "templates/pr-template.md"
       description: "Pull request body structure used by speckit.spectra.create-pr. Override at .specify/templates/overrides/pr-template.md."
+    - name: "review-template"
+      file: "templates/review-template.md"
+      description: "Findings presentation for speckit.spectra.review-pr — the summary body and the inline comment. Override at .specify/templates/overrides/review-template.md. The revision anchor, the AI-assisted disclosure, and the coverage statement stay with the command."
 
 hooks:
   after_implement:

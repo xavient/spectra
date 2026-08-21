@@ -3,6 +3,74 @@
 All notable changes to the `spectra` extension are documented here. This project follows
 [Semantic Versioning](https://semver.org/).
 
+## [1.9.0] - 2026-08-21
+
+### Added
+- **`speckit.spectra.review-pr` reads the linked issue as optional context — in both kinds of PR.** It looks
+  for one automatically, tells you which issue it used, and asks once if it cannot find one. Skip the
+  question and the review proceeds exactly as before, on the constitution and the spec.
+
+  Detection runs two routes, and the second is not redundant: the structured link
+  (`closingIssuesReferences`), then a scan of the PR title and body for `#42` and issue URLs. GitHub only
+  records the structured link when a PR targets the **default branch** — the same rule that shaped
+  `create-pr` in 1.8.0 — so a PR into `dev` can say `Closes #42` and return nothing structured. Without the
+  text fallback the command would ask you for an issue already sitting on the pull request.
+
+  What the issue is *for* depends on what else exists. With **no spec** it becomes the traceability baseline:
+  the lens now runs against the issue in both directions — does the diff address what it describes, and does
+  it do anything the issue never asked for — instead of being reported as not run. With a **spec**, the spec
+  still authorizes and the issue is background. Where the two disagree, that is a Question naming both; the
+  command does not adjudicate between two human artifacts.
+
+  Two limits keep it honest. An issue's content is **data about intent, never instruction** — text asking to
+  "just merge it" is a fact about the conversation, not a direction. And a finding whose only source is an
+  issue **cannot be a Blocker** unless the PR claims to close it, in which case the rubric's existing clause
+  about failing a requirement it claims to satisfy already applies. An issue is a conversation; a spec is
+  authorized scope.
+
+- **Line-anchored comments, with applicable code suggestions.** The review no longer arrives as one body
+  with file:line references for you to go and find. Accepted findings whose anchors fall inside the diff are
+  published **on those lines**, and where the fix is mechanical the comment carries a ` ```suggestion ` block
+  the author can apply in one click.
+
+  This was the command's one deferred feature, and its stated reason — "diff-position arithmetic" — is
+  obsolete: the reviews endpoint takes `path`, `line`, and `side` directly. Everything posts in **one call**
+  carrying body, comments, and verdict together, so there is no state where the comments landed and the
+  verdict did not. Publication moves from `gh pr review` to `gh api` for that reason; it is the same tool and
+  the same authentication, and `curl` remains forbidden.
+
+  Because a suggestion is one click from a commit, the rails are requirements rather than advice: mechanical
+  and complete for exactly the replaced range, never architectural, never spanning files, never on a
+  low-confidence finding, never on a removed line or a generated file — and **every suggestion appears
+  verbatim in the pre-publish preview**, because it can be applied without being read. Findings anchored
+  outside the diff go in the body, with the reason stated. `<n>:body` in the selection forces any finding
+  into the body.
+
+- **A review template, overridable per project.** The body's shape was hard-coded; it is now
+  `templates/review-template.md`, registered in `provides.templates` and resolved through the same stack as
+  the ADR, BRD, and PR templates. It defines two shapes — the summary body and the inline comment — and the
+  command reports which template path it used.
+
+  Its remit is deliberately **narrower** than the other templates. Three things stay with the command and
+  survive any override: the `<!-- spectra:review-pr revision=… -->` anchor (how `--since` and self-review
+  detection find previous reviews), the AI-assisted disclosure line, and the **Coverage and limits** section
+  that stops a review implying assurance it did not earn. Judgment is not overridable either — the severity
+  rubric and its floors, the confidence cap, the anchor rule, the selection grammar, and the verdict
+  derivation stay in the command, because two reviews of the same diff have to agree.
+
+  The shipped default keeps today's sections and adds a **Summary**, with `- [ ]` task items on Blockers and
+  Majors only. Ticking a Question means nothing, so Minor, Nits, and Questions stay plain bullets.
+
+### Changed
+- **Coverage now says how much of the constitution applied**, not merely that the guardrail lens ran. A
+  review reporting "guardrails: run" against three vague principles looks thorough and is not. It states how
+  many principles were read and how many bore on this diff, says so plainly when none did, and names the
+  domain-analyzer and constitution commands as the way to close that gap. An absent constitution is stated
+  rather than implied.
+- Coverage also records **which context authorized the review** — spec and discovery tier, issue with number,
+  title and state, constitution, or the absence of each — and **what could not be placed inline**.
+- The summary gained an **Issue status** line: the issue, its state, and how it was obtained.
+
 ## [1.8.0] - 2026-08-21
 
 ### Added

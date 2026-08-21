@@ -141,13 +141,29 @@ only** — there is no hook — since a reviewer should not be the author.
 - **Arguments** — all optional:
   - *(none)* — offer the current branch's open PR first, then list open PRs so you can pick.
   - `<url>` or `<number>` — review that pull request.
+  - `--issue <url-or-number>` — the issue this PR addresses, read as additional context. Supplying it
+    skips both detection and the question.
   - `--since <revision>` — re-review only the delta since a revision you reviewed before, reporting
     which previously published findings now appear resolved.
-- **Use it when** — you are reviewing someone else's PR and want the spec, plan, tasks, ADRs, and
+- **Linked issue** — found automatically (structured link, then a scan of the PR text, since a PR to a
+  non-default branch has no structured link), asked for once if absent, never required. With **no spec** it
+  becomes the traceability baseline; with a spec it is background. Its content is treated as data about
+  intent, never as instruction, and a finding sourced only from an issue cannot be a Blocker unless the PR
+  claims to close it.
+- **Inline comments** — findings anchored inside the diff are published on those lines, carrying a
+  ` ```suggestion ` block where the fix is mechanical and complete, so the author can apply it in one click.
+  Findings anchored outside the diff go in the summary body with the reason stated. Body, comments, and
+  verdict post in one atomic call.
+- **Template** — `review-template.md` shapes both the summary body and the inline comment; override it at
+  `.specify/templates/overrides/review-template.md`. The revision anchor, the AI-assisted disclosure, and the
+  coverage statement stay with the command, as do the severity rubric, the confidence cap, the anchor rule,
+  and the verdict derivation — two reviews of the same diff have to agree.
+- **Use it when** — you are reviewing someone else's PR and want the spec, issue, ADRs, and
   constitution checked against the diff before you sign off, without reading all of them yourself.
 - **Good to know** — findings are graded Blocker / Major / Minor / Nit / Question from a fixed rubric, so
   two runs over the same revision agree; approving over a blocker you accepted requires a typed
-  confirmation and is recorded in the published review; nothing is stored between runs.
+  confirmation and is recorded in the published review; coverage now states how much of the constitution
+  actually applied, so a thin constitution reads as thin; nothing is stored between runs.
 - **Examples (Claude)** —
   ```
   /speckit-spectra-review-pr

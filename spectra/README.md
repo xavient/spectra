@@ -243,17 +243,21 @@ reviews one — judging it against **the intent and standards the PR carries**, 
    that changes the rules it is being measured against.
 4. Locates the governing spec by trying the PR's own diff, then the project's Spec Kit feature record,
    then treating the change as carrying no spec. Branch names are never used to guess.
-5. Runs **traceability in both directions** (work claimed complete but absent; changes no task
+5. Reads the **linked issue as optional extra context** — found automatically, asked for once if absent,
+   never required. On a PR with **no spec** the issue becomes the traceability baseline; with a spec it is
+   background, and where the two disagree that is a Question naming both.
+6. Runs **traceability in both directions** (work claimed complete but absent; changes no task
    authorized), **guardrails** with the violated clause quoted, and **craft** lenses chosen from what
    the diff actually touches — reporting which lenses did not run, and why.
-6. Grades every finding Blocker / Major / Minor / Nit / Question from a **fixed rubric** so repeated
+7. Grades every finding Blocker / Major / Minor / Nit / Question from a **fixed rubric** so repeated
    reviews of one revision agree, with a separate confidence axis that caps severity: a low-confidence
    finding becomes a Question rather than a Blocker.
-7. Presents the findings numbered and ranked, with a severity tally, its own reading of the change, a
-   recommended verdict, and a mandatory **coverage-and-limits** statement.
-8. Hands control back: **nothing is pre-selected.** You choose which findings are published and which
-   verdict to submit, you see the exact body first, and only then is a **single review event** posted
-   under your own `gh` authentication.
+8. Presents the findings numbered and ranked, with a severity tally, its own reading of the change, a
+   recommended verdict, and a mandatory **coverage-and-limits** statement — which now also says how much
+   of the constitution actually applied to this diff, rather than only that guardrails ran.
+9. Hands control back: **nothing is pre-selected.** You choose which findings are published and which
+   verdict to submit, you see the exact review first — body *and* every inline comment — and only then is a
+   **single review event** posted under your own `gh` authentication.
 
 **Every finding cites a file, a line, and the clause, requirement, or principle it rests on** — a
 finding that cannot be anchored and sourced is not reported at all. An **empty selection posts nothing**,
@@ -265,6 +269,22 @@ Its only mutation is publishing that one review, after an explicit go-ahead. It 
 spec, the plan, the tasks, or the constitution, never touches your working tree, holds no credentials of
 its own, and stores nothing between runs.
 
+### Findings land on the lines they are about
+
+Accepted findings whose anchors fall **inside the diff** are published as comments on those lines, and where
+the fix is mechanical the comment carries a ` ```suggestion ` block you can apply from the GitHub UI in one
+click. Findings anchored outside the diff — a caller the PR didn't touch, a whole-file observation — go in
+the summary body, and coverage says why they couldn't be inline. Add `<n>:body` to your selection to force
+any finding into the body.
+
+Because a suggestion is one click from a commit, they are offered narrowly: only for a mechanical, complete
+fix covering exactly the commented lines, never for architectural or multi-file changes, never on a
+low-confidence finding, and never in a generated file. **Every suggestion appears verbatim in the preview
+you approve** — nothing that can be applied without being read is summarized.
+
+Body, comments, and verdict post in one atomic call, so a failure can't leave the comments on the PR
+without the verdict.
+
 Usage (Claude):
 
 ```
@@ -275,9 +295,30 @@ Optional arguments:
 
 - *(none)* — offers the current branch's open PR, then lists open PRs to pick from.
 - `<url>` or `<number>` — review that pull request.
+- `--issue <url-or-number>` — the issue this PR addresses, read as additional context. Supplying it skips
+  both detection and the question.
 - `--since <revision>` — review only the delta since a revision you reviewed before, reporting which
   previously published findings now appear resolved. Prior findings are recovered by reading the earlier
   review off the pull request itself, since nothing is stored locally.
+
+### Change the shape of your reviews
+
+The findings presentation comes from `review-template.md` — the summary body *and* the inline comment shape.
+Override it exactly like the other templates:
+
+```bash
+mkdir -p .specify/templates/overrides
+cp .specify/extensions/spectra/templates/review-template.md .specify/templates/overrides/review-template.md
+```
+
+Three things are **not** the template's to change, and survive any override: the
+`<!-- spectra:review-pr revision=… -->` anchor that `--since` and self-review detection depend on, the
+AI-assisted disclosure line, and the **Coverage and limits** section — the one that stops a review implying
+assurance it didn't earn.
+
+Judgment isn't overridable either. The severity rubric and its floors, the confidence cap, the anchor rule,
+the selection grammar, and how the verdict is derived stay in the command, because two reviews of the same
+diff have to agree. The template governs how findings *read*, not what counts as a Blocker.
 
 Deliberately **on demand only** — there is no hook, because a reviewer should not be the author.
 **GitHub only** in this version (via the `gh` CLI), and single-body reviews only; line-anchored inline
