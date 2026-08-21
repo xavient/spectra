@@ -3,6 +3,25 @@
 All notable changes to the `spectra` extension are documented here. This project follows
 [Semantic Versioning](https://semver.org/).
 
+## [1.9.1] - 2026-08-21
+
+### Fixed
+- **An issue passed to `speckit.spectra.create-pr` now always reaches the pull request.** The rendering was
+  already right — `Closes #42` when the base is the repository's default branch, a plain `#42` reference
+  elsewhere, since GitHub ignores closing keywords outside the default branch — but the reference was treated
+  as *presentation*. Combined with the honour-the-template rule, that meant a project whose
+  `.specify/templates/overrides/pr-template.md` had no **Related Issues** section got a pull request with no
+  issue link at all: `--issue 42` noted the omission in chat and opened an unlinked PR that looked complete.
+
+  The reference is now the command's obligation rather than the template's. It goes in the template's issue
+  section when there is one — judged by intent, so a team's `## Ticket` counts — and is **appended** with a
+  one-line note when there is not. With no issue, nothing is appended and any such section is removed, as
+  before.
+
+  This is the same line `review-pr` draws for its revision anchor, its AI-assisted disclosure, and its
+  coverage statement: a template governs how a document *reads*; functional obligations stay with the command.
+  Rendering is unchanged, and a template that has the section produces byte-identical output to 1.9.0.
+
 ## [1.9.0] - 2026-08-21
 
 ### Added

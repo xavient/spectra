@@ -98,7 +98,8 @@ before anything is staged, and `--no-verify` is never used.
 - **Template** — `pr-template.md`: Summary, Related Issues, Type of Change, Changes, How to Test, Evidence,
   Breaking Changes, Notes for Reviewers — and deliberately **no self-certification checklist**. Override it
   at `.specify/templates/overrides/pr-template.md`; the override is committed, team-wide, and survives
-  extension updates.
+  extension updates. Trimming **Related Issues** does not unlink the PR: an issue you passed is appended with
+  a note rather than dropped.
 - **Linked issues** — GitHub honours closing keywords **only** on PRs targeting the default branch, so the
   command writes `Closes #42` there and a plain `#42` reference anywhere else, telling you that merging will
   not auto-close it. Cross-repository issues are referenced by full URL.

@@ -42,6 +42,10 @@
   merging closes nothing. When targeting a non-default branch (a `dev` in a promotion flow,
   say), use a plain reference — `#123`, or the full URL for an issue in another repository —
   which still records a cross-reference on the issue.
+
+  If you remove this section from your override, the pull request is still linked: the command
+  appends a short Related Issues section rather than dropping an issue you passed with `--issue`.
+  It will say that it did. Keep the section if you would rather choose where it sits.
 -->
 
 [Closes #NNN — or a plain reference, per the note above]
