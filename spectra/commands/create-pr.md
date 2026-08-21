@@ -337,7 +337,14 @@ Filling rules:
 - **Title** — a concise, self-describing subject line: the spec name on a spec branch, otherwise a summary of
   the change. It is the template's top heading; do not leave it as a placeholder.
 - **Summary** — outcome first, in plain language, for a reviewer with no context on the ticket.
-- **Related Issues** — per Step 9, or the whole section deleted when there is no issue.
+- **Related Issues** — where the reference from Step 9 goes. Three cases, and the first two are not optional:
+  - **The template has a section for issues** — put it there, rendered per Step 9's base-branch rules. Judge
+    that by intent rather than by heading text: a team's `## Ticket` or `## Linked work` is such a section,
+    and appending a second one to a template that already handles issues would be noise.
+  - **The template has no such section, and you have a resolved issue** — **append** a short
+    `## Related Issues` section carrying the reference, and say once that you added it because the template
+    had no place for it. The user can then move it where they want it in their own template.
+  - **There is no issue** — remove the section entirely. No placeholder number, no empty heading.
 - **Type of Change** — mark exactly one, based on what the diff actually does.
 - **Changes** — from the diff, grouped when large; skip formatting-only noise.
 - **How to Test** — the real commands, and what the reviewer should observe. Name the test suite when that is
@@ -352,6 +359,12 @@ Filling rules:
 - **Honour the template; do not repair it.** If the resolved template drops sections, follow it as authored and
   mention the omission once. If it adds sections, fill them from the same evidence; where you have nothing to
   say, say so rather than inventing content. A project's override is a decision, not a suggestion.
+- **One exception, and it is a matter of scope rather than an exception to the rule.** A resolved **issue
+  reference is yours, not the template's.** A template governs how the body *reads*; it does not govern whether
+  a pull request is linked to the issue the user passed. If the template has nowhere for it, append it — the
+  alternative is that `--issue 42` silently produces an unlinked pull request that looks complete. `review-pr`
+  draws the same line for its revision anchor, its AI-assisted disclosure, and its coverage statement: shape is
+  the template's, functional obligations are the command's.
 - **Do not tick a box that asserts something a human must vouch for.** If a project's override reintroduces a
   self-certification checklist ("I have self-reviewed the full diff"), leave those boxes unchecked and say you
   left them for the author.

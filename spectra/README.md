@@ -220,6 +220,10 @@ The shipped template has **no self-certification checklist** on purpose: an agen
 have self-reviewed the full diff". If your override adds one, the command leaves those boxes unchecked and
 tells you it left them for you.
 
+One thing the template does *not* control: whether the PR is linked to the issue you passed. Trim the
+**Related Issues** section and the command appends a short one rather than dropping the link — saying that it
+did. Keep the section if you would rather choose where it sits.
+
 **GitHub only** in this version (via the `gh` CLI), and `gh` is required at run time rather than
 optional: without it the command stops with the remedy instead of half-running. Failures *after* that
 gate — a protected base branch, a token without push permission, a fork restriction — degrade to the

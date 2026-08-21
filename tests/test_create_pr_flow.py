@@ -301,6 +301,62 @@ class SurvivingGuarantees(States, unittest.TestCase):
         )
 
 
+class TheIssueLinkIsAnInvariant(States, unittest.TestCase):
+    """A template governs shape; whether the PR is linked is the command's obligation.
+
+    Before 1.9.1 the reference was purely presentational, so a project override that trimmed the Related
+    Issues section produced an unlinked pull request from `--issue 42` — a silent failure on an artifact that
+    looked complete.
+    """
+
+    def test_the_reference_survives_a_template_without_a_section(self):
+        self.assertStates("append** a short")
+        self.assertStates("had no place for it")
+
+    def test_the_carve_out_is_stated_as_scope_not_as_an_exception(self):
+        self.assertStates("issue\n  reference is yours, not the template's", text())
+
+    def test_the_reason_is_recorded(self):
+        self.assertStates("silently produces an unlinked pull request")
+
+    def test_the_precedent_is_cited(self):
+        """`review-pr` drew this line first; naming it stops the carve-out reading as ad hoc."""
+        self.assertStates("shape is the template's, functional obligations are the command's")
+
+    def test_a_section_is_judged_by_intent_not_heading_text(self):
+        self.assertStates("Judge that by intent rather than by heading text")
+
+    def test_no_issue_means_no_section(self):
+        self.assertStates("No placeholder number, no empty heading")
+
+
+class TheShippedTemplateKeepsItsGuidance(unittest.TestCase):
+    """The command owns the rule, but an unexplained rule is one edit from being simplified away."""
+
+    def setUp(self):
+        self.template = h.repo_file("spectra", "templates", "pr-template.md").read_text(encoding="utf-8")
+
+    def test_it_has_a_related_issues_section(self):
+        self.assertTrue(
+            "## Related Issues" in self.template,
+            "pr-template.md no longer has a Related Issues section",
+        )
+
+    def test_the_default_branch_condition_is_explained(self):
+        flat_template = " ".join(self.template.split())
+        self.assertTrue(
+            "only meaningful when the PR targets the repository's DEFAULT branch" in flat_template,
+            "pr-template.md no longer explains that closing keywords are default-branch only",
+        )
+
+    def test_it_says_removing_the_section_does_not_unlink_the_pr(self):
+        flat_template = " ".join(self.template.split())
+        self.assertTrue(
+            "the pull request is still linked" in flat_template,
+            "pr-template.md no longer tells a team what happens if they trim this section",
+        )
+
+
 class TheManifestAgrees(States, unittest.TestCase):
     """What the manifest advertises has to match what the command does."""
 
