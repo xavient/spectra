@@ -520,14 +520,14 @@
       <ul class="cmds">
         <li>
           <span class="name">speckit.spectra.brd</span>
-          <span class="cdesc">Turn a raw business requirement — typed text or a <code>.docx</code>/<code>.pdf</code>/<code>.md</code>/<code>.txt</code> document — into a structured, specify-ready BRD written under <code>/brds</code>. Reads project context, asks a few clarifying questions only when the requirement has gaps, and never invents requirements — then hands the result to the specify command.</span>
+          <span class="cdesc">Turn a raw business requirement — typed text or a <code>.docx</code>/<code>.pdf</code>/<code>.md</code>/<code>.txt</code> document — into a structured, specify-ready BRD written under <code>docs/brd/</code>, or wherever your constitution declares its <code>Artifact root:</code>. Reads project context, asks a few clarifying questions only when the requirement has gaps, and never invents requirements — then hands the result to the specify command.</span>
           <span class="args"><b>Arguments:</b> the requirement as text, or a path to a requirement document. With no input it asks for one.</span>
           <span class="lbl">Example (Claude)</span>
           <pre><code>/speckit-spectra-brd Support agents need to merge duplicate customer tickets while preserving history</code></pre>
         </li>
         <li>
           <span class="name">speckit.spectra.adr</span>
-          <span class="cdesc">Create a context-aware Architecture Decision Record grounded in your codebase, prior ADRs, and constitution — it asks a few clarifying questions, then writes the ADR under <code>Docs/ADR/</code>. Use it when making a significant architecture or technology choice.</span>
+          <span class="cdesc">Create a context-aware Architecture Decision Record grounded in your codebase, prior ADRs, and constitution — it asks a few clarifying questions, then writes the ADR under <code>docs/adr/</code> (or your declared <code>Artifact root:</code>). Use it when making a significant architecture or technology choice.</span>
           <span class="args"><b>Arguments:</b> a short description of the decision. If omitted, you'll be asked for one before drafting.</span>
           <span class="lbl">Example (Claude)</span>
           <pre><code>/speckit-spectra-adr We should standardize on PostgreSQL for all primary data stores</code></pre>

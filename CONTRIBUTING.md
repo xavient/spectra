@@ -140,6 +140,31 @@ the agent runs.
 - **Be context-aware.** Good Spectra commands read real project context (the constitution under
   `.specify/memory/`, specs under `specs/`, existing artifacts, and source code) before acting, rather
   than blindly filling a template. See [`spectra/commands/adr.md`](spectra/commands/adr.md) for the pattern.
+- **Documents go under the project's artifact root.** If your command produces a durable Markdown
+  deliverable, it writes to `<artifact-root>/<artifact>/` — lowercase kebab-case slug, one artifact type per
+  folder, three-digit numbering, created on demand. The root is `docs/` by default and is declared by the
+  project with a single constitution line (`Artifact root: documents/`), which your command MUST read and
+  honour like every other document agent. That is Constitution
+  [Principle VII](.specify/memory/constitution.md), and it is not a preference you get to re-decide:
+  `adr` → `<root>/adr/`, `brd` → `<root>/brd/`, a threat-model agent → `<root>/threat-model/`. Never a new
+  top-level folder, never a leading slash, never mixed case (`Docs/` is a separate directory on Linux and
+  silently aliases into `docs/` on macOS). Context written for another command to consume is different —
+  that belongs in Spec Kit's own `.specify/` or `specs/`, as `domain-analyzer` does with
+  `.specify/memory/domain-analysis.md`. `tests/test_doc_output_paths.py` enforces this on the shipped
+  command files.
+
+  Three related duties. **Check before defaulting into `docs/`:** it is GitHub Pages' only non-root branch
+  source and the default source directory for MkDocs and Docusaurus, so look for `mkdocs.yml`,
+  `docusaurus.config.*`, `docs/_config.yml`, `docs/.nojekyll`, `docs/index.html`, `docs/conf.py`, or a Pages
+  config pointing at `docs`, raise it, recommend `documents/`, and prefer the non-publishing option when you
+  cannot get an answer. **Offer the declaration, never write it** — a document agent does not edit
+  governance as a side effect. And **if you change an existing command's output location**, keep reading the
+  old one for context and numbering so an updating project does not restart at `001`, and never move a
+  user's files for them; suggest the `git mv` instead.
+
+  This repository's own [`brds/`](brds/) predates the convention: it stays where it is, because those BRDs
+  are historical inputs referenced from `specs/`. Principle VII governs what agents produce, not a
+  retroactive re-filing of what already exists.
 
 Minimal skeleton:
 
@@ -173,7 +198,8 @@ generic Spec Kit form is `/speckit.<step>`):
 2. **Plan** — `/speckit.plan` (`/speckit-plan`). Generates the design artifacts and runs the
    Constitution Check gate, which enforces the single self-contained `spectra/` extension, a new
    command file under `spectra/commands/` registered in `spectra/extension.yml`, agent-agnostic
-   `$ARGUMENTS` commands, and the `speckit.spectra.<command>` namespace.
+   `$ARGUMENTS` commands, the `speckit.spectra.<command>` namespace, and — for a document-producing
+   command — the artifact-root output convention.
 3. **Tasks** — `/speckit.tasks` (`/speckit-tasks`). Produces the dependency-ordered `tasks.md`.
 4. **Implement** — `/speckit.implement` (`/speckit-implement`). Executes the tasks: it adds the
    command file under `spectra/commands/`, registers it in `spectra/extension.yml`, adds the agent to

@@ -1,6 +1,82 @@
 <!--
 SYNC IMPACT REPORT
 ==================
+Version: 1.5.0 → 1.6.0
+Bump type: MINOR — one new principle. No existing principle was redefined or removed.
+Rationale: Spectra's two document-producing agents each invented their own output location. `adr` wrote
+  `Docs/ADR/ADR-NNN-*.md`; `brd` wrote `/brds/NNN-*.md`. Nothing in the constitution said where a
+  deliverable belongs, so each command answered the question independently and gave two different
+  answers — differing in parent folder, in case, and in whether the path was even project-relative
+  (`/brds` names the filesystem root when read literally).
+
+  The roster is 44 agents, many of them document producers still under development (threat model, API
+  design, Article 30 records, PIAs). Left unstated, that convention would be re-invented 20 more times
+  and a consumer's project root would accumulate an unrelated top-level folder per agent. Principle VII
+  settles it once: `<artifact-root>/<artifact>/`, lowercase kebab-case slug, one artifact type per
+  folder, created on demand. `adr` → `docs/adr/`, `brd` → `docs/brd/`, and every future agent inherits
+  the answer instead of choosing.
+
+  The root is **declarable rather than fixed**, defaulting to `docs/`. `docs/` is GitHub Pages' only
+  non-root branch source and the default source directory for MkDocs and Docusaurus, so for a minority of
+  projects writing there publishes the artifact to the public web or breaks a docs build — and a BRD
+  carries revenue targets, named stakeholders, and competitive rationale. Whether `docs/` is safe is a
+  fact about the project, unknowable when the command is authored, so a project overrides it with one
+  line in its constitution (`Artifact root: documents/`) that every document agent honours. Commands must
+  check for the publication signal before defaulting into `docs/`, recommend `documents/` when they find
+  one, and take the non-publishing option when the choice cannot be obtained: a misplaced private file
+  moves with one command, a published BRD cannot be recalled from caches or forks. Commands offer the
+  declaration line and never write it themselves — producing a document is not a licence to edit
+  governance.
+
+  Two details are recorded because they are correctness, not style. Paths MUST be lowercase and
+  project-relative: `Docs/ADR/` is a distinct directory on Linux but silently aliases into an existing
+  `docs/` on a case-insensitive macOS filesystem, so the same command produced different layouts on
+  different machines. And a command MUST read the locations earlier versions wrote to for numbering while
+  never relocating them — without that, updating the extension gives a team a second `ADR-001` and splits
+  one decision log across two folders, while moving files for them would exceed a documentation agent's
+  write scope.
+
+  Spec Kit's own locations are carved out. `.specify/` and `specs/` are Spec Kit's, and a command
+  writing there — as `domain-analyzer` does with `.specify/memory/domain-analysis.md` — is writing
+  context for another command to consume, not a deliverable for a human to read.
+
+Modified principles: (none)
+Added sections:
+  VII — Document Artifacts Live Under One Declared Root
+Removed sections: (none)
+Other edits: Development Workflow step 2 now cites Principle VII in the Constitution Check gate.
+
+Templates & docs in sync:
+  - spectra/commands/adr.md ✅ — `Docs/ADR/` → `<artifact-root>/adr/` (default `docs/adr/`) throughout,
+    incl. the suggested `git add`; resolves the declared root and checks for the publication signal
+    before defaulting; legacy `Docs/ADR/` read for context and numbering, reported once, never moved
+  - spectra/commands/brd.md ✅ — `/brds` → `<artifact-root>/brd/` (default `docs/brd/`) throughout, incl.
+    the front-matter description and the one-rule write scope; same root resolution, with the extra note
+    that a BRD's contents make publication the more damaging default; legacy `brds/` read, never moved
+  - spectra/extension.yml ✅ — `brd` description no longer names `/brds`; version 1.5.0 → 1.6.0
+  - catalog.json ✅ — version and `updated_at` mirrored (1.6.0)
+  - spectra/CHANGELOG.md ✅ — `[1.6.0]` entry records both moves, the declarable root, the publication
+    check, and the legacy-read behavior
+  - docs/packages/spectra.zip ✅ — rebuilt with tools/build_package.py
+  - spectra/README.md, AGENTS_LIST.md, docs/index.html, test/README.md ✅ — every user-facing statement
+    of where these agents write now names the canonical folders and the override
+  - CONTRIBUTING.md ✅ — new document-producing agents are pointed at Principle VII, including the duty
+    to honour a declared root
+  - tests/test_doc_output_paths.py ✅ — new: fails the suite when a shipped command file names a legacy
+    path or a non-conforming output folder, when a document command stops resolving the declared root, or
+    when it stops checking for the publication signal — so the principle is enforced rather than reviewed
+  - .specify/templates/*.md ✅ — the Constitution Check gate is generic; no principle names cited
+  - README.md ✅ — states no output paths; nothing to change
+  - specs/012-doc-output-convention/ ✅ — spec, plan, and tasks for this change
+
+Deliberately unchanged:
+  - brds/ (this repository's own 8 BRDs) — historical inputs cross-referenced from specs/; Principle VII
+    governs newly produced artifacts and does not require relocating an existing set
+  - VERSION / spectra_cli/ — the CLI channel did not change (Principle VI)
+
+Follow-up TODOs: (none)
+
+--- Previous report ---
 Version: 1.4.0 → 1.5.0
 Bump type: MINOR — materially expanded guidance in Principle VI (one new MUST), plus a factual
   correction in the same principle.
@@ -294,6 +370,72 @@ shared version number would either inflate the CLI on every agent addition or bl
 unrelated CLI work. Independent SemVer per channel keeps each artifact's version honest about what
 actually changed in it.
 
+### VII. Document Artifacts Live Under One Declared Root
+
+Every command that produces a durable Markdown **deliverable** for the user's project MUST write it into
+`<artifact-root>/<artifact>/`, where `<artifact>` is the artifact type as a lowercase kebab-case slug and
+`<artifact-root>` is the project's single artifact root. The subfolder MUST be created on demand, MUST hold
+exactly **one** artifact type, and the command MUST NOT write anywhere else. Filenames MUST carry a
+zero-padded three-digit sequence number scoped to that subfolder, starting at `001`. The two shipped
+document agents define the pattern: `<artifact-root>/adr/ADR-NNN-<kebab-title>.md` and
+`<artifact-root>/brd/NNN-<kebab-title>.md`. A new document-producing agent MUST take its own sibling
+subfolder — `<artifact-root>/threat-model/`, `<artifact-root>/api-design/` — and MUST NOT introduce a
+top-level folder of its own.
+
+**The root defaults to `docs/` and is declarable per project.** A project overrides it with a single line
+in its constitution, matched case-insensitively:
+
+```text
+Artifact root: documents/
+```
+
+A declared root MUST be honoured by **every** document-producing command, so a project decides this once
+and every present and future agent inherits it. It MUST be project-relative — no leading slash, no `..` —
+and a command that finds an unusable value MUST say so and fall back to the default rather than guess.
+
+**A command MUST NOT write that declaration itself.** It offers the exact line and lets the user add it.
+Producing a document is not a licence to edit governance; the one constitution change a Spectra command
+may propose is one that is *about* the decision it just recorded, and even that requires explicit
+approval.
+
+**Defaulting into `docs/` requires a publication check first.** `docs/` is GitHub Pages' only non-root
+branch source and the default source directory for MkDocs and Docusaurus, so on a minority of projects
+writing there publishes the artifact to the web or breaks a documentation build. Before defaulting, a
+command MUST look for that signal — `mkdocs.yml`, `docusaurus.config.*`, `docs/_config.yml`,
+`docs/.nojekyll`, `docs/index.html`, `docs/conf.py`, or a Pages configuration pointing at `docs` — and,
+finding one with no declared root, MUST surface it, recommend `documents/`, and let the user choose. Where
+the choice cannot be obtained it MUST take the non-publishing option: a document written to the wrong
+private folder is moved with one command, while a business requirements document served on the public web
+cannot be recalled from caches, clones, or forks.
+
+**Spec Kit's own locations are outside this rule.** `.specify/` (constitution, memory, extension assets)
+and `specs/` belong to Spec Kit, and a command writing there — as `speckit.spectra.domain-analyzer` does
+with `.specify/memory/domain-analysis.md` — is writing **context** for another command to consume, not a
+deliverable for a human to read. The rule governs deliverables.
+
+**Paths MUST be lowercase and project-relative.** Not `Docs/`, not `/docs/`. This is correctness, not
+style: mixed case is a distinct directory on Linux but silently aliases into an existing `docs/` on a
+case-insensitive macOS filesystem, so one command produces two different layouts; and a leading slash
+names the filesystem root rather than the project.
+
+**A location an earlier version wrote to MUST be read, reported, and left alone.** That covers both the
+pre-1.6.0 folders (`Docs/ADR/`, `brds/`) and the default root itself once a project declares a different
+one. The command MUST read those locations — matching case-insensitively — for context and for sequence
+continuity, so the next number is one greater than the highest found across the canonical folder *and*
+every superseded one. It MUST report the superseded folder once, name the canonical one, and offer the
+move as a command the user can run. It MUST NOT move, rename, modify, or delete anything there itself.
+
+Rationale: A consumer installs **one** extension and gets many document-producing agents. If each picks
+its own folder, the project root accumulates an unrelated top-level directory per agent and nobody can
+predict where an agent's output went — the roster already lists a dozen more document producers under
+development. One root, one subfolder per artifact type, decided once, means every future agent inherits
+the answer instead of inventing one. The root is declarable rather than fixed because whether `docs/` is
+safe is a fact about the project that cannot be known when the command is authored: `docs/adr/` is the
+convention most teams expect, and the minority who publish `docs/` need an escape hatch that costs them
+one line and then applies everywhere. Reading superseded locations rather than ignoring them is what keeps
+a cut-over from producing a duplicate `ADR-001`; refusing to move them is what keeps a documentation agent
+inside the write scope it promises.
+
 ## Publishing & Distribution Standards
 
 - **Semantic Versioning (per channel).** Both release channels follow [SemVer](https://semver.org/) on
@@ -341,8 +483,9 @@ under it, never as new extensions:
 2. **Plan** (`plan`) — generate the design artifacts. The Constitution Check gate enforces the single
    self-contained `spectra/` extension (Principle II), a new command file under `spectra/commands/`
    registered in `spectra/extension.yml`, agent-agnostic `$ARGUMENTS` commands under the
-   `speckit.spectra.<command>` namespace (Principle III), context-awareness (Principle IV), and the
-   catalog/package sync obligations (Principle V).
+   `speckit.spectra.<command>` namespace (Principle III), context-awareness (Principle IV), the
+   catalog/package sync obligations (Principle V), and — for any command that produces a document —
+   the artifact-root output convention (Principle VII).
 3. **Tasks** (`tasks`) — produce the dependency-ordered task list.
 4. **Implement** (`implement`) — execute the tasks: add the command file under `spectra/commands/`,
    register it in `spectra/extension.yml`, bump `extension.version` with a matching
@@ -397,4 +540,4 @@ and why, and MUST update this file together with any dependent templates and doc
 binding. Complexity that violates a principle MUST be justified or removed; unjustified violations
 block merge.
 
-**Version**: 1.5.0 | **Ratified**: 2026-07-12 | **Last Amended**: 2026-08-16
+**Version**: 1.6.0 | **Ratified**: 2026-07-12 | **Last Amended**: 2026-08-21

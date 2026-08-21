@@ -24,14 +24,48 @@ Read and internalize the relevant project context so your questions and the ADR 
 specific to this codebase. Inspect, where present:
 
 1. **Constitution** — `.specify/memory/constitution.md`. These are the governing principles.
-   The ADR must be consistent with them (or explicitly acknowledge tension).
-2. **Existing ADRs** — every `*.md` file under `Docs/ADR/`. Use these to:
+   The ADR must be consistent with them (or explicitly acknowledge tension). Also read it for the
+   **artifact root** — see the next item.
+2. **The artifact root** — where this project keeps generated documents. Resolve it before you look for
+   anything else, because every path below hangs off it:
+   - **Declared root wins.** If the constitution contains a line reading `Artifact root: <folder>/`
+     (match case-insensitively), use that folder. It MUST be project-relative — reject a value with a
+     leading `/` or a `..` segment, say why, and fall back to the default.
+   - **Otherwise the default is `docs/`** — but check first whether `docs/` is a **published site
+     source** in this project. Signals: `mkdocs.yml`, `docusaurus.config.*`, `docs/_config.yml`,
+     `docs/.nojekyll`, `docs/index.html`, `docs/conf.py`, or a GitHub Pages configuration pointing at
+     `docs` (Pages' only non-root branch source is `/docs`).
+   - **If you find a signal and no declared root**, raise it with the user before writing: writing to
+     `docs/adr/` would publish the ADR on their site or add it to a generated documentation build.
+     Recommend `documents/` and ask which they want. This question is about *where to write*, not about
+     the decision, so it does not count against the five in Step 2. If you cannot get an answer, use
+     `documents/` and say so — a file in the wrong private folder is one `git mv` away, a published one
+     cannot be recalled from caches or forks.
+   - **Offer the declaration; never write it.** Whatever root is chosen, show the user the line that
+     makes it permanent for every Spectra agent, and let them add it themselves:
+
+     ```text
+     Artifact root: documents/
+     ```
+
+     Until that line exists you will ask again on the next run. Do **not** edit
+     `.specify/memory/constitution.md` for this — the only constitution change you may propose is the
+     one in Step 6, about the decision itself.
+   - From here on, `<artifact-root>/adr/` is this project's ADR folder — `docs/adr/` unless the root was
+     declared or changed above.
+3. **Existing ADRs** — every `*.md` file under `<artifact-root>/adr/`. Use these to:
    - understand decisions already made and the conventions/numbering in use,
    - avoid duplicating or silently contradicting a prior ADR,
    - detect if this new decision **supersedes** an existing one.
-3. **Specifications and plans** — anything under `specs/` (spec.md, plan.md, research.md,
+
+   **Also check the locations earlier runs used.** Extension versions before 1.6.0 wrote ADRs to
+   `Docs/ADR/` — compare case-insensitively, since on macOS `Docs/ADR/` may already resolve to
+   `docs/ADR/`. And if the root was declared as something other than `docs/`, check `docs/adr/` too.
+   Read any you find, for exactly the same purposes and for the numbering in Step 3. Treat them as
+   **read-only**: you never move, rename, modify, or delete anything in them.
+4. **Specifications and plans** — anything under `specs/` (spec.md, plan.md, research.md,
    data-model.md, contracts/, tasks.md) relevant to the area being decided.
-4. **Source code** — locate and skim the parts of the codebase the decision actually touches
+5. **Source code** — locate and skim the parts of the codebase the decision actually touches
    (relevant modules, configs, dependency manifests like package.json / pyproject.toml /
    go.mod, infrastructure files). Ground your understanding in what exists today.
 
@@ -53,10 +87,15 @@ you genuinely cannot determine from Step 1.
 
 ## Step 3 — Determine the ADR number and location
 
-- Ensure the directory `Docs/ADR/` exists at the project root; create it if it does not.
-- Scan `Docs/ADR/` for existing files named `ADR-NNN-*.md` and find the highest `NNN`.
+- Ensure the directory `<artifact-root>/adr/` exists at the project root; create it if it does not. With
+  the default root that is `docs/adr/`. The path is **project-relative and lowercase** — not `Docs/ADR/`,
+  not `/docs/adr/`.
+- Scan `<artifact-root>/adr/` for existing files named `ADR-NNN-*.md` and find the highest `NNN`.
+- If Step 1 found ADRs in an earlier location (`Docs/ADR/`, or `docs/adr/` when the root is declared
+  elsewhere), scan those the same way and take the **highest `NNN` across every folder**, so the decision
+  log keeps one continuous sequence across the move.
 - The new number is that value + 1, zero-padded to **three digits** (e.g. `001`, `002`, `017`).
-  If no ADRs exist yet, start at `001`.
+  If no ADRs exist anywhere, start at `001`.
 
 ## Step 4 — Draft the ADR
 
@@ -95,19 +134,44 @@ Filling rules:
   harder.
 - If this decision supersedes an existing ADR, say so in Context, and after writing the new
   file, update the superseded ADR's status line to `Superseded` (referencing the new number).
+  **Exception:** if the superseded ADR lives in one of the earlier locations from Step 1 (a legacy
+  `Docs/ADR/`, or `docs/adr/` when the root is declared elsewhere), do not edit it there — those folders
+  are read-only. Record the supersession in the new ADR's Context and tell the user which file to update
+  once they move it.
 
 ## Step 5 — Write the file
 
 Create the file at:
 
 ```
-Docs/ADR/ADR-NNN-<kebab-case-title>.md
+<artifact-root>/adr/ADR-NNN-<kebab-case-title>.md
+```
+
+which with the default root is:
+
+```
+docs/adr/ADR-NNN-<kebab-case-title>.md
 ```
 
 where `<kebab-case-title>` is the title lowercased with spaces replaced by hyphens and special
 characters removed (e.g. `ADR-003-adopt-postgres-for-primary-store.md`).
 
 Show the user the path you created and a short summary of the ADR.
+
+**If Step 1 found ADRs in an earlier location**, say so once, in one short note — and no more than once
+per run:
+
+- state where ADRs live now and that this ADR was written there,
+- confirm you left the earlier folder untouched,
+- offer the move as a command they can run if they want the history in one place (substitute the actual
+  folders):
+
+  ```bash
+  git mv Docs/ADR/*.md docs/adr/ && rmdir Docs/ADR
+  ```
+
+Do **not** run it, and do not move the files yourself. Continuing the numbering across every folder means
+nothing breaks if they never move them.
 
 ## Step 6 — Check the ADR against the constitution (your recommendation)
 
@@ -132,10 +196,10 @@ Then:
 
 Do **not** run git commands yourself. Instead, present them as an optional suggestion the user
 can copy. Tailor the message and the file list to what you actually changed (include the
-constitution file only if it was edited):
+constitution file only if it was edited, and use the real artifact root):
 
 ```bash
-git add Docs/ADR/ADR-NNN-<kebab-case-title>.md
+git add docs/adr/ADR-NNN-<kebab-case-title>.md
 git commit -m "docs(adr): ADR-NNN <title>"
 ```
 
