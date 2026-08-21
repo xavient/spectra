@@ -3,7 +3,7 @@ schema_version: "1.0"
 extension:
   id: "spectra"
   name: "Spectra"
-  version: "1.6.0"
+  version: "1.7.0"
   description: "TELUS Digital - Agentic software engineering across the entire SDLC."
   category: "workflow"
   effect: "read-write"
@@ -45,6 +45,19 @@ provides:
     - name: "speckit.spectra.review-pr"
       file: "commands/review-pr.md"
       description: "Review a GitHub pull request against the spec, plan, tasks, ADRs, and constitution it carries, then publish a single human-curated review containing only the severity-ranked findings the reviewer individually selected."
+
+  # The section structure of every document Spectra produces. Both are resolved through Spec Kit's template
+  # stack, so a project overrides one by dropping its own copy at .specify/templates/overrides/<name>.md —
+  # committed, team-wide, and outside the extension tree, so an extension update cannot discard it. Editing
+  # the installed copy under .specify/extensions/ is NOT the customization path: extension files are
+  # replaced wholesale on update.
+  templates:
+    - name: "adr-template"
+      file: "templates/adr-template.md"
+      description: "Section structure for Architecture Decision Records produced by speckit.spectra.adr. Override at .specify/templates/overrides/adr-template.md."
+    - name: "brd-template"
+      file: "templates/brd-template.md"
+      description: "Canonical Business Requirements Document structure produced by speckit.spectra.brd. Override at .specify/templates/overrides/brd-template.md."
 
 hooks:
   after_implement:

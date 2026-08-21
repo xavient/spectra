@@ -254,6 +254,28 @@ Worth one extra pass on the artifact root, since it is the part that varies per 
 `documents/adr/` and `documents/brd/` instead. Then remove the line, `touch mkdocs.yml`, and confirm both
 commands raise the publication risk and ask before defaulting into `docs/`.
 
+Then one pass on the templates, which is the other per-project variable:
+
+```bash
+mkdir -p .specify/templates/overrides
+# add a section the shipped default does not have
+sed 's/^## Context/## Alternatives Considered\n\n[alts]\n\n## Context/' \
+  .specify/extensions/spectra/templates/adr-template.md \
+  > .specify/templates/overrides/adr-template.md
+```
+
+Run `adr` and confirm three things: the ADR carries **Alternatives Considered**, the run **names the override
+path** it used, and nothing under `.specify/extensions/` was touched. Then delete a section from the override
+and confirm the command follows it and *says* what it omitted rather than adding it back. Repeat for
+`brd-template.md`.
+
+Finally, confirm the override survives an update — this is the property the whole feature rests on:
+
+```bash
+specify extension add spectra --force   # same tree-replace a version bump performs
+ls .specify/templates/overrides/        # both files still there, unchanged
+```
+
 **6. Iterate and clean up.** After editing files under `spectra/`, rebuild the zip (step 1),
 re-unzip, and reinstall with `--force`, then restart your agent:
 

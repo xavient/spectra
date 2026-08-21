@@ -50,7 +50,7 @@ specific to this codebase. Inspect, where present:
 
      Until that line exists you will ask again on the next run. Do **not** edit
      `.specify/memory/constitution.md` for this — the only constitution change you may propose is the
-     one in Step 6, about the decision itself.
+     one in Step 7, about the decision itself.
    - From here on, `<artifact-root>/adr/` is this project's ADR folder — `docs/adr/` unless the root was
      declared or changed above.
 3. **Existing ADRs** — every `*.md` file under `<artifact-root>/adr/`. Use these to:
@@ -97,41 +97,50 @@ you genuinely cannot determine from Step 1.
 - The new number is that value + 1, zero-padded to **three digits** (e.g. `001`, `002`, `017`).
   If no ADRs exist anywhere, start at `001`.
 
-## Step 4 — Draft the ADR
+## Step 4 — Resolve the ADR template
 
-Write the ADR using **exactly** this template and section structure. Do not add, rename, or
-reorder sections.
+The ADR's **structure** comes from a template, not from this file. Resolve `adr-template.md` through the
+project's template stack and take the **first readable, non-empty** hit:
 
-```
-# ADR-NNN: [Title]
+1. `.specify/templates/overrides/adr-template.md` — the project's own override. It wins outright.
+2. `.specify/presets/<preset-id>/templates/adr-template.md` — any installed preset (in registry priority
+   order, if a `.specify/presets/.registry` says so).
+3. `.specify/extensions/spectra/templates/adr-template.md` — the template shipped with this extension.
+4. `.specify/templates/adr-template.md` — a core template, if the project keeps one there.
+5. The **inline skeleton** at the end of this command — last resort only, for a project with no `.specify/`
+   at all.
 
-**Date:** YYYY-MM-DD
+Rules:
 
-**Status:** Proposed | Accepted | Deprecated | Superseded
+- **Do not stop at the first file that exists — stop at the first one you can actually use.** If a layer's
+  file is present but empty or unreadable, say so in one line and continue down the list.
+- **Report which template you used**, by path, when you report the result in Step 6. An override that
+  silently failed to apply looks exactly like one that worked, and the first clue would otherwise be a
+  wrongly-shaped ADR.
+- **Never edit a template.** They are input.
 
-## Context
+## Step 5 — Draft the ADR
 
-What is the issue or problem that motivates this decision?
-
-## Decision
-
-What is the change that we're proposing and/or doing?
-
-## Consequences
-What becomes easier or harder as a result of this decision?
-```
+Follow the resolved template's sections **exactly** — same sections, same order, same headings. Do not add,
+rename, or reorder them.
 
 Filling rules:
-- **NNN** — the zero-padded number from Step 3.
-- **Title** — a short, descriptive title in title case.
+
+- **NNN** — the zero-padded number from Step 3. **Title** — short and descriptive, in title case.
 - **Date** — today's date in `YYYY-MM-DD` format.
-- **Status** — set to `Proposed` for a new ADR. Keep the other options out of the final file;
-  only the chosen status remains on the line (e.g. `**Status:** Proposed`).
-- **Context** — ground this in the real problem, referencing the relevant code/specs/prior ADRs
-  you found. Capture the user's answers from Step 2.
+- **Status** — `Proposed` for a new ADR. Keep only the chosen value on the line (e.g. `**Status:** Proposed`)
+  and delete the alternatives.
+- **Context** — ground it in the real problem, referencing the relevant code, specs, and prior ADRs you
+  found. Capture the user's answers from Step 2.
 - **Decision** — state the concrete decision clearly and unambiguously.
-- **Consequences** — be honest about both the benefits and the trade-offs / things that get
-  harder.
+- **Consequences** — be honest about both the benefits and the trade-offs.
+- **Delete every guidance comment and `[PLACEHOLDER]` token.** None may survive into the finished ADR.
+- **Honour the template; do not repair it.** If the resolved template omits a section this command would
+  ordinarily fill — no Consequences, say — follow the template as authored and mention the omission once
+  when you report. Do not reinstate it. A project's override is a decision, not a suggestion. Equally, if
+  the template adds sections (Alternatives Considered, Compliance Impact, Drivers), fill them from what you
+  gathered in Steps 1–2; where you genuinely have nothing, say so in the section rather than inventing
+  content.
 - If this decision supersedes an existing ADR, say so in Context, and after writing the new
   file, update the superseded ADR's status line to `Superseded` (referencing the new number).
   **Exception:** if the superseded ADR lives in one of the earlier locations from Step 1 (a legacy
@@ -139,7 +148,7 @@ Filling rules:
   are read-only. Record the supersession in the new ADR's Context and tell the user which file to update
   once they move it.
 
-## Step 5 — Write the file
+## Step 6 — Write the file
 
 Create the file at:
 
@@ -156,7 +165,8 @@ docs/adr/ADR-NNN-<kebab-case-title>.md
 where `<kebab-case-title>` is the title lowercased with spaces replaced by hyphens and special
 characters removed (e.g. `ADR-003-adopt-postgres-for-primary-store.md`).
 
-Show the user the path you created and a short summary of the ADR.
+Show the user the path you created, the **template you used** (the path resolved in Step 4), and a short
+summary of the ADR.
 
 **If Step 1 found ADRs in an earlier location**, say so once, in one short note — and no more than once
 per run:
@@ -173,7 +183,12 @@ per run:
 Do **not** run it, and do not move the files yourself. Continuing the numbering across every folder means
 nothing breaks if they never move them.
 
-## Step 6 — Check the ADR against the constitution (your recommendation)
+**If the template came from the shipped default** (layer 3), and only if the user seems to want a different
+structure, mention once that they can copy it to `.specify/templates/overrides/adr-template.md`, edit it,
+and commit — every later ADR follows their version, and the override survives extension updates. Do not
+create that file yourself.
+
+## Step 7 — Check the ADR against the constitution (your recommendation)
 
 Compare the decision against `.specify/memory/constitution.md` and decide whether this is a
 **significant** ADR. Treat it as significant if it does any of the following:
@@ -192,7 +207,7 @@ Then:
 - **If not significant:** briefly note that the ADR does not warrant a constitution change and
   why, then continue.
 
-## Step 7 — Suggest committing the ADR (optional, do not run automatically)
+## Step 8 — Suggest committing the ADR (optional, do not run automatically)
 
 Do **not** run git commands yourself. Instead, present them as an optional suggestion the user
 can copy. Tailor the message and the file list to what you actually changed (include the
@@ -205,3 +220,31 @@ git commit -m "docs(adr): ADR-NNN <title>"
 
 If a constitution update was made, suggest staging that file in the same commit. Make clear
 this step is optional and the user can adjust the branch, message, or scope as they prefer.
+
+---
+
+## Inline template skeleton (last resort for Step 4)
+
+Use this **only** when no layer in Step 4 yielded a readable template — a project with no `.specify/`
+directory at all. Its sections are identical to the shipped `adr-template.md`; fill it per Step 5 and delete
+these guidance notes in the output.
+
+```markdown
+# ADR-NNN: [Title]
+
+**Date:** YYYY-MM-DD
+
+**Status:** Proposed | Accepted | Deprecated | Superseded
+
+## Context
+
+What is the issue or problem that motivates this decision?
+
+## Decision
+
+What is the change that we're proposing and/or doing?
+
+## Consequences
+
+What becomes easier or harder as a result of this decision?
+```

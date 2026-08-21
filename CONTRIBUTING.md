@@ -165,6 +165,23 @@ the agent runs.
   This repository's own [`brds/`](brds/) predates the convention: it stays where it is, because those BRDs
   are historical inputs referenced from `specs/`. Principle VII governs what agents produce, not a
   retroactive re-filing of what already exists.
+- **A document's shape comes from a registered, overridable template.** Never a literal block inside the
+  command file — that is what `adr` used to do, and it left teams with nothing to change. Ship
+  `spectra/templates/<artifact>-template.md`, declare it in `extension.yml` under `provides.templates`, and
+  resolve it in the command through Spec Kit's stack, first usable layer winning:
+  `.specify/templates/overrides/` → `.specify/presets/<id>/templates/` → `.specify/extensions/<id>/templates/`
+  → `.specify/templates/` → an inline skeleton in the command as the last resort. That is Constitution
+  [Principle VIII](.specify/memory/constitution.md).
+
+  Four rules go with it. **Report the resolved path**, or an override that failed to apply is invisible.
+  **Honour the template, don't repair it** — a section the project deleted stays deleted, and you say what you
+  left out. **Never hard-code a path**: `brd` did, so project overrides were silently ignored for two releases.
+  And **keep resolution in prose** — calling Spec Kit's Bash `resolve_template()` breaks agent-agnosticism, and
+  shipping a resolver script would break the Markdown-only guarantee (no scripts, no binaries, no hooks) that
+  the security section of the README rests on.
+
+  Keep the shipped template and the command's inline skeleton in step; `tests/test_document_templates.py`
+  fails if their headings drift, if a template is unregistered, or if a registered file is missing.
 
 Minimal skeleton:
 

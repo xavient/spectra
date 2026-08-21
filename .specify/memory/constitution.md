@@ -1,6 +1,69 @@
 <!--
 SYNC IMPACT REPORT
 ==================
+Version: 1.6.0 → 1.7.0
+Bump type: MINOR — one new principle. No existing principle redefined or removed.
+Rationale: Principle VII settled *where* a produced document goes. Nothing said anything about *how it
+  is shaped*, and the two shipped document agents had drifted into opposite answers. `brd` loaded a
+  shipped asset — `spectra/templates/brd-template.md` — from a hard-coded path. `adr` carried its
+  structure as a fenced literal inside the command file, introduced by "use **exactly** this template …
+  do not add, rename, or reorder sections". One was an asset a team could in principle change; the other
+  could not be changed at all.
+
+  Neither was actually overridable in a way that survives. Spec Kit already resolves templates through a
+  four-layer stack — project override, presets, extension, core — but `brd` read layer 3 directly, so an
+  override at `.specify/templates/overrides/brd-template.md` was silently ignored. That left editing the
+  installed copy as the only route, and measurement against Spec Kit 0.16.5 confirmed it is a trap: an
+  edit inside `.specify/extensions/spectra/templates/` survives a no-op update but is destroyed by the
+  tree-replace that any version bump performs, while `.specify/.gitignore` tracks the edit — so it is
+  committed, looks durable, and is reverted later as noise in an unrelated diff.
+
+  Principle VIII fixes the shape question the way VII fixed the location question: one rule, stated once,
+  inherited by every future document agent. A document's structure comes from a registered template
+  resolved through the stack, with an inline last-resort skeleton; the command reports which template won,
+  honours what the resolved template says rather than repairing it, and never hard-codes a path.
+
+  Two constraints are written in because they are easy to violate with good intentions. Resolution MUST be
+  prompt-expressed: `resolve_template()` is a Bash function in core's script tree, so calling it breaks
+  PowerShell-only setups (Principle III), and shipping our own resolver script would break the
+  Markdown-only supply-chain promise the README makes and the security review depends on. And a resolved
+  template MUST be honoured as authored — a command that quietly re-adds a section the team deleted has
+  turned their override into a suggestion.
+
+Modified principles: (none)
+Added sections:
+  VIII — Documents Are Shaped by Overridable Templates
+Removed sections: (none)
+Other edits: Development Workflow step 2 cites Principle VIII alongside VII in the Constitution Check gate.
+
+Templates & docs in sync:
+  - spectra/templates/adr-template.md ✅ — new: today's ADR structure, verbatim, in the house style of
+    brd-template.md. No new sections, so no existing user's output changes.
+  - spectra/templates/brd-template.md ✅ — content unchanged
+  - spectra/commands/adr.md ✅ — Step 4 resolves the template through the stack; the former literal is now
+    the inline last-resort skeleton at the end of the file; reports the resolved path
+  - spectra/commands/brd.md ✅ — the hard-coded read is replaced by the same resolution block; same
+    reporting, fall-through, and honour-don't-repair rules
+  - spectra/extension.yml ✅ — provides.templates declares adr-template and brd-template; version 1.7.0
+  - catalog.json ✅ — version and updated_at (the catalog schema carries a command count only)
+  - spectra/CHANGELOG.md ✅ — [1.7.0]
+  - docs/packages/spectra.zip ✅ — rebuilt; contains both templates
+  - spectra/README.md, AGENTS_LIST.md, docs/index.html, test/README.md ✅ — the override path is
+    documented as the supported customization point, and stated to survive extension updates
+  - CONTRIBUTING.md ✅ — a new document agent ships a registered template and resolves it through the stack
+  - tests/test_document_templates.py ✅ — new: registration completeness both ways, heading parity between
+    each shipped template and its command's inline skeleton, four-layer coverage in both commands, no
+    hard-coded template path, and no script or binary in the package
+  - .specify/templates/*.md ✅ — the Constitution Check gate is generic; no principle names cited
+  - specs/013-overridable-templates/ ✅ — spec, plan, tasks, incl. the Phase 0 measurements
+
+Deliberately unchanged:
+  - the ADR template's section list — enriching it is now every project's own call
+  - VERSION / spectra_cli/ — the CLI channel did not change (Principle VI)
+
+Follow-up TODOs: (none)
+
+--- Previous report ---
 Version: 1.5.0 → 1.6.0
 Bump type: MINOR — one new principle. No existing principle was redefined or removed.
 Rationale: Spectra's two document-producing agents each invented their own output location. `adr` wrote
@@ -436,8 +499,52 @@ one line and then applies everywhere. Reading superseded locations rather than i
 a cut-over from producing a duplicate `ADR-001`; refusing to move them is what keeps a documentation agent
 inside the write scope it promises.
 
-## Publishing & Distribution Standards
+### VIII. Documents Are Shaped by Overridable Templates
 
+Where Principle VII settles **where** a produced document goes, this settles **how it is shaped**. Every
+command that produces a durable Markdown deliverable MUST take its structure from a **template**, and that
+template MUST be:
+
+- **Shipped as an asset**, not embedded as a literal in the command file — one file per document type under
+  `spectra/templates/`, named `<artifact>-template.md`;
+- **Registered** in `spectra/extension.yml` under `provides.templates` with `name`, `file`, and
+  `description`. An unregistered template file, or a registered entry whose file is missing, is a defect;
+- **Resolved through Spec Kit's stack**, highest priority first: `.specify/templates/overrides/<name>.md` →
+  `.specify/presets/<preset-id>/templates/<name>.md` → `.specify/extensions/<ext-id>/templates/<name>.md` →
+  `.specify/templates/<name>.md` → the command's own inline skeleton as the last resort. A command MUST NOT
+  hard-code a single template path, and MUST take the first readable, non-empty layer.
+
+**The project override is the supported customization point.** `.specify/templates/overrides/<name>.md` is
+committed, applies to the whole team, and sits outside the extension tree — so it survives
+`specify extension update`. Editing the *installed* copy under `.specify/extensions/` MUST NOT be documented
+as the way to customize anything: extension-provided files resolve as `replace`, so a version bump discards
+the edit, and because the path is tracked by Git the change looks durable until it silently reverts.
+
+**A resolved template is honoured, not repaired.** A command MUST follow the sections the resolved template
+declares, in its order, and MUST NOT add, rename, or reorder them. Where a template omits a section the
+command would ordinarily fill, the command MUST note the omission rather than reinstating it — anything else
+turns a team's override into a suggestion. Guidance comments and `[PLACEHOLDER]` tokens MUST be stripped from
+the output whichever layer the template came from.
+
+**The command MUST report which template it used**, naming the resolved path. Without that, an override that
+failed to apply is indistinguishable from one that applied, and the user's first clue is a wrongly-shaped
+document.
+
+**Resolution MUST be expressed as prompt instructions.** Spec Kit's `resolve_template()` is a Bash function
+in core's script tree: depending on it would break agent-agnosticism (Principle III) wherever Bash is not the
+script flavour, and shipping a resolver of our own would break the Markdown-only guarantee the published
+package makes — no scripts, no binaries, no post-install hooks. The commands therefore state the same
+priority order in prose.
+
+Rationale: A template is the difference between a consistent document set and a pile of differently-shaped
+files, and an *overridable* template is the difference between Spectra's opinion and the team's. Both shipped
+document agents had a template; only one was a file, and neither honoured the project's own override — so a
+team's only lever was editing an installed file that the next update deletes. Shipping the structure as a
+registered asset resolved through the stack means one file in a repository changes every document produced
+from then on, for everyone, permanently. Requiring the same of future document agents keeps that promise from
+being re-litigated per agent, which is exactly how the `adr`/`brd` divergence arose in the first place.
+
+## Publishing & Distribution Standards
 - **Semantic Versioning (per channel).** Both release channels follow [SemVer](https://semver.org/) on
   independent cadences (Principle VI). Each **extension (catalog) release** MUST bump `extension.version`
   in `spectra/extension.yml` and the matching `version` in the `catalog.json` entry, and add a matching
@@ -485,7 +592,8 @@ under it, never as new extensions:
    registered in `spectra/extension.yml`, agent-agnostic `$ARGUMENTS` commands under the
    `speckit.spectra.<command>` namespace (Principle III), context-awareness (Principle IV), the
    catalog/package sync obligations (Principle V), and — for any command that produces a document —
-   the artifact-root output convention (Principle VII).
+   the artifact-root output convention (Principle VII) and the registered, overridable template it is
+   shaped by (Principle VIII).
 3. **Tasks** (`tasks`) — produce the dependency-ordered task list.
 4. **Implement** (`implement`) — execute the tasks: add the command file under `spectra/commands/`,
    register it in `spectra/extension.yml`, bump `extension.version` with a matching
@@ -540,4 +648,4 @@ and why, and MUST update this file together with any dependent templates and doc
 binding. Complexity that violates a principle MUST be justified or removed; unjustified violations
 block merge.
 
-**Version**: 1.6.0 | **Ratified**: 2026-07-12 | **Last Amended**: 2026-08-21
+**Version**: 1.7.0 | **Ratified**: 2026-07-12 | **Last Amended**: 2026-08-21

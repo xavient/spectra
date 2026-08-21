@@ -91,6 +91,32 @@ Upgrading from an older version? If the project still has a `Docs/ADR/` folder f
 command reads it for context and continues its numbering, tells you once where ADRs live now, and offers a
 `git mv` you can run. It never moves or edits anything in the old folder.
 
+### Change the shape of your ADRs
+
+The ADR's section structure comes from `adr-template.md`, shipped with the extension. To use your own — extra
+sections your governance requires, or fewer than the default — copy it into your project's override slot and
+edit it there:
+
+```bash
+mkdir -p .specify/templates/overrides
+cp .specify/extensions/spectra/templates/adr-template.md .specify/templates/overrides/adr-template.md
+```
+
+Commit that file. Every ADR from then on follows your structure, for everyone on the team, and **the override
+survives extension updates** because it lives outside the extension's own directory. The command resolves the
+template in this order and uses the first one it can read:
+
+1. `.specify/templates/overrides/adr-template.md` — yours
+2. `.specify/presets/<preset-id>/templates/adr-template.md` — an installed preset
+3. `.specify/extensions/spectra/templates/adr-template.md` — the shipped default
+4. `.specify/templates/adr-template.md` — a core template, if you keep one there
+5. a skeleton inside the command itself — only when there is no `.specify/` at all
+
+Every run tells you which template it used, so an override that isn't being picked up is obvious. Sections you
+delete stay deleted: the command follows your template and mentions what it left out rather than adding it
+back. Do **not** edit the copy under `.specify/extensions/` — extension files are replaced when the extension
+updates, and your edit goes with them.
+
 ---
 
 ## `speckit.spectra.domain-analyzer` — Domain Analyzer
@@ -265,6 +291,23 @@ worth one question. Unanswered, it picks the non-publishing folder.
 Upgrading from an older version? A `brds/` folder from before 1.6.0 is read for context and numbering, so
 the next BRD continues the sequence; the command says once where BRDs live now and offers a `git mv`.
 Nothing in the old folder is moved or modified.
+
+### Change the shape of your BRDs
+
+Same mechanism as the ADR agent, with `brd-template.md`:
+
+```bash
+mkdir -p .specify/templates/overrides
+cp .specify/extensions/spectra/templates/brd-template.md .specify/templates/overrides/brd-template.md
+```
+
+Commit it, and every BRD follows your structure — the 14 shipped sections are a default, not a fixed contract.
+Resolution order, the reported template path, and the survives-updates guarantee are identical to the ADR
+agent's, described [above](#change-the-shape-of-your-adrs).
+
+One caveat worth knowing: **Section 6 — User Journeys** is what the Spec Kit `specify` command leans on most
+heavily. Dropping it is allowed, and the command will say it did so, but expect the resulting spec to have
+thinner user stories.
 
 ## License
 

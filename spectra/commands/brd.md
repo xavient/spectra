@@ -61,9 +61,19 @@ Interpret it as follows (all handled in Step 1):
 Read available context so the BRD aligns with the project — but remember it only **grounds and
 deconflicts**; it never adds scope the requirement did not state.
 
-1. **The BRD template** — load the canonical template shipped with this extension at
-   `.specify/extensions/spectra/templates/brd-template.md` and follow its exact section structure. If
-   that file cannot be found, fall back to the **inline template skeleton** at the end of this command.
+1. **The BRD template** — the BRD's **structure** comes from a template. Resolve `brd-template.md` through
+   the project's template stack and take the **first readable, non-empty** hit:
+   1. `.specify/templates/overrides/brd-template.md` — the project's own override. It wins outright.
+   2. `.specify/presets/<preset-id>/templates/brd-template.md` — any installed preset (in registry priority
+      order, if a `.specify/presets/.registry` says so).
+   3. `.specify/extensions/spectra/templates/brd-template.md` — the template shipped with this extension.
+   4. `.specify/templates/brd-template.md` — a core template, if the project keeps one there.
+   5. The **inline skeleton** at the end of this command — last resort only, for a project with no
+      `.specify/` at all.
+
+   Do not stop at the first file that *exists* — stop at the first one you can actually **use**. If a
+   layer's file is present but empty or unreadable, say so in one line and continue down the list. Never
+   edit a template: they are input. Report which one you used, by path, in Step 7.
 2. **Constitution** — `.specify/memory/constitution.md`, if present, so the BRD's terminology and
    constraints align with ratified guardrails. If the requirement appears to conflict with a principle,
    note the tension as an Open Question — never silently override or edit the constitution.
@@ -142,10 +152,11 @@ user journeys, or acceptance criteria and that you cannot resolve from Steps 1�
 
 ---
 
-## Step 5 — Draft the BRD from the template
+## Step 5 — Draft the BRD from the resolved template
 
-Fill the template's sections **in order**, grounded strictly in the requirement and the clarifying
-answers. Filling rules:
+Fill the **resolved** template's sections (Step 2) **in order**, grounded strictly in the requirement and the
+clarifying answers. Follow it exactly — same sections, same order, same headings. Do not add, rename, or
+reorder them. Filling rules:
 
 - **Document Control** (auto-populate):
   - **BRD ID** — `BRD-NNN` (same number as the filename).
@@ -164,6 +175,13 @@ answers. Filling rules:
   adopted under **Assumptions (Section 9)** — never invent a requirement to fill a gap.
 - **Remove all template guidance comments and every `[PLACEHOLDER]` token.** Delete any section that
   genuinely does not apply (remove it entirely — do not leave "N/A").
+- **Honour the resolved template; do not repair it.** The section numbers above describe the shipped
+  default. If the project's override renames, renumbers, drops, or adds sections, follow **its** structure:
+  fill what it declares, and mention once when you report that it omitted something this command would
+  ordinarily produce (say, User Journeys — the section the spec depends on most). Do not reinstate it. An
+  override is a decision, not a suggestion. Where the override adds sections, fill them from the
+  requirement and the clarifying answers; where you genuinely have nothing, say so in the section rather
+  than inventing content.
 
 ---
 
@@ -180,10 +198,17 @@ any source file, and do not touch an earlier BRD folder.
 After writing, report concisely in chat:
 
 1. The output file path (e.g. `docs/brd/003-brd-generator.md`).
-2. A **one-line summary** of the BRD's title/intent.
-3. The next step, in **agent-neutral** wording: *You can now run the Spec Kit **specify** command with
+2. The **template you used** — the path resolved in Step 2. An override that silently failed to apply looks
+   exactly like one that worked, so name it.
+3. A **one-line summary** of the BRD's title/intent.
+4. The next step, in **agent-neutral** wording: *You can now run the Spec Kit **specify** command with
    this BRD to create the spec.* (The exact trigger varies by agent — e.g. `/speckit-specify` on Claude,
    `/speckit.specify` on kiro-cli.)
+
+**If the template came from the shipped default** (layer 3), and only if the user seems to want a different
+structure, mention once that they can copy it to `.specify/templates/overrides/brd-template.md`, edit it, and
+commit — every later BRD follows their version, and the override survives extension updates. Do not create
+that file yourself: it would breach the one rule above.
 
 **If Step 2 found BRDs in an earlier location**, add one short note — once per run, no more:
 
@@ -202,10 +227,11 @@ Do **not** invoke `specify` yourself — the handoff is an instruction only.
 
 ---
 
-## Inline template skeleton (fallback for Step 2)
+## Inline template skeleton (last resort for Step 2)
 
-Use this only if `.specify/extensions/spectra/templates/brd-template.md` cannot be read. Reproduce these
-sections, in order, filling them per Step 5 (delete these guidance notes in the output):
+Use this **only** when no layer in Step 2 yielded a readable template — a project with no `.specify/`
+directory at all. Its sections are identical to the shipped `brd-template.md`. Reproduce these sections, in
+order, filling them per Step 5 (delete these guidance notes in the output):
 
 ```markdown
 # Business Requirements Document (BRD): <Title>
