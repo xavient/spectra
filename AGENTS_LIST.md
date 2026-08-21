@@ -37,6 +37,9 @@ any constitution update the decision implies.
   and checked against the constitution as you decide.
 - **Where it writes** — `docs/adr/` by default, or the `Artifact root:` your constitution declares. It
   checks whether `docs/` is a published site source (Pages, MkDocs, Docusaurus) and asks first if it is.
+- **Template** — `adr-template.md`. Override it at `.specify/templates/overrides/adr-template.md` to change the
+  sections; the override is committed, team-wide, and survives extension updates. Each run reports which
+  template it used.
 - **Example (Claude)** —
   ```
   /speckit-spectra-adr We should standardize on PostgreSQL for all primary data stores
@@ -150,6 +153,9 @@ Questions). It then tells you to run the specify command with the BRD; its only 
   move it, and every Spectra document agent follows. Because `docs/` is GitHub Pages' only non-root branch
   source and the default source directory for MkDocs and Docusaurus, the command checks for that setup and
   asks before writing a BRD somewhere it would be published.
+- **Template** — `brd-template.md`, the 14-section structure. Override it at
+  `.specify/templates/overrides/brd-template.md` to add or drop sections; the override is committed, team-wide,
+  and survives extension updates. Each run reports which template it used.
 - **Examples (Claude)** —
   ```
   /speckit-spectra-brd Support agents need to merge duplicate customer tickets while preserving history

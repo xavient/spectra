@@ -3,6 +3,50 @@
 All notable changes to the `spectra` extension are documented here. This project follows
 [Semantic Versioning](https://semver.org/).
 
+## [1.7.0] - 2026-08-21
+
+### Added
+- **Both document agents are now driven by an overridable template.** `speckit.spectra.adr` used to carry its
+  structure as a literal block inside the command file — there was no file to change. It now ships as
+  `templates/adr-template.md`, alongside the BRD template, and both are declared in `extension.yml` under
+  `provides.templates`.
+
+- **`.specify/templates/overrides/<name>.md` is the supported way to customize them.** Drop
+  `.specify/templates/overrides/adr-template.md` (or `brd-template.md`) into your project, edit it, commit it —
+  every document produced from then on follows your structure, on every teammate's machine. Add the sections
+  your governance needs, or delete ones you don't want.
+
+  Both commands now resolve their template through Spec Kit's stack, first usable layer wins: project override
+  → installed presets → this extension → core `.specify/templates/` → the command's inline skeleton as a last
+  resort. A layer that exists but is empty or unreadable is reported and skipped rather than being fatal.
+
+  **This is the part that was broken before.** `brd` read the extension's copy at a hard-coded path, so an
+  override was silently ignored, which left editing the installed copy as the only lever — and that edit does
+  not survive: extension files are replaced wholesale when the extension updates. Because the path is tracked
+  by Git, the edit looks durable and then reverts later inside an unrelated diff. An override lives outside the
+  extension tree and survives.
+
+- **Each command reports which template it used**, by path. An override that silently failed to apply
+  otherwise looks exactly like one that worked, and the first clue would be a wrongly-shaped document.
+
+### Changed
+- **A resolved template is honoured, not repaired.** If your override renames, renumbers, drops, or adds
+  sections, the command follows *your* structure and mentions once what it left out, instead of quietly
+  reinstating it. Where your template adds sections, they are filled from the same gathered context; where
+  there is genuinely nothing to say, the command says so rather than inventing content.
+
+- **The ADR's section list is unchanged**: Context, Decision, Consequences, with the same `Date` and `Status`
+  header. With no override in place, output is structurally identical to 1.6.0. Enriching the default was
+  deliberately left out of this release — now that every project can add sections itself, changing the shipped
+  default would have altered everyone's output while claiming to be additive.
+
+- Constitution **Principle VIII — Documents Are Shaped by Overridable Templates** (constitution 1.7.0) records
+  the rule so future document agents inherit it: the structure comes from a registered template resolved
+  through the stack, with an inline fallback and never a hard-coded path; the resolved template is honoured as
+  authored; the command names the template it used. Resolution stays prompt-expressed, because calling Spec
+  Kit's Bash `resolve_template()` would break agent-agnosticism and shipping a resolver of our own would break
+  the Markdown-only guarantee — the package still contains no scripts, no binaries, and no hooks.
+
 ## [1.6.0] - 2026-08-21
 
 ### Changed
