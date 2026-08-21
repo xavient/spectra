@@ -297,6 +297,23 @@ Run `create-pr` and check five things:
 
 Clean up the probe PR and branch afterwards.
 
+And one pass on `review-pr`, whose new surface is the hardest to verify by reading. On a PR you own:
+
+1. **Issue as context, spec-less.** Open a PR from a non-spec branch whose body says `Closes #<n>` and
+   target a **non-default** branch. Confirm the command finds the issue anyway — the structured link is empty
+   there, so this exercises the text fallback — and that traceability is reported as run *against the issue*.
+2. **Declining.** Remove the reference, run again, and confirm it asks once, accepts a skip, and reports the
+   absence rather than asking twice.
+3. **Inline placement.** Accept a finding anchored on a changed line and confirm it arrives as a line comment;
+   accept one anchored outside the diff and confirm it lands in the body with the reason in coverage.
+4. **A suggestion.** Confirm a mechanical fix arrives as a ` ```suggestion ` block, that it appeared verbatim
+   in the preview first, and that GitHub's **Commit suggestion** button applies cleanly.
+5. **Template override.** Copy `review-template.md` into `.specify/templates/overrides/`, delete a section,
+   and confirm the next review follows your version, says what it moved, and **still** carries the revision
+   anchor, the AI-assisted disclosure, and Coverage and limits.
+6. **Atomicity.** Nothing to force here, but confirm the report names the template path, the inline/body
+   counts, and the authorizing context it used.
+
 **6. Iterate and clean up.** After editing files under `spectra/`, rebuild the zip (step 1),
 re-unzip, and reinstall with `--force`, then restart your agent:
 
