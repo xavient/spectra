@@ -12,6 +12,7 @@ is a *listing* — several agents named together, a command string, or a descrip
 
 from __future__ import annotations
 
+import ast
 import re
 import sys
 import unittest
@@ -95,6 +96,38 @@ class TheRosterIsReadAtRunTime(unittest.TestCase):
                 code = cli.main(["agent-list"])
         self.assertEqual(code, 0)
         self.assertIn("Invented By The Test Only", buffer.getvalue())
+
+
+class EverySourceFileParsesOnTheOldestSupportedPython(unittest.TestCase):
+    """`pyproject.toml` claims `>=3.9`, and CI runs 3.9 — so the *grammar* has to hold there too.
+
+    This exists because of a real escape: a test fixture used escaped quotes inside an f-string expression,
+    which PEP 701 legalized in 3.12. It parsed on the developer's 3.14 and was a `SyntaxError` on 3.9, taking
+    down fifteen test modules at import time — a failure the whole local suite could not see. `ast.parse`
+    with `feature_version` reproduces the older grammar without needing the older interpreter.
+    """
+
+    ROOTS = ("spectra_cli", "tests", "tools")
+    OLDEST = (3, 9)
+
+    def test_no_file_uses_syntax_newer_than_the_declared_floor(self):
+        offences = []
+        for root in self.ROOTS:
+            for path in sorted(h.repo_file(root).glob("*.py")):
+                try:
+                    ast.parse(path.read_text(encoding="utf-8"), filename=str(path),
+                              feature_version=self.OLDEST)
+                except SyntaxError as exc:
+                    offences.append(f"{path.name}:{exc.lineno}: {exc.msg}")
+        self.assertEqual(offences, [],
+                         "these files need syntax that Python "
+                         f"{'.'.join(map(str, self.OLDEST))} does not have:\n"
+                         + "\n".join(offences))
+
+    def test_the_floor_matches_what_the_package_declares(self):
+        """If `requires-python` moves, this test must move with it — not be quietly outgrown."""
+        declared = h.repo_file("pyproject.toml").read_text(encoding="utf-8")
+        self.assertIn('requires-python = ">=3.9"', declared)
 
 
 class CoverageCarriesNoAgentKnowledge(unittest.TestCase):

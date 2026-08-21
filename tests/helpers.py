@@ -371,10 +371,17 @@ def fake_specify(output: str = SELF_CHECK_UP_TO_DATE, *, exit_code: int = 0,
     """
     payload = (status_output if status_output is not None
                else integration_status_json(installed, default=default, modified=modified))
-    fail_keys = " ".join(f'"{key}"' for key in use_fails)
+    # Built by concatenation rather than f-strings on purpose: the shell fragments below contain both
+    # quote characters, and an f-string expression cannot carry a quote of its own delimiter — or any
+    # escape — before Python 3.12 (PEP 701). The CI matrix includes 3.9, where that is a SyntaxError at
+    # import time, which takes the whole suite down rather than one test.
+    fail_list = " ".join('"' + key + '"' for key in use_fails) or '""'
+    log_line = 'printf "%s\\n" "$*" >> ' + str(argv_log) + "\n" if argv_log else ""
     with tempfile.TemporaryDirectory() as tmp:
         script = Path(tmp) / "specify"
         helper = Path(tmp) / "use_effect.py"
+        use_line = ("  " + sys.executable + " " + str(helper) + " " + str(use_effect)
+                    + ' "$3" || exit 1\n')
         # A tiny Python helper rather than shell JSON surgery: the registry and integration.json are
         # JSON, and sed-ing them would be the kind of fixture that passes while the product is wrong.
         helper.write_text(
@@ -404,23 +411,23 @@ def fake_specify(output: str = SELF_CHECK_UP_TO_DATE, *, exit_code: int = 0,
         )
         script.write_text(
             "#!/bin/sh\n"
-            + (f'printf "%s\\n" "$*" >> {argv_log}\n' if argv_log else "")
+            + log_line
             + 'if [ "$1" = "self" ] && [ "$2" = "check" ]; then\n'
-            f"  cat <<'SPECTRA_SELF_EOF'\n{output}SPECTRA_SELF_EOF\n"
-            f"  exit {exit_code}\n"
-            "fi\n"
-            'if [ "$1" = "integration" ] && [ "$2" = "status" ]; then\n'
-            f"  cat <<'SPECTRA_STATUS_EOF'\n{payload}SPECTRA_STATUS_EOF\n"
-            f"  exit {status_exit_code}\n"
-            "fi\n"
-            'if [ "$1" = "integration" ] && [ "$2" = "use" ]; then\n'
-            f"  for failing in {fail_keys or '""'}; do\n"
-            '    if [ "$3" = "$failing" ]; then exit 1; fi\n'
-            "  done\n"
-            + (f'  {sys.executable} {helper} {use_effect} "$3" || exit 1\n' if use_effect else "")
+            + "  cat <<'SPECTRA_SELF_EOF'\n" + output + "SPECTRA_SELF_EOF\n"
+            + "  exit " + str(exit_code) + "\n"
+            + "fi\n"
+            + 'if [ "$1" = "integration" ] && [ "$2" = "status" ]; then\n'
+            + "  cat <<'SPECTRA_STATUS_EOF'\n" + payload + "SPECTRA_STATUS_EOF\n"
+            + "  exit " + str(status_exit_code) + "\n"
+            + "fi\n"
+            + 'if [ "$1" = "integration" ] && [ "$2" = "use" ]; then\n'
+            + "  for failing in " + fail_list + "; do\n"
+            + '    if [ "$3" = "$failing" ]; then exit 1; fi\n'
+            + "  done\n"
+            + (use_line if use_effect else "")
             + "  exit 0\n"
-            "fi\n"
-            "exit 0\n",
+            + "fi\n"
+            + "exit 0\n",
             encoding="utf-8",
         )
         script.chmod(0o755)
