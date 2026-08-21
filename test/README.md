@@ -276,6 +276,27 @@ specify extension add spectra --force   # same tree-replace a version bump perfo
 ls .specify/templates/overrides/        # both files still there, unchanged
 ```
 
+And one pass on `create-pr`, which has the most moving parts. On a throwaway branch with a commit:
+
+```bash
+git checkout -b fix/probe-timeout       # deliberately NOT a spec branch
+echo "probe" >> README.md               # leave something uncommitted
+```
+
+Run `create-pr` and check five things:
+
+1. It **proceeds from a non-spec branch** rather than refusing.
+2. It lists the uncommitted file and asks whether to **commit and push first**. Answer no once and confirm
+   it says the change is excluded; run again, answer yes, and confirm the commit exists on the remote.
+3. With no promotion flow documented, the final summary **asks whether the proposed base is right**. Answer
+   "no, use dev" and confirm the PR targets `dev` and that the target's existence was re-checked.
+4. Pass `--issue <n>` and confirm the body carries `Closes #<n>` when the base is the default branch, and a
+   plain `#<n>` plus an auto-close warning when it is not.
+5. The report names the **resolved template path**. Override `pr-template.md` and confirm the next PR follows
+   it.
+
+Clean up the probe PR and branch afterwards.
+
 **6. Iterate and clean up.** After editing files under `spectra/`, rebuild the zip (step 1),
 re-unzip, and reinstall with `--force`, then restart your agent:
 

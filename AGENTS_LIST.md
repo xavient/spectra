@@ -66,10 +66,10 @@ edits the constitution or source — you choose which guardrails to adopt.
 <!-- SPECTRA:AGENT id=create-pr -->
 ### Create PR ✅
 
-**`speckit.spectra.create-pr`** — Open a correctly-targeted GitHub PR for the current spec branch. It
-derives the base branch from your promotion strategy, confirms before any push or PR creation, and
-returns the PR URL. Also offered automatically by an `after_implement` hook once `implement` finishes, so
-you don't have to invoke it by hand.
+**`speckit.spectra.create-pr`** — Open a correctly-targeted GitHub PR for the branch you are on, optionally
+linked to an issue, with the body built from an overridable PR template. It asks once with everything on the
+table before creating anything, and returns the PR URL. Also offered automatically by an `after_implement`
+hook once `implement` finishes, so you don't have to invoke it by hand.
 
 `gh` is required at run time, and the command **gates on it before doing anything else**: if `gh` is
 missing or unauthenticated it stops immediately — before reading the constitution, before deriving a base
@@ -80,12 +80,33 @@ Failures *after* the gate degrade instead: you get the manual `git push` + `gh p
 the derived base branch filled in, plus an explicit statement of whether the branch already reached the
 remote.
 
+**Works from any branch** — a `fix/…` or chore branch is fine; only a detached HEAD and a branch that is
+already the base are refused. A spec branch simply contributes more to the body (`spec.md`, `plan.md`,
+`tasks.md`), while the **Changes** section always comes from the real diff against the base.
+
+**Uncommitted work is offered a commit, not a warning.** A dirty tree gets the file list and the question
+*"should I proceed with committing and pushing first?"* — yes behaves like an ordinary commit-and-push, no
+opens the PR from committed work and says what was excluded. Credential-shaped filenames are called out
+before anything is staged, and `--no-verify` is never used.
+
 - **Arguments** — all optional:
   - *(none)* — open a **ready-for-review** PR (the default).
+  - `--issue <url-or-number>` — the issue this PR addresses. Omit it and you are asked once; skipping the
+    question writes no issue section at all.
   - `--draft` — open the PR as a **draft** instead.
-  - `--base <branch>` — override the derived base branch (still confirmed with you before opening).
-- **Use it when** — implementation is done and you want the PR opened against the right base without
-  running `git`/`gh` by hand.
+  - `--base <branch>` — use this base branch (still shown in the final summary).
+- **Template** — `pr-template.md`: Summary, Related Issues, Type of Change, Changes, How to Test, Evidence,
+  Breaking Changes, Notes for Reviewers — and deliberately **no self-certification checklist**. Override it
+  at `.specify/templates/overrides/pr-template.md`; the override is committed, team-wide, and survives
+  extension updates.
+- **Linked issues** — GitHub honours closing keywords **only** on PRs targeting the default branch, so the
+  command writes `Closes #42` there and a plain `#42` reference anywhere else, telling you that merging will
+  not auto-close it. Cross-repository issues are referenced by full URL.
+- **Base branch** — a promotion flow documented in the constitution or the `git` extension config is used
+  and cited. With nothing documented the command *proposes* a base and asks at the final gate, so you can
+  answer "no, use dev" without restarting.
+- **Use it when** — a piece of work is ready for review and you want the PR opened against the right base,
+  shaped like your team's template, without running `git`/`gh` by hand.
 - **Examples (Claude)** —
   ```
   /speckit-spectra-create-pr

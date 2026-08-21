@@ -541,10 +541,10 @@
         </li>
         <li>
           <span class="name">speckit.spectra.create-pr</span>
-          <span class="cdesc">Open a correctly-targeted GitHub PR for the current spec branch, deriving the base from your promotion strategy and returning the PR URL. Confirms before any push, and is also offered automatically after <code>implement</code>.</span>
-          <span class="args"><b>Arguments:</b> none opens a <b>ready-for-review</b> PR (default); <code>--draft</code> opens a draft; <code>--base &lt;branch&gt;</code> overrides the derived base branch (confirmed first).</span>
+          <span class="cdesc">Open a correctly-targeted GitHub PR for the branch you're on — optionally linked to an issue, with the body built from an overridable <code>pr-template</code>. Offers to commit and push uncommitted work, asks once with everything on the table before creating anything, and returns the PR URL. Also offered automatically after <code>implement</code>.</span>
+          <span class="args"><b>Arguments:</b> none opens a <b>ready-for-review</b> PR (default); <code>--issue &lt;url-or-number&gt;</code> links an issue (you're asked once if omitted); <code>--draft</code> opens a draft; <code>--base &lt;branch&gt;</code> sets the base branch.</span>
           <span class="lbl">Example (Claude)</span>
-          <pre><code>/speckit-spectra-create-pr --draft</code></pre>
+          <pre><code>/speckit-spectra-create-pr --issue 42</code></pre>
         </li>
         <li>
           <span class="name">speckit.spectra.review-pr</span>
