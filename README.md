@@ -246,8 +246,10 @@ spectra install
 `install` is the verb that does the work.)
 
 It installs the `specify` CLI if it's missing (at the latest Spec Kit release), offers to run
-`specify init` if the current folder isn't a Spec Kit project yet, registers the Spectra catalog, and
-installs every extension the catalog advertises. It works on macOS, Linux, and Windows.
+`specify init` if the current folder isn't a Spec Kit project yet, registers the Spectra catalog,
+installs every extension the catalog advertises, and — in a project with more than one coding agent
+installed — registers Spectra's commands for **every** one of them, restoring your default integration
+afterwards. It works on macOS, Linux, and Windows.
 
 When it finishes, **restart your AI agent** to pick up the new commands.
 
@@ -337,8 +339,54 @@ Two things follow from that:
   `--force` overwrites nothing and tells you which flag would.
 
 If an installed integration has no Spectra commands registered for it, `spectra version` says so and names
-the Spec Kit command that would scaffold them — Spectra won't run it for you, because it changes the
-project's default integration for everyone.
+`spectra install` as the fix — which is what closes the gap, since **installing covers every agent in the
+project**. See the next section for how that works.
+
+#### Every agent gets Spectra's commands
+
+`spectra install` registers Spectra's commands for **every** integration installed in the project, not just
+the default one. Spec Kit only ever registers an extension for the *active* integration, so the install
+briefly makes each uncovered agent the default in turn, and then **sets your default back to what it was**
+as the last thing it does. It tells you before it starts, and names the default it will restore:
+
+```text
+[4/4] Registering Spectra with your other agents
+› Spectra's commands are registered for kiro-cli only.
+  claude is installed here but has no Spectra commands.
+
+  To add them, each agent has to be made the project's default for a moment.
+  This run will do that for: claude
+  Then it will set the default back to kiro-cli, where it is now.
+
+› Registering Spectra's commands for claude…
+✓ claude — Spectra's commands registered
+✓ default restored to kiro-cli
+```
+
+Four things are worth knowing:
+
+- **Your default integration is never changed as an outcome.** It moves during the run, is disclosed before
+  it moves, and is restored as the run's final act — including after a failure or a Ctrl-C. If the
+  restoration itself can't be completed, the run prints the exact command that fixes it.
+- **Nothing you customized is overwritten.** Activating an integration preserves locally modified managed
+  files, so this step never asks for `--force` and never accepts it.
+- **`spectra update` keeps coverage.** Updating the extension unregisters it for every agent and
+  re-registers only the default, so the update asks once — defaulting to *no*, or authorized by `--yes` —
+  and puts the other agents back. Without this, an update would quietly undo what the install did.
+- **Single-agent projects see none of this.** No extra step, no question, no extra line of output.
+
+Landed in a half-covered project? Run `spectra install` again. It reports the extension as already
+installed rather than failing, and repairs the coverage:
+
+```text
+✓ Spectra is already installed here (1.5.0) — nothing to download.
+  Update it with: spectra update
+```
+
+> **If a run was killed mid-rotation** — the terminal closed, the machine slept — your project may be left
+> defaulting to another agent. Nothing is broken and nothing was lost; put it back with
+> `specify integration use <your-original-default>`, or just run `spectra install` again, which reports the
+> current default as it works.
 
 Managing the **tool itself** is down to one verb, since `version` and `update` now cover it:
 

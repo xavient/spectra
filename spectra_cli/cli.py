@@ -31,7 +31,8 @@ import argparse
 import os
 import sys
 
-from spectra_cli import extension, health, install, net, project, roster, ui, version
+from spectra_cli import (coverage, exits, extension, health, install, net, project, roster, ui,
+                         version)
 
 # The help surface, rendered by `print_help()` into Spectra-purple panels rather than by argparse's
 # plain formatter. Keeping the copy here (not in `add_argument(help=...)`) keeps the rendered table and
@@ -85,15 +86,16 @@ REMOVED_FLAGS = {
 
 COMMANDS = PROJECT_COMMANDS  # kept for the subparser loop below
 
-# Exit codes. 0-4 and 130 are already the tool's conventions; 5 is new, and exists so a caller can
-# tell "I could not answer" from "the answer is no".
-EXIT_OK = 0
-EXIT_DECLINED = 1        # the user declined an offered action
-EXIT_USAGE = 2           # bad flag or unknown command (argparse's convention)
-EXIT_UNREACHABLE = 3     # published data could not be retrieved
-EXIT_DELEGATION = 4      # a delegated `specify` or `uv` command failed
-EXIT_PROJECT_STATE = 5   # the project is not in the required state
-EXIT_INTERRUPTED = 130
+# Exit codes. Defined in `spectra_cli/exits.py` and re-exported here, because `install.py` has to return
+# them too and cannot import them from this module — `cli.py` imports `install.py`, so the dependency only
+# runs one way. Re-exporting keeps `cli.EXIT_OK` resolving for everything that already reads it here.
+EXIT_OK = exits.EXIT_OK
+EXIT_DECLINED = exits.EXIT_DECLINED          # the user declined an offered action
+EXIT_USAGE = exits.EXIT_USAGE                # bad flag or unknown command (argparse's convention)
+EXIT_UNREACHABLE = exits.EXIT_UNREACHABLE    # published data could not be retrieved
+EXIT_DELEGATION = exits.EXIT_DELEGATION      # a delegated `specify` or `uv` command failed
+EXIT_PROJECT_STATE = exits.EXIT_PROJECT_STATE  # the project is not in the required state
+EXIT_INTERRUPTED = exits.EXIT_INTERRUPTED
 
 
 class _Parser(argparse.ArgumentParser):
@@ -510,19 +512,23 @@ def _skip_network(args) -> bool:
 # version (the whole stack)
 # --------------------------------------------------------------------------- #
 def _show_coverage_advisory(state, report) -> None:
-    """Name any installed integration that has no Spectra commands, and the remedy — without running it.
+    """Name any installed integration that has no Spectra commands, and the remedy.
 
-    Spec Kit registers an extension's commands for the **active** integration only, and defers the others
-    until one is activated. So in a project with two integrations, a developer on the non-default one has
-    no Spectra commands and nothing explains why. This says why, in the one place they are already looking.
+    Spec Kit registers an extension's commands for the **active** integration only, so in a project with two
+    integrations a developer on the non-default one has no Spectra commands and nothing explains why. This
+    says why, in the one place they are already looking.
 
-    Three deliberate restraints: it sits **below** the four rows rather than becoming a fifth; it never
-    touches the exit code, because coverage is not a currency verdict; and it stops at naming
-    `specify integration use` instead of running it, because that command changes which agent the whole
-    project targets — a decision that belongs to the team, not to a maintenance command.
+    **The remedy is now `spectra install`.** It used to name the dependency's own `integration use`, warning
+    in the same breath that it changes the project's default integration for everyone — advice no careful
+    developer should take, which made it a remedy in name only. Since feature 011 the install covers every
+    installed integration and returns the default to where it was, so the safe command is also the effective
+    one (FR-039, FR-040).
 
-    Silent whenever coverage cannot be established (`registered_agents` returning None), and whenever
-    every installed integration is already covered.
+    Two restraints are unchanged: it sits **below** the four rows rather than becoming a fifth, and it never
+    touches the exit code, because coverage is not a currency verdict (FR-042).
+
+    Silent whenever coverage cannot be established (`registered_agents` returning None), and whenever every
+    installed integration is already covered.
     """
     core = report.get(health.INTEGRATION)
     if core is None or len(core.parts) < 2:
@@ -538,8 +544,7 @@ def _show_coverage_advisory(state, report) -> None:
     ui.warn(f"Spectra commands are registered for {have} only.")
     for key in missing:
         ui.plain(ui.dim(f"  {key} is installed here but has no Spectra commands."))
-    ui.plain(ui.dim(f"  To scaffold them: specify integration use {missing[0]}"))
-    ui.plain(ui.dim("  (this changes the project's default integration for everyone.)"))
+    ui.plain(ui.dim("  Add them with: spectra install"))
     ui.plain()
 
 
@@ -832,17 +837,22 @@ def _stalled_children(result, before, after) -> bool:
     return False
 
 
-def _say_what_happened(results, plan) -> None:
+def _say_what_happened(results, plan, coverage_result=None) -> None:
     """Close a successful run with a sentence that is true of *this* run.
 
     "Everything that needed updating was updated" is the right line only when nothing was left behind. A
     declined overwrite exits 0 — correctly, because a skip is neither success nor failure — but claiming a
     complete update in that state would be the same overstatement this feature exists to remove from the
-    report.
+    report. A declined *coverage* step is the same situation for the same reason, so it suppresses the
+    claim too.
     """
     updated = [r for r in results if r.outcome == health.UPDATED]
     updated += [child for r in results for child in r.parts if child.outcome == health.UPDATED]
     left_behind = [key for key in plan.candidates if key not in plan.authorized]
+    if coverage_result is not None and coverage_result.left_uncovered:
+        left_behind = list(left_behind) + list(coverage_result.left_uncovered)
+    if coverage_result is not None and coverage_result.newly_covered:
+        updated = list(updated) + list(coverage_result.newly_covered)
 
     if left_behind and not updated:
         ui.warn("Nothing was updated.")
@@ -854,6 +864,146 @@ def _say_what_happened(results, plan) -> None:
         ui.ok("Everything that needed updating was updated.")
     ui.plain(ui.dim("  Restart your AI agent so it picks up any new commands."))
     ui.plain()
+
+
+def _coverage_row(result):
+    """The `Agent coverage` row group for the outcome table, with one child line per integration.
+
+    A row in the **outcome** table, never a fifth row in the health table above it. That table reports a
+    currency verdict for four components and feature 010 deliberately kept coverage out of it; this one
+    reports work performed, which is exactly what a rotation is (FR-032, research R7).
+    """
+    label = "Agent coverage"
+    children = []
+    for child in result.parts:
+        if child.outcome == coverage.NEWLY_COVERED:
+            children.append((child.key, ui.GLYPH_OK, "registered"))
+        elif child.outcome == coverage.ALREADY_COVERED:
+            children.append((child.key, ui.GLYPH_NONE, "already registered"))
+        elif child.outcome == coverage.FAILED:
+            children.append((child.key, ui.GLYPH_FAIL, f"failed ({child.detail})"))
+        else:
+            children.append((child.key, ui.GLYPH_NONE, f"skipped ({child.detail})"))
+
+    if result.outcome == coverage.COVERED:
+        summary = "registered for " + ", ".join(result.newly_covered)
+        glyph = ui.GLYPH_OK
+    elif result.outcome == coverage.FAILED:
+        if result.restoration == coverage.NOT_RESTORED:
+            summary = f"the default integration was left as {result.current_default}"
+        else:
+            summary = "not registered for " + ", ".join(result.left_uncovered)
+        glyph = ui.GLYPH_FAIL
+    else:
+        summary = f"skipped ({result.detail})"
+        glyph = ui.GLYPH_NONE
+    return (label, glyph, summary, tuple(children))
+
+
+def _coverage_consent(args, plan) -> bool:
+    """Disclose the transient default change and get one answer for it (FR-025 – FR-028).
+
+    Separate from `_confirm_updates` on purpose. That question approves a *version* plan; this one approves
+    activating agents and moving a committed setting for a moment. Folding them together would make one
+    answer cover two different kinds of change — and the clarification for this feature asked for them to
+    stay apart.
+
+    `--yes` authorizes; `--force` deliberately does not appear here, because it means "overwrite my modified
+    files", which coverage never does (FR-009, FR-049).
+    """
+    ui.plain()
+    ui.warn("Spectra's commands are missing for: " + ", ".join(plan.uncovered_keys))
+    if plan.moves_default:
+        ui.plain("  Adding them means making each agent the project's default for a moment,")
+        ui.plain(f"  then setting the default back to {ui.bold(plan.default_key)}, where it is now.")
+    else:
+        ui.plain(f"  They can be added to {ui.bold(plan.default_key)} without changing anything else.")
+    ui.plain()
+
+    if args.yes:
+        return True
+    if not sys.stdin.isatty():
+        ui.plain("  Re-run with " + ui.bold("--yes") + " to register them without being asked.")
+        ui.plain()
+        return False
+    return ui.confirm("Register Spectra's commands for these agents?", default_yes=False)
+
+
+def _run_coverage(args, state):
+    """Evaluate coverage after the walk and, with consent, close the gap. Returns a result or None.
+
+    Runs **whether or not** the Spectra agents were updated in this run: the extension update unregisters
+    every agent and re-registers only the default, so the loss may have been caused by an earlier run
+    (FR-024, BRD-007 F5).
+
+    Returns None when there is nothing to say — every integration covered, coverage unknown, or a single
+    integration that is already covered — so a project the feature does not serve sees no new output
+    (FR-037, FR-038).
+    """
+    plan = coverage.plan(state.project_root)
+    if not plan.needed:
+        return None
+
+    if not _coverage_consent(args, plan):
+        children = tuple(
+            coverage.CoverageOutcome(
+                key, coverage.ALREADY_COVERED if covered else coverage.SKIPPED,
+                detail=None if covered else "declined")
+            for key, covered in ((s.key, s.covered) for s in plan.states))
+        return coverage.CoverageResult(coverage.SKIPPED, detail="declined", parts=children,
+                                      original_default=plan.default_key,
+                                      current_default=plan.default_key)
+
+    def announce(key):
+        ui.plain()
+        ui.info(f"Registering Spectra's commands for {ui.bold(key)} …")
+
+    try:
+        return coverage.apply(plan, announce=announce)
+    except coverage.Interrupted:
+        raise
+    except extension.DelegationError as exc:
+        return coverage.CoverageResult(coverage.FAILED, detail=str(exc),
+                                       original_default=plan.default_key)
+
+
+def _coverage_only(args, state) -> int:
+    """The coverage step on a run where no component needed updating (FR-024).
+
+    Returns `EXIT_OK` when there was nothing to do — which is the overwhelmingly common case and prints
+    nothing at all — and otherwise reports the rotation exactly as the full walk does.
+    """
+    try:
+        result = _run_coverage(args, state)
+    except coverage.Interrupted:
+        ui.plain()
+        ui.fail("Interrupted; the agents that were not reached were left alone.")
+        ui.plain(ui.dim("  The project's default integration was restored."))
+        return EXIT_INTERRUPTED
+    if result is None:
+        return EXIT_OK
+
+    ui.health_table([_coverage_row(result)])
+    ui.plain()
+    if result.restoration == coverage.NOT_RESTORED:
+        ui.fail(f"Could not set the default integration back to {result.original_default}.")
+        if result.current_default:
+            ui.plain(f"  The project is currently defaulted to {ui.bold(result.current_default)}.")
+        ui.plain("  Restore it with: "
+                 + ui.bold(f"specify integration use {result.original_default}"))
+        ui.plain()
+        return EXIT_DELEGATION
+    if result.left_uncovered:
+        ui.warn("Spectra's commands are still missing for: " + ", ".join(result.left_uncovered))
+        ui.plain("  Add them with: " + ui.bold("spectra install"))
+        ui.plain()
+    if result.failed:
+        return EXIT_DELEGATION
+    if result.newly_covered:
+        ui.ok("Spectra's commands are now registered for every agent in this project.")
+        ui.plain(ui.dim("  Restart your AI agent so it picks up the new commands."))
+        ui.plain()
+    return EXIT_OK
 
 
 def cmd_update(args) -> int:
@@ -887,7 +1037,10 @@ def cmd_update(args) -> int:
         else:
             ui.ok("Everything is up to date.")
         ui.plain()
-        return EXIT_OK
+        # Coverage is still evaluated: an earlier run's extension update may have stripped it, and a
+        # current stack with a half-covered project is exactly the state this feature exists to fix
+        # (FR-024). Silent when there is nothing to do, so an all-covered project reads as it always did.
+        return _coverage_only(args, state)
 
     if not _confirm_updates(args, report.outdated):
         ui.info("Nothing was changed.")
@@ -918,16 +1071,47 @@ def cmd_update(args) -> int:
     # manifest that disagrees yields a cheerful no-op. Re-reading is what turns "we ran the update" into
     # "here is what you now have".
     after = health.check_all(project.classify(), skip_network=_skip_network(args))
-    ui.health_table([
+
+    # Coverage comes after the walk, because the extension update is what destroys it: the update
+    # unregisters every agent and re-registers only the default (BRD-007 F5). Evaluating first would plan
+    # against a state this run is about to invalidate.
+    try:
+        coverage_result = _run_coverage(args, state)
+    except coverage.Interrupted:
+        ui.plain()
+        ui.fail("Interrupted; the agents that were not reached were left alone.")
+        ui.plain(ui.dim("  The project's default integration was restored."))
+        return EXIT_INTERRUPTED
+
+    rows = [
         _outcome_row(result, before=report.get(result.key), after=after.get(result.key))
         + (_outcome_child_rows(result, before=report.get(result.key),
                                after=after.get(result.key)),)
         for result in results
-    ])
+    ]
+    if coverage_result is not None:
+        rows.append(_coverage_row(coverage_result))
+    ui.health_table(rows)
     ui.plain()
+
+    if coverage_result is not None and coverage_result.restoration == coverage.NOT_RESTORED:
+        ui.fail("Could not set the default integration back to "
+                f"{coverage_result.original_default}.")
+        if coverage_result.current_default:
+            ui.plain(f"  The project is currently defaulted to "
+                     f"{ui.bold(coverage_result.current_default)}.")
+        ui.plain("  Restore it with: "
+                 + ui.bold(f"specify integration use {coverage_result.original_default}"))
+        ui.plain()
+    elif coverage_result is not None and coverage_result.left_uncovered:
+        ui.warn("Spectra's commands are still missing for: "
+                + ", ".join(coverage_result.left_uncovered))
+        ui.plain("  Add them with: " + ui.bold("spectra install"))
+        ui.plain()
 
     failed = [r for r in results if r.failed]
     stalled = [r for r in results if _reported_success_without_moving(r, report, after)]
+    coverage_failed = coverage_result is not None and coverage_result.failed
 
     if failed:
         ui.fail(f"{len(failed)} of {len(report.outdated)} updates failed.")
@@ -947,7 +1131,11 @@ def cmd_update(args) -> int:
         return EXIT_DELEGATION
 
     _report_unauthorized(plan, after)
-    _say_what_happened(results, plan)
+    if coverage_failed:
+        # An attempted coverage step that failed is a failure of this run, on the same terms as any other
+        # attempted component (FR-029). A declined one is not, and never reaches here.
+        return EXIT_DELEGATION
+    _say_what_happened(results, plan, coverage_result)
     return EXIT_OK
 
 

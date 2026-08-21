@@ -348,5 +348,50 @@ class ForceFlag(unittest.TestCase):
         self.assertIn("--force", buffer.getvalue())
 
 
+class CoverageAddsNoSurface(unittest.TestCase):
+    """Feature 011 changed what two commands *do*, and nothing about what a user types (FR-047).
+
+    Coverage is part of installing, not a switch: there is no flag to skip it and no environment variable to
+    disable it. The clarification behind that decision is recorded in the spec — the step is non-destructive
+    and self-reversing, and a team that truly objects can still install the extension with the dependency's
+    own command, so a permanent flag would buy an opt-out that is only meaningful in a case FR-044 already
+    makes declinable.
+    """
+
+    def test_the_option_list_is_unchanged(self):
+        self.assertEqual([long for long, _short, _desc in cli.OPTIONS],
+                         ["--yes", "--force", "--no-update-check", "--help"])
+
+    def test_no_coverage_flag_is_accepted_on_install(self):
+        for flag in ("--no-coverage", "--skip-coverage", "--coverage", "--cover"):
+            code, _out = run(["install", flag])
+            self.assertEqual(code, cli.EXIT_USAGE, f"{flag} must not parse")
+
+    def test_no_coverage_flag_is_accepted_on_update(self):
+        for flag in ("--no-coverage", "--skip-coverage"):
+            code, _out = run(["update", flag])
+            self.assertEqual(code, cli.EXIT_USAGE, f"{flag} must not parse")
+
+    def test_no_environment_variable_disables_coverage(self):
+        """The only environment variable the tool reads stays the update check (research R11, FR-018)."""
+        source = (Path(cli.__file__).parent / "coverage.py").read_text(encoding="utf-8")
+        self.assertNotIn("environ", source)
+        self.assertNotIn("getenv", source)
+
+    def test_the_project_command_list_is_unchanged(self):
+        self.assertEqual([name for name, _desc in cli.PROJECT_COMMANDS],
+                         ["install", "check", "version", "update", "uninstall", "agent-list"])
+
+    def test_the_exit_codes_are_the_ones_the_tool_already_published(self):
+        """Coverage reuses the vocabulary rather than adding a code of its own (research R8)."""
+        from spectra_cli import exits
+        self.assertEqual(
+            (exits.EXIT_OK, exits.EXIT_DECLINED, exits.EXIT_USAGE, exits.EXIT_UNREACHABLE,
+             exits.EXIT_DELEGATION, exits.EXIT_PROJECT_STATE, exits.EXIT_INTERRUPTED),
+            (0, 1, 2, 3, 4, 5, 130))
+        # `cli` re-exports them, so anything reading `cli.EXIT_*` still resolves.
+        self.assertEqual(cli.EXIT_DELEGATION, exits.EXIT_DELEGATION)
+
+
 if __name__ == "__main__":
     unittest.main()

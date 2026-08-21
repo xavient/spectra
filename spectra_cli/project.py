@@ -78,6 +78,28 @@ def find_project_root(start=None):
     return None
 
 
+def extension_present(project_root, extension_id) -> bool:
+    """Whether `extension_id` is installed in this project, by the presence of its folder.
+
+    Answers a narrower question than :func:`classify`, for any extension id rather than Spectra's alone:
+    the catalog may advertise several, and the install flow has to decide *per id* whether there is
+    anything to install.
+
+    **Asked before the install is attempted, never after it fails.** Spec Kit refuses to install an
+    extension that is already present, and a classification taken afterwards cannot tell that refusal
+    apart from a download that failed while an older copy sat on disk — both leave the folder there.
+    Deciding first removes the ambiguity, and removes any need to match the dependency's message text
+    (spec 011 FR-021, research R6).
+
+    A folder with no readable manifest counts as **present** here on purpose. This function reports what is
+    on disk; whether it is *usable* is :func:`classify`'s question, and the install flow deliberately treats
+    an unusable folder as absent so the add is attempted — see `install.add_catalog`.
+    """
+    if project_root is None or not extension_id:
+        return False
+    return (Path(project_root) / ".specify" / "extensions" / extension_id).is_dir()
+
+
 def classify(start=None) -> ProjectState:
     """Resolve the folder's state. Never raises; an unreadable manifest is a state, not an error."""
     root = find_project_root(start)

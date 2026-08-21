@@ -12,6 +12,8 @@ is a *listing* — several agents named together, a command string, or a descrip
 
 from __future__ import annotations
 
+import ast
+import re
 import sys
 import unittest
 from pathlib import Path
@@ -94,6 +96,89 @@ class TheRosterIsReadAtRunTime(unittest.TestCase):
                 code = cli.main(["agent-list"])
         self.assertEqual(code, 0)
         self.assertIn("Invented By The Test Only", buffer.getvalue())
+
+
+class EverySourceFileParsesOnTheOldestSupportedPython(unittest.TestCase):
+    """`pyproject.toml` claims `>=3.9`, and CI runs 3.9 — so the *grammar* has to hold there too.
+
+    This exists because of a real escape: a test fixture used escaped quotes inside an f-string expression,
+    which PEP 701 legalized in 3.12. It parsed on the developer's 3.14 and was a `SyntaxError` on 3.9, taking
+    down fifteen test modules at import time — a failure the whole local suite could not see. `ast.parse`
+    with `feature_version` reproduces the older grammar without needing the older interpreter.
+    """
+
+    ROOTS = ("spectra_cli", "tests", "tools")
+    OLDEST = (3, 9)
+
+    def test_no_file_uses_syntax_newer_than_the_declared_floor(self):
+        offences = []
+        for root in self.ROOTS:
+            for path in sorted(h.repo_file(root).glob("*.py")):
+                try:
+                    ast.parse(path.read_text(encoding="utf-8"), filename=str(path),
+                              feature_version=self.OLDEST)
+                except SyntaxError as exc:
+                    offences.append(f"{path.name}:{exc.lineno}: {exc.msg}")
+        self.assertEqual(offences, [],
+                         "these files need syntax that Python "
+                         f"{'.'.join(map(str, self.OLDEST))} does not have:\n"
+                         + "\n".join(offences))
+
+    def test_the_floor_matches_what_the_package_declares(self):
+        """If `requires-python` moves, this test must move with it — not be quietly outgrown."""
+        declared = h.repo_file("pyproject.toml").read_text(encoding="utf-8")
+        self.assertIn('requires-python = ">=3.9"', declared)
+
+
+class CoverageCarriesNoAgentKnowledge(unittest.TestCase):
+    """`coverage.py` acts on integrations it was told about, and does nothing else to them.
+
+    Four prohibitions from spec 011, each cheap to assert at the source level and expensive to discover by
+    hand once broken. The module rotates a project's default integration, so what it *cannot* do matters as
+    much as what it does.
+    """
+
+    KNOWN_INTEGRATION_KEYS = ("kiro-cli", "claude", "copilot", "cursor", "gemini", "codex",
+                              "windsurf", "qwen", "opencode", "roo", "codebuddy", "amp", "vibe")
+
+    @classmethod
+    def setUpClass(cls):
+        cls.source = (PACKAGE / "coverage.py").read_text(encoding="utf-8")
+        # Docstrings name agents as examples, which is prose rather than a roster. Strip them so the
+        # assertions below read the executable code only.
+        cls.code = re.sub(r'""".*?"""', "", cls.source, flags=re.S)
+
+    def test_no_integration_key_appears_as_a_literal(self):
+        """FR-046. The set of integrations comes from project state at run time, never from constants."""
+        for key in self.KNOWN_INTEGRATION_KEYS:
+            self.assertNotIn(f'"{key}"', self.code, f"coverage.py hard-codes the {key!r} key")
+            self.assertNotIn(f"'{key}'", self.code, f"coverage.py hard-codes the {key!r} key")
+
+    def test_it_never_installs_removes_or_switches_an_integration(self):
+        """FR-045. Spectra covers the integrations a project has; it does not curate them."""
+        for forbidden in ("integration\", \"install", "integration\", \"remove",
+                          "integration\", \"switch", "integration\", \"uninstall"):
+            self.assertNotIn(forbidden, self.code)
+        # The one delegation it is allowed to reach for, named explicitly so a second one stands out.
+        self.assertIn("delegate_integration_use", self.code)
+        self.assertNotIn("delegate_integration_upgrade", self.code)
+        self.assertNotIn("delegate_remove", self.code)
+
+    def test_it_makes_no_network_call_and_holds_no_credential(self):
+        """FR-048. Coverage is a local question about local files."""
+        for forbidden in ("urllib", "http", "requests", "socket", "token", "Authorization"):
+            self.assertNotIn(forbidden, self.code)
+
+    def test_it_cannot_express_an_overwrite(self):
+        """FR-009, FR-049 — enforced by `delegate_integration_use` having no such parameter."""
+        self.assertNotIn("force", self.code)
+        signature = (PACKAGE / "extension.py").read_text(encoding="utf-8")
+        self.assertIn("def delegate_integration_use(key: str) -> int:", signature)
+
+    def test_it_never_consults_the_dependency_version(self):
+        """FR-051. Support is decided by the presence of state, not by a version comparison."""
+        self.assertNotIn("compare_versions", self.code)
+        self.assertNotIn("speckit_version", self.code)
 
 
 if __name__ == "__main__":

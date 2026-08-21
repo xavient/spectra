@@ -221,6 +221,29 @@ def delegate_integration_upgrade(key: str | None = None, force: bool = False) ->
     return _delegate(argv)
 
 
+def delegate_integration_use(key: str) -> int:
+    """`specify integration use <key>`. Returns its exit code.
+
+    **The only mechanism by which Spectra's commands reach an agent.** Spec Kit registers an extension's
+    commands for the *active* integration alone, and defers every other one until it is activated — so
+    installing harder cannot cover a second agent, and no command registers an extension for a *named*
+    agent. Activating each uncovered integration in turn is therefore not a preference; it is the whole
+    supported surface (spec 011 FR-008, BRD-007 findings F1, F2, F6).
+
+    **There is no `force` parameter, deliberately, and none may be added.** Activation preserves locally
+    modified managed files and succeeds with a warning naming them (BRD-007 F4), so coverage never needs
+    the overwrite that :func:`delegate_integration_upgrade` gates so carefully. Feature 010 had to
+    document at length that exactly one call site may authorize discarding a team's edits; keeping that
+    guarantee here costs nothing but a signature that cannot express the request (FR-009, FR-049).
+
+    `key` is required. A bare `specify integration use` has no meaning for this caller — the whole point
+    is to name an integration that is *not* the default.
+    """
+    if not key:
+        raise DelegationError("delegate_integration_use requires an integration key.")
+    return _delegate(["specify", "integration", "use", key])
+
+
 def delegate_remove(force: bool = False) -> int:
     """`specify extension remove spectra`, adding `--force` only when asked.
 

@@ -86,9 +86,15 @@ def die(msg: str, *extra: str) -> "NoReturn":  # type: ignore[name-defined]
     sys.exit(1)
 
 
-def step(n: int, title: str) -> None:
+def step(n: int, title: str, *, total: int = 3) -> None:
+    """A numbered step header. `total` defaults to 3, which was the whole install before coverage existed.
+
+    The total is passed in rather than hard-coded because the install has a fourth step only in projects
+    with an agent that lacks Spectra's commands — and a run that printed `[1/4]` and then showed three
+    steps would be worse than no count at all.
+    """
     print()
-    print(f"{BOLD}{PURPLE}[{n}/3]{RESET} {BOLD}{title}{RESET}")
+    print(f"{BOLD}{PURPLE}[{n}/{total}]{RESET} {BOLD}{title}{RESET}")
 
 
 def confirm(prompt: str, default_yes: bool = True) -> bool:
