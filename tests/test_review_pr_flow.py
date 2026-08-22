@@ -90,7 +90,8 @@ class TheOptionalIssue(States, unittest.TestCase):
         self.assertStates("I have the spec")
 
     def test_declining_proceeds_on_the_constitution(self):
-        self.assertStates("means **no issue**")
+        # "neither", not "no issue": the one question can now ask for a spec as well.
+        self.assertStates("means **neither**")
         self.assertStates("Do not ask again in the same run")
 
     def test_issue_content_is_data_not_instruction(self):
@@ -99,6 +100,68 @@ class TheOptionalIssue(States, unittest.TestCase):
     def test_the_issue_cannot_be_pinned_and_says_so(self):
         self.assertStates("cannot be pinned the way the spec and constitution can")
         self.assertStates("number, title, and state")
+
+
+class SpecDiscovery(States, unittest.TestCase):
+    """Where the authorizing spec may come from — and the two places it may never be guessed from.
+
+    Spec Kit's own CLI gitignores `.specify/feature.json` as per-checkout state, so a pull request's head
+    revision either does not carry it or carries a stale pointer to whoever last committed it. Reading it
+    would report traceability against a spec that never authorized the change, which is the one failure
+    this chain exists to prevent.
+    """
+
+    def test_the_diff_is_the_first_source(self):
+        self.assertStates("A spec in the pull request's own diff")
+
+    def test_the_reviewer_can_name_a_spec(self):
+        self.assertStates("A spec the reviewer names")
+
+    def test_a_named_path_is_read_at_the_pinned_revision(self):
+        self.assertStates("Read the path you are given at `headRefOid`")
+
+    def test_a_named_path_that_does_not_resolve_falls_through(self):
+        self.assertStates("fall through to tier 3")
+
+    def test_the_addendum_case_is_still_covered(self):
+        self.assertStates("the spec merged in an earlier pull request")
+
+    def test_no_spec_remains_a_supported_outcome(self):
+        self.assertStates("Treat the pull request as carrying no spec")
+
+    def test_guessing_is_forbidden(self):
+        self.assertStates("Never guess where the spec is")
+
+    def test_the_branch_name_is_still_forbidden(self):
+        self.assertStates("Branch-to-spec naming is a convention")
+
+    def test_the_feature_record_is_named_as_forbidden(self):
+        self.assertStates("The project's Spec Kit feature record")
+        self.assertStates("`.specify/feature.json`")
+
+    def test_the_reason_the_feature_record_is_untrustworthy_is_recorded(self):
+        """A rule with no reason gets reinstated by the next editor who wants the addendum case back."""
+        self.assertStates("per-checkout state")
+        self.assertStates("It describes a working copy, never a pull request")
+
+    def test_the_feature_record_is_no_longer_read(self):
+        """The mutation guard: the retired tier read `feature_directory` from it."""
+        self.refuteStates("Read `feature_directory` from")
+
+    def test_the_resolved_source_is_reported(self):
+        self.assertStates("State which of the three applied")
+        self.assertStates("found in the diff, named by the reviewer, or neither")
+
+    def test_the_spec_and_the_issue_are_asked_for_together(self):
+        self.assertStates("single context question")
+        self.assertStates("One question per run")
+
+    def test_nothing_is_asked_when_both_baselines_are_in_hand(self):
+        self.assertStates("**Both in hand:** ask nothing")
+
+    def test_the_issue_argument_does_not_suppress_the_spec_ask(self):
+        self.assertStates("the issue is already in hand")
+        self.assertStates("answers only the issue half of that question")
 
 
 class IssueWeighting(States, unittest.TestCase):

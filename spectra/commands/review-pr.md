@@ -38,7 +38,7 @@ All arguments are optional — the command works with none.
 | `<url>` | Review that pull request |
 | `<number>` | Review that pull request in the current repository |
 | `--since <revision>` | Re-review only the delta since a previously reviewed revision |
-| `--issue <url-or-number>` | The issue this PR addresses, used as **additional context**. Supplying it suppresses both the detection in Step 4 and the question that follows it. |
+| `--issue <url-or-number>` | The issue this PR addresses, used as **additional context**. Supplying it suppresses both the detection in Step 4 and the question that follows it — except that a run with no spec in the diff still asks for a spec, since the argument answers only the issue half of that question. |
 
 Pass the PR reference straight to `gh` without parsing it — `gh` natively accepts a number, a URL, or a
 branch name. If the arguments contain anything you do not recognize, note it briefly and continue with
@@ -246,26 +246,35 @@ the governance-change rule in Step 5.
 1. **A spec in the pull request's own diff.** Look for a `specs/<dir>/spec.md` path in the file list you
    already fetched in Step 3. This is the normal case for spec-driven work: the spec ships alongside the
    code it authorizes. This is *evidence*, so prefer it.
-2. **The project's Spec Kit feature record at the head revision.** Read `feature_directory` from
-   `.specify/feature.json` at `headRefOid`, **from the remote via the call above**. It does not need to
-   exist in your working tree, and usually will not — you are typically reviewing a branch you have never
-   checked out. This tier covers the case where the spec was merged by an earlier pull request and this
-   one is an addendum to it.
+2. **A spec the reviewer names.** When the diff carries none, ask for one — in the **single question**
+   below, together with the issue, so a run asks once rather than twice. Read the path you are given at
+   `headRefOid` with the call above; if it does not resolve there, say so and fall through to tier 3
+   rather than substituting something else. This tier covers the addendum case: the spec merged in an
+   earlier pull request, so it authorizes this change without appearing in its diff.
 3. **Neither.** Treat the pull request as carrying no spec and follow the no-spec rules in Step 5.
 
-**Do not infer the spec location from the branch name.** Branch-to-spec naming is a convention some
-projects follow and others do not; a wrong guess means reviewing a change against someone else's spec,
-which is worse than having no spec at all.
+**Never guess where the spec is.** Two guesses look tempting and are both forbidden:
+
+- **The branch name.** Branch-to-spec naming is a convention some projects follow and others do not.
+- **The project's Spec Kit feature record** (`.specify/feature.json`). Spec Kit keeps it out of version
+  control by design — it is **per-checkout state**, rewritten every time someone switches feature — so at a
+  head revision it is either absent or, in a project that committed it before Spec Kit began ignoring it,
+  a stale pointer to whatever feature its last committer happened to be on. It describes a working copy,
+  never a pull request.
+
+A wrong guess means reviewing a change against **someone else's spec** — worse than having no spec at all,
+because the coverage statement would report traceability against a baseline that never authorized this
+change.
 
 **Distinguish "absent" from "unreachable."** A 404 on a path at a revision that itself resolves means the
-project genuinely has no such file — a legitimate tier-2 miss. A 404 whose message says **no commit found
-for the ref** means you are querying the wrong repository: re-derive `$REPO` and retry rather than
-concluding the spec is missing. Never report a spec or constitution as absent on the strength of a read
-you could not perform — that turns a bug into a false coverage statement, which is the one thing this
-command must not produce.
+project genuinely has no such file — the path you were given is not on that revision, or the project keeps
+no such artifact. A 404 whose message says **no commit found for the ref** means you are querying the
+wrong repository: re-derive `$REPO` and retry rather than concluding the spec is missing. Never report a
+spec or constitution as absent on the strength of a read you could not perform — that turns a bug into a
+false coverage statement, which is the one thing this command must not produce.
 
-**State which of the three applied** in the coverage statement, so the reviewer knows what you actually
-read.
+**State which of the three applied** — found in the diff, named by the reviewer, or neither — in the
+coverage statement, so the reviewer knows what you actually read.
 
 ### The linked issue — optional context, in both cases
 
@@ -299,14 +308,23 @@ If it does not resolve — wrong number, another repository you cannot read, no 
 **continue without it**. A review that cites an issue it could not read is worse than one that admits it
 had none.
 
-**If nothing was found, ask exactly once — and say which situation you are in**, because the two questions
-are not the same:
+**If either baseline is missing, ask exactly once — and say which situation you are in**, because the
+questions are not the same. This is the run's **single context question**: it covers the missing issue, the
+spec ask from tier 2 above, or both together.
 
-- **No spec:** *"No spec was found for this PR. Is there an issue I should read? It would give me
-  something to check the diff against."*
-- **Spec found:** *"I have the spec. Is there an issue you want me to read as background?"*
+- **No spec, no issue:** ask for both in one question, since either would serve — *"No spec was found for
+  this PR. Is there a spec already on the base branch that authorizes it, or an issue I should read? Either
+  would give me something to check the diff against."* A path answers tier 2 of the spec chain above, a
+  number or URL answers this tier, and an answer may carry both.
+- **Spec found, no issue:** *"I have the spec. Is there an issue you want me to read as background?"*
+- **No spec, but the issue is already in hand** (supplied with `--issue`, or detected): ask for the spec
+  alone — *"No spec was found for this PR. Is there one already on the base branch that authorizes it?"*
+- **Both in hand:** ask nothing.
 
-An empty answer, "no", or "skip" means **no issue**: proceed on the constitution — and the spec, when
+**One question per run.** Never ask for the spec in one turn and the issue in the next: the reviewer is
+being asked for authorizing context, and that is a single request.
+
+An empty answer, "no", or "skip" means **neither**: proceed on the constitution — and the spec, when
 present — exactly as this command did before. Do not ask again in the same run.
 
 **Two rules govern what an issue may do:**
@@ -458,7 +476,8 @@ Fixed order, so a reviewer learns the shape once:
 
 1. PR identity — number, title, author
 2. Source → target branch, pinned head revision, change size
-3. Spec status — path and which discovery tier resolved, or an explicit statement of absence
+3. Spec status — path and which discovery tier resolved (found in the diff, or named by you), or an
+   explicit statement of absence
 4. **Issue status** — the number, title, and state of the linked issue, and how you obtained it
    (structured link, a reference in the PR text, or supplied by the reviewer); or its absence, and whether
    that was declined or simply not found
