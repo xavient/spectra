@@ -3,6 +3,29 @@
 All notable changes to the `spectra` extension are documented here. This project follows
 [Semantic Versioning](https://semver.org/).
 
+## [1.10.0] - 2026-08-22
+
+### Changed
+- **`speckit.spectra.review-pr` no longer looks for a spec in `.specify/feature.json`.** Spec Kit now gitignores
+  that file — its own CLI writes the rule, describing it as "per-checkout state rather than something to share" —
+  so the second tier of the spec-discovery chain read a path that, at a pull request's head revision, is either
+  missing or stale. Missing was the common case and cost nothing but a wasted call. Stale was the dangerous one: a
+  project that committed the file before Spec Kit began ignoring it still carries whatever feature its last
+  committer happened to be on, so the review would check the diff against **someone else's spec** and report full
+  traceability while doing it. That is the exact failure the chain's ban on branch-name guessing exists to prevent.
+
+  The tier is now **a spec you name**. When the diff carries no spec, the command asks for one and reads the path
+  at the pinned head revision, falling through to the standalone review if it does not resolve there. The addendum
+  case — the spec merged in an earlier pull request — stays covered, on evidence a human vouched for rather than on
+  a machine-local pointer. Both forbidden guesses are now named in the command, with the reason recorded, so
+  neither comes back by accident.
+
+  **The run still asks at most one question.** When neither a spec nor an issue was found, the existing single
+  context question asks for both together; `--issue` answers only its own half, so a run with no spec in the diff
+  still asks for the spec. Tier 1 is untouched: a PR that ships its spec behaves exactly as in 1.9.1, and a PR with
+  no spec anywhere is still reviewed standalone — traceability reported as not run, guardrails at full strength,
+  intent findings capped at Question.
+
 ## [1.9.1] - 2026-08-21
 
 ### Fixed

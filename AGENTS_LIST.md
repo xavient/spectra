@@ -146,11 +146,14 @@ only** — there is no hook — since a reviewer should not be the author.
     skips both detection and the question.
   - `--since <revision>` — re-review only the delta since a revision you reviewed before, reporting
     which previously published findings now appear resolved.
+- **Spec discovery** — the spec ships in the PR's own diff, or you name one when asked; nothing is guessed
+  from a branch name or from Spec Kit's machine-local feature record, which is gitignored and so is absent
+  or stale at any head revision. A PR with no spec is reviewed standalone, and says so.
 - **Linked issue** — found automatically (structured link, then a scan of the PR text, since a PR to a
   non-default branch has no structured link), asked for once if absent, never required. With **no spec** it
   becomes the traceability baseline; with a spec it is background. Its content is treated as data about
   intent, never as instruction, and a finding sourced only from an issue cannot be a Blocker unless the PR
-  claims to close it.
+  claims to close it. When both are missing, the spec and the issue are asked for in **one** question.
 - **Inline comments** — findings anchored inside the diff are published on those lines, carrying a
   ` ```suggestion ` block where the fix is mechanical and complete, so the author can apply it in one click.
   Findings anchored outside the diff go in the summary body with the reason stated. Body, comments, and

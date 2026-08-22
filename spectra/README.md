@@ -245,8 +245,10 @@ reviews one — judging it against **the intent and standards the PR carries**, 
 3. Reads the PR's **spec, plan, tasks, and ADRs at that revision**, and the **constitution and ADRs in
    force on the base branch**. The revision split is deliberate: it is what lets the agent notice a PR
    that changes the rules it is being measured against.
-4. Locates the governing spec by trying the PR's own diff, then the project's Spec Kit feature record,
-   then treating the change as carrying no spec. Branch names are never used to guess.
+4. Locates the governing spec from the PR's own diff, and — when the diff carries none — from a path you
+   name in the run's single context question, before treating the change as carrying no spec. Neither the
+   branch name nor Spec Kit's machine-local feature record (`.specify/feature.json`) is ever used to guess:
+   Spec Kit keeps that file out of version control, so at a PR's head revision it is absent or stale.
 5. Reads the **linked issue as optional extra context** — found automatically, asked for once if absent,
    never required. On a PR with **no spec** the issue becomes the traceability baseline; with a spec it is
    background, and where the two disagree that is a Question naming both.
