@@ -14,6 +14,7 @@ extension that bundles Spectra's agentic SDLC commands. Every command lives unde
 | `speckit.spectra.domain-analyzer` | Infer the project's business domain from its code and docs, then propose opt-in candidate guardrails for SME review. |
 | `speckit.spectra.brd` | Turn a raw business requirement, typed or in a document, into a structured, specify-ready BRD. |
 | `speckit.spectra.adr` | Capture a context-aware Architecture Decision Record grounded in the codebase, prior ADRs, and the constitution. |
+| `speckit.spectra.flaky-test-detector` | Find the tests that pass and fail on the same code, then fix the ones you approve, one at a time. |
 | `speckit.spectra.create-pr` | Open a correctly-targeted GitHub PR for the current spec branch and return its URL. |
 | `speckit.spectra.review-pr` | Review a GitHub pull request against the spec, plan, tasks, ADRs, and constitution it carries, then publish a single human-curated review containing only the findings the reviewer selected. |
 <!-- SPECTRA:GENERATED END id=spectra-readme-commands -->
@@ -392,6 +393,75 @@ agent's, described [above](#change-the-shape-of-your-adrs).
 One caveat worth knowing: **Section 6 — User Journeys** is what the Spec Kit `specify` command leans on most
 heavily. Dropping it is allowed, and the command will say it did so, but expect the resulting spec to have
 thinner user stories.
+
+## `speckit.spectra.flaky-test-detector` — Flaky Test Detector
+
+A Testing & Quality-phase command, and the only Spectra agent that edits code you wrote. It finds the
+tests that pass and fail on the same code, and — with your go-ahead twice — fixes them. It:
+
+1. Reads `.specify/memory/flaky-test-analysis.md` **first**, before anything else, and branches on what it
+   finds: no file, unfinished work, a completed list, or a file it cannot parse.
+2. Identifies your test suites from the working tree — runner configuration, test scripts in the project
+   manifest, directory conventions, filename patterns — and reports each with its framework and file count
+   before naming a single candidate. Several suites in several languages are fine.
+3. Reads the tests for the eight signal categories: timing and async, isolation and shared state, unmocked
+   external dependencies, non-determinism, brittle assertions, parallel-execution conflicts, environment
+   coupling, and existing retry or known-flaky annotations.
+4. Reports a ranked table — test, file, confidence, and a specific fix — plus an honest statement of what
+   it did not examine, then **stops and asks** before writing anything.
+5. On your go-ahead writes the plan: a run summary, one `[ ]` row per candidate, the evidence behind each,
+   and what it could not analyse. Then it stops again, and tells you to delete the rows you disagree with.
+6. On a second go-ahead works the surviving rows in file order, ticking each `[x]` on disk as it lands, and
+   closes with what it fixed, what it left open and why, and every file it touched.
+
+**It never runs anything** — not your suite, not a build, not an install, and not to verify a fix it just
+applied. Detection is a read of the source, which is why it works on the day you install it with no CI
+integration, no results store, and no waiting for run history. The no-verification rule is deliberate
+rather than an omission: an agent that can run the tests it just edited can iterate until green, and that
+is how tests get weakened.
+
+**A fix removes the cause.** Deleting an assertion, loosening one so it always passes, skipping the test,
+marking it expected-to-fail, adding a retry wrapper, or lengthening a sleep are forbidden as remedies.
+Edits stay in test and test-support files — it may create a helper or a mock where a fix needs one, and it
+will say so — but never production source, and never a new dependency. Where the real remedy is in your
+application code, the item stays open with a note about what would need to change and where. Nothing is
+committed: the working-tree diff is your review surface.
+
+Usage (Claude):
+
+```
+/speckit-spectra-flaky-test-detector
+```
+
+Or narrow it to one part of a monorepo:
+
+```
+/speckit-spectra-flaky-test-detector api/
+```
+
+### The list is meant to outlive the session
+
+There is exactly **one** analysis file, at `.specify/memory/flaky-test-analysis.md`, at any time. Close
+your terminal mid-run and the file is still exactly true — progress is written after every single fix, not
+batched at the end — so the next run picks up the remaining items without re-analysing and without
+discarding the pruning you did. A completed list is never replaced without asking. A file it cannot parse
+is never overwritten silently; it says what it could not read and waits. And before a run scoped to one
+suite replaces a plan covering more, it names the pending items that would be dropped.
+
+The file is yours to edit. Delete rows to exclude those tests, reword a suggested fix and it acts on your
+wording, tick an item yourself and it skips it. Only structural damage — a missing `## Tasks` heading,
+rows it cannot resolve — counts as unreadable.
+
+### Confidence, and what it is not
+
+High, Medium, or Low, rating **the strength of the evidence in your source**, not a measured failure rate.
+High requires the triggering construct in the test's own body or its direct fixtures, citable by line.
+With no run history there is no denominator, so the command emits no percentage, score, or flakiness
+index — inventing one would be the easiest way to sound authoritative and be wrong.
+
+Your project's constitution binds the fix it chooses. If a guardrail rules out the only available remedy —
+no mocking libraries, no new test dependencies — the item is left open with that rule named, rather than
+producing a change your own review would reject.
 
 ## License
 

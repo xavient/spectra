@@ -305,10 +305,11 @@
       "id": "flaky-test-detector",
       "title": "Flaky Test Detector",
       "description": "Find the tests that pass and fail on the same code, then fix the ones you approve, one at a time.",
-      "status": "planned",
+      "status": "available",
       "phase": "testing-quality",
       "type": "add-on",
-      "provider": "spectra"
+      "provider": "spectra",
+      "command": "speckit.spectra.flaky-test-detector"
     },
     {
       "id": "security-analyst",

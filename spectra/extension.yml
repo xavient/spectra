@@ -3,7 +3,7 @@ schema_version: "1.0"
 extension:
   id: "spectra"
   name: "Spectra"
-  version: "1.10.0"
+  version: "1.11.0"
   description: "TELUS Digital - Agentic software engineering across the entire SDLC."
   category: "workflow"
   effect: "read-write"
@@ -45,6 +45,9 @@ provides:
     - name: "speckit.spectra.review-pr"
       file: "commands/review-pr.md"
       description: "Review a GitHub pull request against its spec, its linked issue (optional, via --issue), the ADRs, and the constitution, then publish one human-curated review — an overridable summary body plus line-anchored comments with applicable code suggestions — containing only the findings the reviewer individually selected."
+    - name: "speckit.spectra.flaky-test-detector"
+      file: "commands/flaky-test-detector.md"
+      description: "Find the tests that pass and fail on the same code by reading the test source alone — no test run, no CI history — report each with a confidence rating and a concrete fix, then, behind two explicit gates, write a resumable task list to .specify/memory/flaky-test-analysis.md and apply the fixes the developer approves."
 
   # The section structure of every document Spectra produces. Both are resolved through Spec Kit's template
   # stack, so a project overrides one by dropping its own copy at .specify/templates/overrides/<name>.md —
@@ -88,3 +91,6 @@ tags:
   - "review"
   - "code-review"
   - "workflow"
+  - "testing"
+  - "flaky-tests"
+  - "quality"

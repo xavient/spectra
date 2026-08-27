@@ -3,6 +3,45 @@
 All notable changes to the `spectra` extension are documented here. This project follows
 [Semantic Versioning](https://semver.org/).
 
+## [1.11.0] - 2026-08-26
+
+### Added
+- **`speckit.spectra.flaky-test-detector` — find the tests that pass and fail on the same code, then fix
+  the ones you approve.** The conventional way to find a flaky test is to instrument CI, collect hundreds
+  of runs, and compute a score: pipeline changes, a results store, and weeks of waiting before the first
+  answer. This agent needs none of it. The causes are visible in the source — an unconditional sleep
+  before an assertion, an un-awaited async call, state one test leaves for another, a live network call,
+  an unseeded random value, an assertion against the real clock — so it reads the test suite and names
+  them, on the day you install it.
+
+  **It never runs anything.** Not the suite, not a build, not an install, and not to verify a fix it just
+  applied. That last exclusion is deliberate: an agent that can run the tests it edited is an agent that
+  can iterate until green, and iterating until green is how tests get weakened. Verification stays with
+  you and your CI.
+
+  **A fix removes the cause.** Deleting an assertion, loosening one until it always passes, skipping the
+  test, marking it expected-to-fail, adding a retry wrapper, or lengthening a sleep are all forbidden as
+  remedies. Edits are confined to test and test-support files; where the real fix belongs in application
+  code, the item is left open with a note saying what would need to change and where.
+
+  **Two gates, and pruning in between.** The run reports a ranked table — test, file, confidence, and a
+  concrete fix — and stops. On your go-ahead it writes `.specify/memory/flaky-test-analysis.md`: a run
+  summary, one `[ ]` row per candidate, the evidence behind each, and what it could not examine. You
+  delete the rows you disagree with. On a second go-ahead it works what is left, one item at a time,
+  ticking each `[x]` on disk as it lands — so an interrupted session leaves a file that is exactly true.
+  Nothing is ever committed.
+
+  **The list outlives the session.** Every run reads that file first and branches on its state: unfinished
+  work resumes without re-analysing and without discarding your pruning; a completed list asks before it
+  is replaced; a file it cannot parse is never overwritten silently. There is exactly one analysis file at
+  any time. Before a run scoped to one suite replaces a broader plan, it names the pending items that
+  would be dropped and waits.
+
+  Confidence is High, Medium, or Low, and it rates the strength of the evidence rather than a failure
+  rate — with no run history there is no denominator, so the agent emits no percentage or score. Your
+  project's own constitution binds the choice of fix: where a guardrail rules out the only remedy, the
+  item is left open with that rule named.
+
 ## [1.10.0] - 2026-08-22
 
 ### Changed

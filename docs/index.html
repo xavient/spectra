@@ -553,6 +553,13 @@
           <span class="lbl">Example (Claude)</span>
           <pre><code>/speckit-spectra-review-pr https://github.com/acme/api/pull/142</code></pre>
         </li>
+        <li>
+          <span class="name">speckit.spectra.flaky-test-detector</span>
+          <span class="cdesc">Find the tests that pass and fail on the same code — by <b>reading your test source</b>, with no CI integration, no results store, and no waiting for run history. Reports each candidate with a confidence rating and a specific fix, then stops. On your go-ahead it writes a task list to <code>.specify/memory/flaky-test-analysis.md</code> that you prune; on a second go-ahead it fixes what's left, ticking each item off on disk as it lands, so an interrupted session resumes exactly where it stopped. <b>It never runs anything</b> — not your suite, not a build, not even to check a fix worked — and a fix must remove the cause: deleting assertions, skipping tests, and adding retries are forbidden as remedies. Edits stay in test code, nothing is committed, and your constitution decides which fixes are allowed.</span>
+          <span class="args"><b>Arguments:</b> none analyzes the whole working tree; a path or suite name narrows the run — and before a narrowed run replaces a broader plan, it names the pending items that would be dropped.</span>
+          <span class="lbl">Example (Claude)</span>
+          <pre><code>/speckit-spectra-flaky-test-detector</code></pre>
+        </li>
       </ul>
     </div>
 
