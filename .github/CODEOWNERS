@@ -1,0 +1,4 @@
+# Every change to this repository requires review from the code owner.
+# Enforced by the `main` branch ruleset ("Protect main"), which requires code-owner approval
+# on every pull request. Code owners must have write access for the requirement to resolve.
+* @alibahaloo
