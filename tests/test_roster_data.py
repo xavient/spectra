@@ -104,12 +104,12 @@ class Content(unittest.TestCase):
         cls.parsed = roster.load(ROSTER_PATH)
 
     def test_it_carries_the_full_published_roster(self):
-        self.assertEqual(len(self.parsed.agents), 45)
+        self.assertEqual(len(self.parsed.agents), 46)
 
-    def test_it_splits_into_fourteen_available_and_thirty_one_planned(self):
+    def test_it_splits_into_fourteen_available_and_thirty_two_planned(self):
         available = [a for a in self.parsed.agents if a.available]
         self.assertEqual(len(available), 14)
-        self.assertEqual(len(self.parsed.agents) - len(available), 31)
+        self.assertEqual(len(self.parsed.agents) - len(available), 32)
 
     def test_spectra_ships_exactly_five_agents_today(self):
         self.assertEqual(sorted(a.id for a in self.parsed.shipped()),

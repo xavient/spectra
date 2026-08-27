@@ -335,6 +335,8 @@ each one ships. All are **🚧 under development**.
   protection rather than just a percentage.
 - **Test Automation Analyst** (Add-on) — Recommend what is worth automating and where each test
   should run across the pipeline.
+- **Flaky Test Detector** (Add-on) — Find the tests that pass and fail on the same code, then fix
+  the ones you approve, one at a time.
 - **Security Analyst** (Add-on) — Surface threat exposure and OWASP-class issues through static and
   dynamic analysis of the change.
 - **Accessibility & WCAG Compliance** (Add-on) — Audit the UI against WCAG 2.2 AA, map conformance

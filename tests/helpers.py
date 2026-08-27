@@ -9,7 +9,7 @@ Three kinds of fixture:
 * **Projects** — `temp_project()` builds a throwaway Spec Kit project in each of the four states the
   CLI classifies, so tests never touch the developer's real tree.
 * **Rosters** — `roster()` returns a valid roster dict that a test mutates to express the one thing it
-  cares about, instead of restating all 45 published entries.
+  cares about, instead of restating all 46 published entries.
 * **Servers** — `serve()` publishes files over loopback HTTP so the network paths can be exercised
   through `SPECTRA_RAW_BASE` without publishing anything, and `UNREACHABLE_BASE` covers the failure
   side.

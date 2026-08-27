@@ -302,6 +302,15 @@
       "provider": "spectra"
     },
     {
+      "id": "flaky-test-detector",
+      "title": "Flaky Test Detector",
+      "description": "Find the tests that pass and fail on the same code, then fix the ones you approve, one at a time.",
+      "status": "planned",
+      "phase": "testing-quality",
+      "type": "add-on",
+      "provider": "spectra"
+    },
+    {
       "id": "security-analyst",
       "title": "Security Analyst",
       "description": "Surface threat exposure and OWASP-class issues through static and dynamic analysis of the change.",
