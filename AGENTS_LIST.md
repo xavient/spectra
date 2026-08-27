@@ -203,6 +203,59 @@ Questions). It then tells you to run the specify command with the BRD; its only 
   /speckit-spectra-brd reqs/ticket-merge-brief.docx
   ```
 
+<!-- SPECTRA:AGENT id=flaky-test-detector -->
+### Flaky Test Detector ✅
+
+**`speckit.spectra.flaky-test-detector`** — Find the tests that pass and fail on the same code, then fix
+the ones you approve. The usual way to catch a flaky test is to instrument CI, collect hundreds of runs,
+and compute a score — pipeline work, a results store, and weeks of waiting before the first answer. This
+agent needs none of that, because the causes are sitting in the source: an unconditional sleep before an
+assertion, an un-awaited async call, state one test leaves behind for another, a live network call, an
+unseeded random value, an assertion against the real clock. It reads your test suite and names them, on
+the day you install it.
+
+**It never runs anything** — not the suite, not a build, not an install, and not to check that a fix
+worked. That last exclusion is the deliberate one: an agent that can run the tests it just edited is an
+agent that can iterate until green, and iterating until green is how tests get quietly weakened.
+Verification stays with you and your CI.
+
+**A fix removes the cause.** Deleting an assertion, loosening one until it always passes, skipping the
+test, marking it expected-to-fail, adding a retry, or lengthening a sleep are all forbidden as remedies —
+they make the symptom disappear and leave you worse off, because now the suite lies quietly. Edits stay
+inside test and test-support files; where the genuine remedy belongs in application code, the item is
+left open with a note saying what would need to change and where.
+
+**Two gates, with your review in between.** The run reports a ranked table — test, file, confidence, and
+a specific fix — and stops. On your go-ahead it writes `.specify/memory/flaky-test-analysis.md`: a run
+summary, one `[ ]` row per candidate, the evidence behind each, and an honest account of what it could
+not examine. You delete the rows you disagree with. On a second go-ahead it works what is left, one item
+at a time, ticking each `[x]` on disk as it lands — so an interrupted session leaves a file that is
+exactly true rather than one that claims nothing happened. Nothing is ever committed; the working-tree
+diff is your review surface.
+
+**The list outlives the session**, which is the point of writing it down. Every run reads that file first
+and branches on what it finds: unfinished work resumes without re-analysing and without discarding your
+pruning, a completed list asks before it is replaced, and a file it cannot parse is never overwritten
+silently. There is exactly one analysis file at any time.
+
+- **Arguments** — optional. With none, it analyses the whole working tree; give it a path or a suite name
+  to narrow the run. Before a narrowed run replaces a broader plan, it names the pending items that would
+  be dropped and waits for an answer.
+- **Use it when** — your suite has become something people re-run rather than trust, and you want a short
+  reviewable list of what to fix rather than a dashboard telling you it is bad.
+- **Confidence** — High, Medium, or Low, rating the strength of the evidence rather than a failure rate.
+  With no run history there is no denominator, so it emits no percentage, score, or flakiness index.
+- **Your guardrails bind it** — it reads your project's own constitution, and where a rule forbids the
+  only available remedy, the item is left open naming that rule instead of producing a fix your review
+  would reject.
+- **Where it writes** — `.specify/memory/flaky-test-analysis.md`, and test code you approved row by row.
+  Never production source, never governance, never a commit.
+- **Examples (Claude)** —
+  ```
+  /speckit-spectra-flaky-test-detector
+  /speckit-spectra-flaky-test-detector api/
+  ```
+
 ---
 
 ## Spec Kit core agents
@@ -335,8 +388,6 @@ each one ships. All are **🚧 under development**.
   protection rather than just a percentage.
 - **Test Automation Analyst** (Add-on) — Recommend what is worth automating and where each test
   should run across the pipeline.
-- **Flaky Test Detector** (Add-on) — Find the tests that pass and fail on the same code, then fix
-  the ones you approve, one at a time.
 - **Security Analyst** (Add-on) — Surface threat exposure and OWASP-class issues through static and
   dynamic analysis of the change.
 - **Accessibility & WCAG Compliance** (Add-on) — Audit the UI against WCAG 2.2 AA, map conformance

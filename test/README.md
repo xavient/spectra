@@ -314,6 +314,31 @@ And one pass on `review-pr`, whose new surface is the hardest to verify by readi
 6. **Atomicity.** Nothing to force here, but confirm the report names the template path, the inline/body
    counts, and the authorizing context it used.
 
+And one pass on `flaky-test-detector`, which is the only command that edits code you wrote — so the
+things worth checking are the ones a diff can prove. Plant the patterns from
+[`specs/018-flaky-test-detector/quickstart.md`](../specs/018-flaky-test-detector/quickstart.md) in a
+scratch suite under version control, then:
+
+1. **It writes nothing before you say so.** Run it, read the table, decline at the first gate. Confirm
+   `git status --porcelain` is empty — no analysis file, no touched test.
+2. **The plan, and pruning.** Accept, then check `.specify/memory/flaky-test-analysis.md` has all six
+   header fields, one `[ ]` row per candidate, and an `## Evidence` entry per id. Delete two rows before
+   approving the fix run, and afterwards confirm those two tests are untouched in the diff.
+3. **No weakened tests.** After the fix run, read the whole diff. Every changed file must be a test or
+   test-support file, and nothing may add `.skip`, `xfail`, a retry, or a longer sleep, or delete an
+   assertion. This is the check that cannot be replaced by a unit test.
+4. **Checkpointing.** Interrupt a fix run midway. Every fix already in the diff must be `[x]` and the
+   `Progress` line must agree; a file claiming `0 of 7` with three fixes on disk is the regression.
+5. **Resuming.** Restart your agent and run again. It must report the date and the done/pending counts,
+   offer three choices, and analyse nothing until asked.
+6. **The stale-plan guard.** With rows still pending, remove one target test's flakiness by hand, then
+   resume. That row must be left `[ ]` with a note that the code moved on — not "fixed" against evidence
+   that no longer exists.
+7. **The refusals.** Confirm no test-runner or build command is ever invoked, including after a fix.
+   Add a rule to the project's `.specify/memory/constitution.md` forbidding the obvious remedy and
+   confirm the item is left open with that rule named. Corrupt the `## Tasks` table and confirm the file
+   is **not** overwritten.
+
 **6. Iterate and clean up.** After editing files under `spectra/`, rebuild the zip (step 1),
 re-unzip, and reinstall with `--force`, then restart your agent:
 
