@@ -519,7 +519,7 @@
   .modal-toast.show{opacity:1}
   footer{border-top:1px solid var(--line-soft);padding:30px 0;color:var(--text-faint);font-size:12.5px}
   footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
-  footer .disclaimer{display:block;margin-top:18px;padding-top:16px;border-top:1px solid var(--line-soft);font-size:11px;line-height:1.6;color:var(--text-faint);max-width:none}
+  footer .disclaimer{display:block;flex:0 0 100%;margin-top:18px;padding-top:16px;border-top:1px solid var(--line-soft);font-size:11px;line-height:1.6;color:var(--text-faint);max-width:none}
 
   /* reveal */
   .reveal{opacity:0;transform:translateY(22px);transition:opacity .7s ease,transform .7s ease}
@@ -969,7 +969,7 @@
     </ul>
 
     <div class="cap-foot">
-      <p><span class="cf-label">Markdown only</span>The published extension is four command files, one template, and its licence, notice, and changelog. No scripts, no binaries, no post-install hooks &mdash; it can be read end to end before anyone installs it.</p>
+      <p><span class="cf-label">Markdown only</span>The published extension is six command files, four templates, and its licence, notice, trademark policy, and changelog. No scripts, no binaries, no post-install hooks &mdash; it can be read end to end before anyone installs it.</p>
       <p><span class="cf-label">No telemetry</span>The <span class="mono">spectra</span> command reports nothing about you, your code, or your project. Its only network calls are read-only requests that fetch the published catalog, agent roster, and latest release number &mdash; and the release check can be switched off entirely.</p>
       <p><span class="cf-label">Nothing to grant</span>The catalog is public: no vendor login, no access token, no elevated permissions requested at install.</p>
       <p><span class="cf-label">Auditable &amp; pinnable</span>Apache-2.0 with the source in the open, and every extension pins the Spec Kit version it was tested against. Commit the catalog file and the resolved source travels with the repository.</p>
@@ -990,6 +990,7 @@
   <div class="wrap">
     <span>Capability Brief &middot; SPECTRA &mdash; Agentic Software Engineering for the SDLC</span>
     <span>A TELUS Digital platform &middot; Human-gated by design</span>
+    <span class="disclaimer">Copyright 2026 TELUS Digital. Licensed under the <a href="https://github.com/xavient/spectra/blob/main/LICENSE">Apache License 2.0</a>; see <a href="https://github.com/xavient/spectra/blob/main/NOTICE">NOTICE</a>. The licence grants no trademark rights &mdash; "TELUS", "TELUS Digital", "Spectra", and the TELUS Digital logo are excluded, and forks must rebrand (<a href="https://github.com/xavient/spectra/blob/main/TRADEMARK.md">TRADEMARK.md</a>). Spectra agents produce drafts for human review; their output is not legal, regulatory, medical, financial, or compliance advice and does not constitute certification or audit.</span>
   </div>
 </footer>
 

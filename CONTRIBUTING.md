@@ -31,26 +31,35 @@ spectra/
 │   ├── TELUS_Digital_logo.png      #   the one logo (used by the README + landing page)
 │   ├── SDD.png                     #   Spec-Driven Development diagram
 │   ├── SDLC-to-AIDLC.png           #   SDLC → AI-DLC mapping diagram
-│   └── AIDLC-mapping.png           #   per-phase AI-DLC mapping diagram
+│   └── AI-Native.png               #   AI-assisted vs AI-native diagram
 ├── docs/                          # downloadable package + static landing assets (committed)
 │   ├── index.html                 #   landing page: the extension + its install command
+│   ├── agents.html                #   the agent roster, rendered from agents-list.json
 │   ├── capability-brief.html      #   static capability brief
+│   ├── e-learning/                #   the course handbook
 │   ├── packages/spectra.zip       #   the one downloadable package (top-level spectra/ folder)
 │   └── .nojekyll                  #   serve files as-is (no Jekyll processing)
 ├── README.md                      # user-facing: what Spectra is + how to install
 ├── CONTRIBUTING.md                # this file
 ├── LICENSE                        # Apache License 2.0
 ├── NOTICE                         # required attribution notice (Apache 2.0 §4(d))
+├── TRADEMARK.md                   # what the licence does NOT grant (TELUS marks, the logo)
+├── SECURITY.md                    # how to report a vulnerability (privately, not as an issue)
 └── spectra/                       # THE extension (folder name == extension id `spectra`)
     ├── extension.yml              #   the extension manifest (registers every command)
     ├── commands/                  #   one Markdown file per command
     │   ├── adr.md                 #     speckit.spectra.adr
+    │   ├── brd.md                 #     speckit.spectra.brd
+    │   ├── create-pr.md           #     speckit.spectra.create-pr
     │   ├── domain-analyzer.md     #     speckit.spectra.domain-analyzer
-    │   └── create-pr.md           #     speckit.spectra.create-pr
+    │   ├── flaky-test-detector.md #     speckit.spectra.flaky-test-detector
+    │   └── review-pr.md           #     speckit.spectra.review-pr
+    ├── templates/                 #   the overridable shape of every document produced
     ├── README.md                  #   extension docs (ships inside the zip)
     ├── CHANGELOG.md               #   extension changelog
     ├── LICENSE                    #   Apache License 2.0
-    └── NOTICE                     #   attribution notice (ships inside the zip)
+    ├── NOTICE                     #   attribution notice (ships inside the zip)
+    └── TRADEMARK.md               #   trademark policy (ships inside the zip)
 ```
 
 Two things live here, and it matters which one you are touching. [`spectra/`](spectra/) is **the
@@ -471,11 +480,58 @@ landing page in sync if the install command ever changes.
 - **Command namespace.** Always `speckit.spectra.<command>` — a fixed `spectra` segment followed by
   a clear, descriptive command name (e.g. `adr`, `domain-analyzer`, `create-pr`).
 - **One source file, all agents.** Generic format plus `$ARGUMENTS`. Never hard-code an agent's syntax.
-- **Author / copyright.** `TELUS Digital`, Apache-2.0 licensed. Keep `LICENSE` and `NOTICE` shipping
-  with the extension — attribution is a license condition, not a courtesy.
+- **Author / copyright.** `TELUS Digital`, Apache-2.0 licensed. Keep `LICENSE`, `NOTICE`, and
+  `TRADEMARK.md` shipping with the extension — attribution is a license condition, not a courtesy,
+  and the licence grants no trademark rights. See [Licensing and IP](#licensing-and-ip) for the four
+  rules that bind every command you write.
 - **The catalog and `docs/` are published by hand — keep them in sync.** `catalog.json` (repo root) is
   the single catalog (no second copy elsewhere) and `assets/TELUS_Digital_logo.png` is the one logo. When
   you add or release an extension, update the zip, catalog entry, and landing page together, then commit.
+
+## Licensing and IP
+
+Spectra is Apache-2.0, copyright TELUS Digital. Four rules bind every command you write.
+
+**1. Who may contribute.** Spectra is developed and maintained by TELUS Digital. **Pull request
+creation is restricted to repository collaborators**, so code contributions from outside TELUS
+Digital cannot be accepted. External forks are permitted under Apache-2.0, but changes cannot be
+contributed back.
+
+This is deliberate. With no external contributors, TELUS Digital holds 100% of the copyright, which
+preserves the ability to relicense in future without collecting a CLA from anyone. It also keeps the
+provenance of every command file unambiguous.
+
+**Issues are open to everyone.** Bug reports, feature requests, and questions are welcome at
+<https://github.com/xavient/spectra/issues> regardless of affiliation. Security vulnerabilities are
+the exception — report those privately, per [`SECURITY.md`](SECURITY.md).
+
+TELUS Digital engineers who need to open pull requests must be added as repository collaborators —
+ask a maintainer.
+
+**2. Never paste normative standard text.** ISO/IEC 27001, ISO/IEC 27701, IEC 62304, PCI DSS, and
+most other standards are copyrighted works sold under licence. Reproducing their requirement text in
+a command file is infringement, and this repository is public.
+
+Write compliance agents by **paraphrase and clause reference**: "Check that access control is
+documented and reviewed (ISO/IEC 27001:2022, A.5.15)" is fine. Quoting the clause is not. The same
+applies to any template, checklist, or example output the agent emits. Where the underlying source
+is a government publication in the public domain (US CFR text, EU regulation text), quoting is
+acceptable — but confirm before you rely on it.
+
+**3. Name agents for the work, not for a certification.** Prefer "SOC 2 Readiness" over "SOC 2",
+"PCI-DSS Readiness" over "PCI-DSS". "SOC 2" and "PCI DSS" are marks tied to certification schemes,
+and an agent named after the scheme implies a relationship TELUS Digital does not have. Every
+compliance agent's `description` must be framed as analysis or readiness support, never as
+certification, audit, attestation, or assurance.
+
+**4. Keep the notices intact.** `LICENSE`, `NOTICE`, and `TRADEMARK.md` ship with the extension and
+the CLI. Attribution is a licence condition under Apache-2.0 §4, not a courtesy. If you add a
+dependency, a diagram, or any third-party material, add it to `NOTICE` in the same commit. Every
+`.py` file under `spectra_cli/` and `tools/` carries a `SPDX-License-Identifier: Apache-2.0` header.
+
+**Provenance of diagrams and assets.** Everything in `assets/` must be original TELUS Digital work
+or material TELUS Digital holds a licence to. Do not commit a redrawn version of a third-party
+diagram without checking the source's terms.
 
 ## Compatibility
 

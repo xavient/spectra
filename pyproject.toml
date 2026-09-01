@@ -8,6 +8,9 @@ description = "Install and manage the Spectra catalog of Spec Kit extensions"
 readme = "README.md"
 requires-python = ">=3.9"
 license = "Apache-2.0"
+# Shipped inside the wheel and sdist so the attribution travels with the package:
+# Apache-2.0 4(d) makes the NOTICE binding on downstream redistributors.
+license-files = ["LICENSE", "NOTICE"]
 authors = [{ name = "TELUS Digital" }]
 keywords = ["spec-kit", "specify", "sdlc", "agentic", "extensions", "spectra"]
 # Deliberately dependency-free: the CLI shells out to `uv` and `specify` and uses only the

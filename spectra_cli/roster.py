@@ -1,3 +1,6 @@
+# Copyright 2026 TELUS Digital
+# SPDX-License-Identifier: Apache-2.0
+
 """The agent roster: one parser, two callers.
 
 `agents-list.json` is the single source of truth for the agents Spectra offers. Two very different

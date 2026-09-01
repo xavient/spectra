@@ -1,3 +1,6 @@
+# Copyright 2026 TELUS Digital
+# SPDX-License-Identifier: Apache-2.0
+
 """Command-line entry point for `spectra`.
 
 The command surface has one organizing rule: **a top-level verb acts on the stack you are standing in;

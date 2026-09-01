@@ -1,3 +1,6 @@
+# Copyright 2026 TELUS Digital
+# SPDX-License-Identifier: Apache-2.0
+
 """The installed extension, the published one, and delegating changes to Spec Kit.
 
 Three jobs:

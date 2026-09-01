@@ -1,6 +1,27 @@
 <!--
 SYNC IMPACT REPORT
 ==================
+Version: 1.7.1 → 1.7.2
+Bump type: PATCH — a clarification. No new obligation beyond a file the extension already had to
+  carry in spirit; no principle added, removed, or redefined.
+Rationale: Apache-2.0 §6 withholds trademark rights, but the extension shipped no statement of which
+  marks that covers. The repository carries a TELUS Digital logo under a blanket permissive licence,
+  and "Spectra" is used as a product mark, so a reader with only the installed package in front of
+  them had no way to tell what the grant excludes. `TRADEMARK.md` now says so, and — like `LICENSE`
+  and `NOTICE` — it ships inside the package rather than living only at the repository root, so the
+  carve-out travels to every consumer's `.specify/` directory instead of dangling as a reference.
+
+Modified principles: (none)
+Modified sections:
+  Publishing & Distribution Standards → Authorship & license — names TRADEMARK.md alongside LICENSE
+    and NOTICE as a file the extension carries and ships
+Added sections: (none)
+Removed sections: (none)
+Templates requiring updates: (none — no plan/spec/tasks template references the notice files)
+Follow-up TODOs: (none)
+
+SYNC IMPACT REPORT
+==================
 Version: 1.7.0 → 1.7.1
 Bump type: PATCH — a clarification. No new obligation; no principle added, removed, or redefined.
 Rationale: Principle VIII requires a template for "every command that produces a durable Markdown
@@ -596,9 +617,11 @@ being re-litigated per agent, which is exactly how the `adr`/`brd` divergence ar
   `repository`, `license`, `requires.speckit_version`, and `provides.commands[]` (with each command's
   `name`, `file`, and `description`).
 - **Authorship & license.** Author is `TELUS Digital`; the extension is Apache-2.0 licensed unless
-  explicitly stated otherwise, and carries its own `LICENSE` **and** `NOTICE`. Both MUST ship inside
-  the published package — Apache-2.0 §4(d) makes the `NOTICE` attribution binding on downstream
-  redistributors, so dropping it silently weakens the attribution requirement.
+  explicitly stated otherwise, and carries its own `LICENSE`, `NOTICE`, **and** `TRADEMARK.md`. All
+  three MUST ship inside the published package — Apache-2.0 §4(d) makes the `NOTICE` attribution
+  binding on downstream redistributors, so dropping it silently weakens the attribution requirement,
+  and §6 withholds trademark rights that only `TRADEMARK.md` actually spells out. A consumer who has
+  only the installed package MUST be able to read what the licence does not grant.
 - **No silent drift.** Before publishing, verify that `catalog.json`, `docs/packages/spectra.zip`, and
   `docs/index.html` all agree with the `spectra/` folder and use the raw
   `raw.githubusercontent.com/xavient/spectra/main/...` URLs; any mismatch MUST be resolved first. CI
@@ -680,4 +703,4 @@ and why, and MUST update this file together with any dependent templates and doc
 binding. Complexity that violates a principle MUST be justified or removed; unjustified violations
 block merge.
 
-**Version**: 1.7.1 | **Ratified**: 2026-07-12 | **Last Amended**: 2026-08-21
+**Version**: 1.7.2 | **Ratified**: 2026-07-12 | **Last Amended**: 2026-08-31

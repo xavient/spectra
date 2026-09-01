@@ -1,3 +1,6 @@
+# Copyright 2026 TELUS Digital
+# SPDX-License-Identifier: Apache-2.0
+
 """Where the project is, and whether Spectra is installed in it.
 
 Every project-scoped command starts here. It answers one question — what state is this folder in? —

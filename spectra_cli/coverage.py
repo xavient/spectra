@@ -1,3 +1,6 @@
+# Copyright 2026 TELUS Digital
+# SPDX-License-Identifier: Apache-2.0
+
 """Which installed integrations have Spectra's commands, and how to give them to the ones that do not.
 
 **The problem.** Spec Kit registers an extension's commands for the *active* integration only. A project

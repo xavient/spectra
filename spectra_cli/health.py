@@ -1,3 +1,6 @@
+# Copyright 2026 TELUS Digital
+# SPDX-License-Identifier: Apache-2.0
+
 """The health of the whole Spectra stack, and bringing it current.
 
 Four things have to be current for Spectra to work, and until now the CLI could only report on one of

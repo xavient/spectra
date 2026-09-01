@@ -1,3 +1,6 @@
+# Copyright 2026 TELUS Digital
+# SPDX-License-Identifier: Apache-2.0
+
 """Bounded, anonymous reads of Spectra's published data.
 
 Two artifacts are published from `main` over raw links and read at run time: the agent roster

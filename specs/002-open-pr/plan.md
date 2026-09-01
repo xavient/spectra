@@ -112,7 +112,7 @@ github/                          # NEW — the extension (id == folder name)
 │   └── create-pr.md                # Agent-agnostic command prompt (speckit.github.create-pr)
 ├── README.md                     # User-facing docs (what it does, install, usage, fallback behavior)
 ├── CHANGELOG.md                  # SemVer history; 1.0.0 initial release
-└── LICENSE                       # MIT (TELUS Digital)
+└── LICENSE                       # Apache-2.0 (TELUS Digital)
 
 catalog.json                      # MODIFIED — add the "github" entry (canonical metadata)
 

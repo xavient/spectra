@@ -1,3 +1,6 @@
+# Copyright 2026 TELUS Digital
+# SPDX-License-Identifier: Apache-2.0
+
 """The Spectra install flow — prerequisites, then catalog registration.
 
 Three steps, run from inside the project the user wants Spectra in:

@@ -4,8 +4,8 @@ Copyright 2026 TELUS Digital
 This product includes software developed by TELUS Digital
 (https://github.com/xavient/spectra).
 
-Licensed under the Apache License, Version 2.0. You may obtain a copy of the
-License at http://www.apache.org/licenses/LICENSE-2.0
+Licensed under the Apache License, Version 2.0 (the "License"). You may obtain
+a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
 
 Attribution requirement
 -----------------------
@@ -19,6 +19,101 @@ of the Apache License, Version 2.0. Reproduce it in at least one of:
 
 You must also state that you changed any files you modified (Section 4(b)).
 
-"Spectra" and "TELUS Digital" are names of the Licensor. This License does not
-grant trademark rights beyond the reasonable and customary use needed to
-describe the origin of the work (Section 6).
+================================================================================
+TRADEMARKS
+================================================================================
+
+The Apache License, Version 2.0 does not grant permission to use the trade
+names, trademarks, service marks, or product names of the Licensor, except as
+required for reasonable and customary use in describing the origin of the work
+(Section 6).
+
+The following are marks of TELUS Digital and are NOT licensed under the Apache
+License, Version 2.0:
+
+  * "TELUS", "TELUS Digital", and "TELUS International"
+  * "Spectra", as used to identify this project
+  * The TELUS Digital logo, including assets/TELUS_Digital_logo.png
+
+A fork or derivative work must rebrand: remove the TELUS Digital logo and
+visual identity, and rename the project so it is not identified as Spectra.
+See TRADEMARK.md for the full policy.
+
+================================================================================
+THIRD-PARTY NOTICES
+================================================================================
+
+GitHub Spec Kit
+---------------
+Spectra is built on GitHub Spec Kit (https://github.com/github/spec-kit),
+licensed under the MIT License. Spectra extends Spec Kit and does not replace
+it. This repository also carries copies of Spec Kit's own `git` and
+`agent-context` extensions under .specify/extensions/, to which the following
+notice applies:
+
+    MIT License
+
+    Copyright GitHub, Inc.
+
+    Permission is hereby granted, free of charge, to any person obtaining a
+    copy of this software and associated documentation files (the "Software"),
+    to deal in the Software without restriction, including without limitation
+    the rights to use, copy, modify, merge, publish, distribute, sublicense,
+    and/or sell copies of the Software, and to permit persons to whom the
+    Software is furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in
+    all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+    DEALINGS IN THE SOFTWARE.
+
+Spectra is not affiliated with, endorsed by, or sponsored by GitHub, Inc. or
+Microsoft Corporation. "GitHub" and "Spec Kit" are marks of their respective
+owners and are used here for identification purposes only.
+
+AI-DLC
+------
+References to AI-DLC (the AI-Driven Development Life Cycle) describe a framework
+published by Amazon Web Services. Spectra is not affiliated with, endorsed by,
+or sponsored by Amazon Web Services, Inc. "AWS" and "AI-DLC" are marks of their
+respective owners and are used for identification purposes only.
+
+Standards, Regulations, and Certification Schemes
+-------------------------------------------------
+Spectra agents reference standards, regulations, and certification schemes
+including but not limited to ISO/IEC 27001, ISO/IEC 27701, IEC 62304,
+FDA 21 CFR Part 11, HIPAA, PCI DSS, SOC 2, SOX, GDPR, the EU AI Act, PIPEDA,
+PHIPA, Quebec Law 25, and WCAG.
+
+All such names are the property of their respective owners and are used solely
+for identification. Spectra is not certified by, accredited by, endorsed by,
+affiliated with, or acting on behalf of any standards body, regulator,
+certification authority, or accreditation body.
+
+Spectra does not reproduce the normative text of any copyrighted standard.
+Where an agent references a standard, it does so by paraphrase and by clause
+identifier. Obtaining a licensed copy of any standard remains the user's
+responsibility.
+
+================================================================================
+DISCLAIMER
+================================================================================
+
+Spectra agents produce drafts and analyses for review by qualified humans. Their
+output does not constitute legal, regulatory, medical, financial, security, or
+compliance advice, and does not constitute or substitute for certification,
+audit, accreditation, or professional assessment.
+
+Compliance, privacy, security, and regulatory agents in particular are
+readiness-support tooling. Using Spectra does not make a system compliant with
+any standard or regulation. Always have a qualified professional review outputs
+before relying on them.
+
+See the Apache License, Version 2.0, Sections 7 and 8, for the full disclaimer
+of warranty and limitation of liability.

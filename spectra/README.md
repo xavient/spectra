@@ -463,10 +463,16 @@ Your project's constitution binds the fix it chooses. If a guardrail rules out t
 no mocking libraries, no new test dependencies — the item is left open with that rule named, rather than
 producing a change your own review would reject.
 
-## License
+## License, trademarks, and disclaimer
 
-Apache License 2.0 — see [LICENSE](./LICENSE).
+Apache License 2.0 — see the [`LICENSE`](./LICENSE) and [`NOTICE`](./NOTICE) files shipped with this
+extension. Attribution is a licence condition: keep the copyright notice, the `LICENSE`, and the
+`NOTICE` file with any derivative work, and state which files you changed.
 
-Free to use, modify, and redistribute. Attribution is required: keep the copyright notice, the
-`LICENSE`, and the [`NOTICE`](./NOTICE) file in any redistribution or derivative work, and state
-which files you changed.
+Trademarks are not licensed. "TELUS", "TELUS Digital", "Spectra", and the TELUS Digital logo are
+excluded from the grant; forks must rebrand. See [`TRADEMARK.md`](./TRADEMARK.md).
+
+Spectra agents produce drafts for human review. Output is not legal, regulatory, medical,
+financial, or compliance advice and does not constitute certification or audit. Compliance agents
+are readiness-support tooling only — running them does not make a system compliant, and Spectra is
+not certified by or affiliated with any standards body or regulator.

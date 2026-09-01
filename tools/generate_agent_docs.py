@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# Copyright 2026 TELUS Digital
+# SPDX-License-Identifier: Apache-2.0
 """Rewrite the structured agent listings from `agents-list.json`.
 
 **Maintainer tooling. Not shipped.** `pyproject.toml` lists its packages explicitly

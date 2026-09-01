@@ -1,3 +1,6 @@
+# Copyright 2026 TELUS Digital
+# SPDX-License-Identifier: Apache-2.0
+
 """Terminal presentation — colors, the splash banner, prompts, and subprocess helpers.
 
 Everything user-facing lives here so the install flow reads as a sequence of steps rather than a

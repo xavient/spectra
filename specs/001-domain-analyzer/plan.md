@@ -103,7 +103,7 @@ domain-analyzer/                 # NEW — the extension (id == folder name)
 │   └── analyze.md               # Agent-agnostic command prompt (speckit.domain-analyzer.analyze)
 ├── README.md                    # User-facing docs (what it does, install, usage, output location)
 ├── CHANGELOG.md                 # SemVer history; 1.0.0 initial release
-└── LICENSE                      # MIT (TELUS Digital)
+└── LICENSE                      # Apache-2.0 (TELUS Digital)
 
 catalog.json                     # MODIFIED — add the "domain-analyzer" entry (canonical metadata)
 

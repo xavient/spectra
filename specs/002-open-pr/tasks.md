@@ -29,8 +29,8 @@ This project is a Spec Kit **extension catalog**, not application code. The deli
 **Purpose**: Scaffold the self-contained extension folder (Constitution Principle II).
 
 - [X] T001 Create the `github/` folder with the standard extension layout (`commands/`, `README.md`, `CHANGELOG.md`, `LICENSE`, `extension.yml`) by copying the `adr/` extension as a starting template, then clearing `adr`-specific content
-- [X] T002 [P] Author `github/extension.yml`: `schema_version: "1.0"`; `id: github`; name "GitHub"; `version: 1.0.0`; `category` (e.g. "delivery"); `effect: read-write` (research R9); `author: TELUS Digital`; `license: MIT`; `repository`/`homepage` per `adr/`; `requires.speckit_version: ">=0.11.0"`; `requires.tools` listing `gh` and `git` (required: false, for graceful degradation); `provides.commands` with `speckit.github.create-pr` → `commands/create-pr.md` and a one-line description; and a `hooks.after_implement` block (`command: speckit.github.create-pr`, `optional: true`, offer-style `prompt`, `description`) — per [contracts/hook-and-targeting.md](./contracts/hook-and-targeting.md) Part A
-- [X] T003 [P] Add `github/LICENSE` (MIT, TELUS Digital — copy from `adr/LICENSE`)
+- [X] T002 [P] Author `github/extension.yml`: `schema_version: "1.0"`; `id: github`; name "GitHub"; `version: 1.0.0`; `category` (e.g. "delivery"); `effect: read-write` (research R9); `author: TELUS Digital`; `license: Apache-2.0`; `repository`/`homepage` per `adr/`; `requires.speckit_version: ">=0.11.0"`; `requires.tools` listing `gh` and `git` (required: false, for graceful degradation); `provides.commands` with `speckit.github.create-pr` → `commands/create-pr.md` and a one-line description; and a `hooks.after_implement` block (`command: speckit.github.create-pr`, `optional: true`, offer-style `prompt`, `description`) — per [contracts/hook-and-targeting.md](./contracts/hook-and-targeting.md) Part A
+- [X] T003 [P] Add `github/LICENSE` (Apache-2.0, TELUS Digital — copy from `adr/LICENSE`)
 
 ---
 
@@ -134,7 +134,7 @@ This project is a Spec Kit **extension catalog**, not application code. The deli
 ```bash
 # After T001 scaffolds the folder, author these two files in parallel:
 Task: "Author github/extension.yml manifest (command + after_implement hook)"
-Task: "Add github/LICENSE (MIT, TELUS Digital)"
+Task: "Add github/LICENSE (Apache-2.0, TELUS Digital)"
 ```
 
 ---

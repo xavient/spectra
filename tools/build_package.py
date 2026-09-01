@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# Copyright 2026 TELUS Digital
+# SPDX-License-Identifier: Apache-2.0
 """Rebuild `docs/packages/spectra.zip` from the `spectra/` folder.
 
 **Maintainer tooling. Not shipped** — `pyproject.toml` lists its packages explicitly, so nothing under

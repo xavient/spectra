@@ -3,6 +3,31 @@
 All notable changes to the `spectra` extension are documented here. This project follows
 [Semantic Versioning](https://semver.org/).
 
+## [1.11.1] - 2026-08-31
+
+### Added
+- **`TRADEMARK.md` now ships inside the extension.** Apache-2.0 §6 withholds trademark rights, but
+  until now the extension said nothing about which marks that covers. A consumer with only the
+  installed package in front of them could see a permissive licence and a TELUS Digital logo in the
+  same tree and reasonably conclude the logo came with the grant. `TRADEMARK.md` states what is
+  excluded — the TELUS marks, "Spectra" as a project identifier, and the logo — and that a fork must
+  rebrand. It sits beside `LICENSE` and `NOTICE` rather than only at the repository root, so the
+  carve-out travels into every consumer's `.specify/` directory instead of dangling as a reference to
+  a file they do not have.
+
+### Changed
+- **`NOTICE` carries the trademark carve-out, third-party attributions, and a regulatory
+  disclaimer.** The attribution mechanics under §4(b) and §4(d) are unchanged; three sections are
+  added on top. The third-party section names GitHub Spec Kit and reproduces the MIT permission
+  notice verbatim, which the repository owed for the copies of Spec Kit's own `git` and
+  `agent-context` extensions it carries; it also disclaims affiliation with AWS over the AI-DLC
+  references, and with every standards body, regulator, and certification authority the agents name.
+  The disclaimer says plainly what the compliance agents are: readiness-support tooling that produces
+  drafts for human review, never certification or audit. `NOTICE` is the one file a downstream
+  redistributor is required to carry forward, which makes it the right place for all of this.
+- **The extension README's licence section states obligations rather than permissions**, and points
+  at the shipped `TRADEMARK.md` and the disclaimer.
+
 ## [1.11.0] - 2026-08-26
 
 ### Added

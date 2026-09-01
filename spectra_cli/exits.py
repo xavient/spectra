@@ -1,3 +1,6 @@
+# Copyright 2026 TELUS Digital
+# SPDX-License-Identifier: Apache-2.0
+
 """The process exit codes, in one place both `cli.py` and `install.py` can reach.
 
 They lived in `cli.py` until the install flow needed to return them. It cannot import them from there:

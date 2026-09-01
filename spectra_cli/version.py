@@ -1,3 +1,6 @@
+# Copyright 2026 TELUS Digital
+# SPDX-License-Identifier: Apache-2.0
+
 """Version reporting and uv-based updates for the CLI channel.
 
 The installed version is read from the package metadata, single-sourced from the committed

@@ -23,7 +23,9 @@
   - [Installer (recommended)](#installer-recommended)
   - [Manual](#manual)
 - [Two release channels](#two-release-channels)
-- [License](#license)
+- [Support and compatibility](#support-and-compatibility)
+- [License and trademarks](#license-and-trademarks)
+- [Disclaimer](#disclaimer)
 
 ---
 
@@ -209,8 +211,8 @@ Inheriting the perimeter is the floor, not the ceiling. Spectra is also built to
 
 ### Supply chain
 
-- **Markdown only.** The published extension is four command files, one template, and its licence,
-  notice, and changelog. No scripts, no binaries, no post-install hooks. Read it yourself at
+- **Markdown only.** The published extension is six command files, four templates, and its licence,
+  notice, trademark policy, and changelog. No scripts, no binaries, no post-install hooks. Read it yourself at
   [`spectra/`](spectra/) or inside [`docs/packages/spectra.zip`](docs/packages/spectra.zip).
 - **No telemetry.** The `spectra` command reports nothing about you, your code, or your project. Its
   only network calls are bodyless `GET` requests to `api.github.com` and `raw.githubusercontent.com`,
@@ -515,8 +517,37 @@ Git tags and GitHub Releases on this repo belong to the **command** channel; the
 published continuously from `main` over raw URLs and is never tagged. Both current versions are shown
 live on the [Spectra landing page](https://xavient.github.io/spectra/).
 
-## License
+## Support and compatibility
 
-Apache License 2.0 — see [LICENSE](LICENSE). The `spectra` extension carries its own copy of the
-license too.
+- **Getting help.** Bug reports and feature requests are welcome at
+  <https://github.com/xavient/spectra/issues>. Pull request creation is restricted to TELUS Digital
+  collaborators, so please open an issue rather than a PR.
+- **Security issues.** Please do not report vulnerabilities in a public issue — see
+  [SECURITY.md](SECURITY.md).
+- **Compatibility.** Every extension pins the Spec Kit version it was tested against in
+  `requires.speckit_version`. Re-test when you upgrade Spec Kit.
+
+## License and trademarks
+
+Spectra is licensed under the **Apache License 2.0** — see [LICENSE](LICENSE) and [NOTICE](NOTICE).
+The `spectra` extension carries its own copy of both, which ship inside the installed package.
+
+The Apache License 2.0 does **not** grant trademark rights. "TELUS", "TELUS Digital", "Spectra",
+and the TELUS Digital logo are excluded from the licence grant. Forks must rebrand — see
+[TRADEMARK.md](TRADEMARK.md).
+
+Spectra builds on [Spec Kit](https://github.com/github/spec-kit) (MIT, Copyright GitHub, Inc.) and
+is not affiliated with, endorsed by, or sponsored by GitHub, Inc.
+
+## Disclaimer
+
+Spectra agents produce **drafts for human review**. Their output is not legal, regulatory, medical,
+financial, security, or compliance advice, and does not constitute certification, audit, or
+professional assessment.
+
+Compliance and privacy agents (ISO 27001/27701, IEC 62304, FDA 21 CFR Part 11, HIPAA, PCI-DSS,
+SOC 2, SOX, GDPR, EU AI Act, PIPEDA/PHIPA/Law 25, WCAG, and others on the roadmap) are
+**readiness-support tooling**. Running them does not make a system compliant with any standard or
+regulation, and Spectra is not certified by or affiliated with any standards body, regulator, or
+certification authority. Have a qualified professional review every output before relying on it.
 

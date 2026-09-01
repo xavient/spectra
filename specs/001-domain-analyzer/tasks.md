@@ -29,8 +29,8 @@ This project is a Spec Kit **extension catalog**, not application code. The deli
 **Purpose**: Scaffold the self-contained extension folder (Constitution Principle II).
 
 - [X] T001 Create the `domain-analyzer/` folder with the standard extension layout (`commands/`, `README.md`, `CHANGELOG.md`, `LICENSE`, `extension.yml`) by copying the `adr/` extension as a starting template, then clearing `adr`-specific content
-- [X] T002 [P] Author `domain-analyzer/extension.yml`: `schema_version: "1.0"`; `id: domain-analyzer`; name "Domain Analyzer"; `version: 1.0.0`; `category` (e.g. "governance"); `effect: read-write`; `author: TELUS Digital`; `license: MIT`; `repository`/`homepage` per `adr/`; `requires.speckit_version: ">=0.11.0"` (research D3); `provides.commands` with `speckit.domain-analyzer.analyze` → `commands/analyze.md` and a one-line description; relevant `tags`
-- [X] T003 [P] Add `domain-analyzer/LICENSE` (MIT, TELUS Digital — copy from `adr/LICENSE`)
+- [X] T002 [P] Author `domain-analyzer/extension.yml`: `schema_version: "1.0"`; `id: domain-analyzer`; name "Domain Analyzer"; `version: 1.0.0`; `category` (e.g. "governance"); `effect: read-write`; `author: TELUS Digital`; `license: Apache-2.0`; `repository`/`homepage` per `adr/`; `requires.speckit_version: ">=0.11.0"` (research D3); `provides.commands` with `speckit.domain-analyzer.analyze` → `commands/analyze.md` and a one-line description; relevant `tags`
+- [X] T003 [P] Add `domain-analyzer/LICENSE` (Apache-2.0, TELUS Digital — copy from `adr/LICENSE`)
 
 ---
 
@@ -147,7 +147,7 @@ This project is a Spec Kit **extension catalog**, not application code. The deli
 ```bash
 # After T001 scaffolds the folder, author these two files in parallel:
 Task: "Author domain-analyzer/extension.yml manifest"
-Task: "Add domain-analyzer/LICENSE (MIT, TELUS Digital)"
+Task: "Add domain-analyzer/LICENSE (Apache-2.0, TELUS Digital)"
 ```
 
 ---
