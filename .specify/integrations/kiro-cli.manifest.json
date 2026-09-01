@@ -1,7 +1,7 @@
 {
   "integration": "kiro-cli",
-  "version": "1.0.1",
-  "installed_at": "2026-08-22T00:52:55.056054+00:00",
+  "version": "1.0.2",
+  "installed_at": "2026-09-01T07:21:00.795410+00:00",
   "files": {
     ".kiro/prompts/speckit.analyze.md": "8b2e31164aec18574c207f227c166322ec04d6f7335f2a993948587957a2ccea",
     ".kiro/prompts/speckit.clarify.md": "3b819cab9953c10d2d16165eb4d683f37ef73d9683b6a78422dde4fdb0d61927",
