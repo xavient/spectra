@@ -637,7 +637,7 @@
       <a href="module-4.html" title="Module 4 — Brownfield Lab — Add “Due Date” ★">4</a>
       <a href="module-5.html" title="Module 5 — Best Practices &amp; Pitfalls">5</a>
       <a href="module-6.html" title="Module 6 — Quality, Testing &amp; Team Collaboration">6</a>
-      <a href="module-7.html" title="AI-DLC — From SDLC to AI-Driven Development" class="is-active">AI-DLC</a>
+      <a href="AI-DLC.html" title="AI-DLC — From SDLC to AI-Driven Development" class="is-active">AI-DLC</a>
     </div>
   </div>
 </nav>
@@ -713,6 +713,7 @@
     <p>Uses that validated context to produce logical architecture, domain models, working code, and tests. AI moves very fast here, which is exactly why the humans stay responsible for correctness of intent and for quality boundaries.</p>
     <h3>Operation &mdash; how do we run and ship it safely?</h3>
     <p>Deployment, infrastructure-as-code, monitoring, and the feedback that informs the next cycle. AI applies the context accumulated in the two earlier phases rather than meeting the system cold. This is the phase that turns &ldquo;coding faster&rdquo; into &ldquo;delivering faster.&rdquo;</p>
+    <div class="note"><span class="note-label">Which agents run in which phase?</span>Every agent in the SPECTRA roster is published with the AI-DLC phase it belongs to. The <a href="../agents.html">full agent roster</a> groups agents by SDLC phase and tags each group with its AI-DLC phase &mdash; so you can see at a glance what is available to you in Inception, Construction, and Operation. The roster updates automatically as new agents ship; section 8 maps the core commands onto the same three phases.</div>
 
     <h2><span class="h2-num">4.</span>The loop inside every phase</h2>
     <p>Here is the part that makes AI-DLC feel different in practice. The traditional SDLC is a <em>sequence</em>: finish a phase, hand it on. AI-DLC is a <em>loop</em>, and the same four beats repeat inside every phase and every stage.</p>
@@ -953,7 +954,7 @@
 /speckit.spectra.create-pr    # PR with the spec as its own justification
 /speckit.spectra.review-pr    # AI-assisted review against spec and constitution</code></pre>
     <p>Compare that against the diagram in section 5 one more time. Same three phases, same personas, same gates &mdash; expressed as commands you have already run in Modules 3 and 4.</p>
-    <div class="note"><span class="note-label">SPECTRA's optional agents fit the same map.</span>Add-ons slot into the phase where their work belongs: <code>/speckit.spectra.brd</code> and <code>/speckit.spectra.domain-analyzer</code> in Inception, <code>/speckit.spectra.adr</code> in Construction alongside <code>/speckit.plan</code>, <code>/speckit.spectra.flaky-test-detector</code> in Construction's quality loop. Every agent in the SPECTRA roster is published with the AI-DLC phase it belongs to, so the mapping is not something you have to work out yourself.</div>
+    <div class="note"><span class="note-label">SPECTRA's optional agents fit the same map.</span>Add-ons slot into the phase where their work belongs: <code>/speckit.spectra.brd</code> and <code>/speckit.spectra.domain-analyzer</code> in Inception, <code>/speckit.spectra.adr</code> in Construction alongside <code>/speckit.plan</code>, <code>/speckit.spectra.flaky-test-detector</code> in Construction's quality loop. The <a href="../agents.html">full agent roster</a> shows which phase every one of them belongs to.</div>
 
     <div class="reveal">
       <button class="reveal-trigger" type="button">
@@ -1018,7 +1019,7 @@
     <ul>
       <li><a href="https://aws.amazon.com/blogs/devops/ai-driven-development-life-cycle/">AWS &mdash; AI-Driven Development Life Cycle</a> &mdash; the canonical description of AI-DLC, and the source of every definition in this module.</li>
       <li><a href="https://builder.aws.com/content/376vNVPtBqlCvqIjHPub8iPBSxa/sdlc-who-meet-ai-dlc-the-new-build-loop">SDLC Who? Meet AI-DLC: The New Build Loop</a> and <a href="https://builder.aws.com/content/37A3lwV9pkYlYVN8teXLWfIO3Vv/sdlc-who-meet-ai-dlc-ai-dlc-in-action-with-kiro-part-2">AI-DLC in Action</a> &mdash; two community write-ups of the AI-DLC <em>process</em>, and the source of the loop, the gates, and the shape of a real run described above. They demonstrate the process with their own tooling; this course runs the same process with Spec Kit and SPECTRA.</li>
-      <li><a href="https://xavient.github.io/spectra/">The SPECTRA landing page</a> &mdash; the full agent roster, each agent published with the AI-DLC phase it belongs to.</li>
+      <li><a href="../agents.html">The full SPECTRA agent roster</a> &mdash; every agent grouped by SDLC phase and tagged with its AI-DLC phase, so you can see what is available in Inception, Construction, and Operation. See also the <a href="https://xavient.github.io/spectra/">SPECTRA landing page</a>.</li>
       <li><strong>Module 4</strong> &mdash; if you want to feel a bolt rather than read about one, the brownfield lab is the practice ground. Run it again, but this time with a second person in the room for <code>/speckit.clarify</code> and see what changes.</li>
     </ul>
 
