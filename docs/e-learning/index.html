@@ -447,6 +447,18 @@
     overflow-x: auto;
     white-space: pre;
   }
+  /* Figure (diagram image + caption) */
+  figure.fig { margin: 26px 0; }
+  figure.fig > a { display: block; border-bottom: none; }
+  figure.fig img {
+    display: block; width: 100%; height: auto;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: #fff; box-shadow: var(--shadow-md);
+  }
+  figure.fig figcaption {
+    margin-top: 10px; font-size: 13px; color: var(--text-subtle);
+    font-style: italic; text-align: center;
+  }
   /* Responsive */
   @media (max-width: 600px) {
     main { padding: 40px 20px 80px; }
@@ -630,7 +642,7 @@
       <a href="module-4.html" title="Module 4 — Brownfield Lab — Add “Due Date” ★">4</a>
       <a href="module-5.html" title="Module 5 — Best Practices &amp; Pitfalls">5</a>
       <a href="module-6.html" title="Module 6 — Quality, Testing &amp; Team Collaboration">6</a>
-      <a href="module-7.html" title="Module 7 — Measurement &amp; Adoption Roadmap">7</a>
+      <a href="module-7.html" title="AI-DLC — From SDLC to AI-Driven Development">AI-DLC</a>
     </div>
   </div>
 </nav>
@@ -643,7 +655,7 @@
     <div class="meta">
       <div class="meta-item">
         <span class="meta-label">Total time</span>
-        <span class="meta-value">8&ndash;9 hours</span>
+        <span class="meta-value">9 hours</span>
       </div>
       <div class="meta-item">
         <span class="meta-label">Pace</span>
@@ -718,11 +730,11 @@
       <a class="module-row" href="module-7.html">
         <div class="module-num">7</div>
         <div>
-          <div class="module-title">Measurement &amp; Adoption Roadmap</div>
-          <div class="module-title-sub">Five-bucket metric framework, anti-metrics, phased rollout, ROI timeline, planning template</div>
+          <div class="module-title">AI-DLC</div>
+          <div class="module-title-sub">Inception &rarr; Construction &rarr; Operation, the Plan-Clarify-Approve-Execute loop, bolts instead of sprints, who is in the room at each phase, and the Spec Kit commands that run it</div>
         </div>
-        <div class="module-format">Reading + planning template</div>
-        <div class="module-time">45 min</div>
+        <div class="module-format">Reading + knowledge check</div>
+        <div class="module-time">60 min</div>
       </a>
     </div>
     <p style="font-size: 14px; color: var(--text-muted);"><span class="star" style="margin-left:0;">&#9733;</span> Module 4 is the centerpiece. If you only do one lab, do this one.</p>
@@ -735,11 +747,11 @@
       </div>
       <div class="path-card">
         <div class="path-card-title">Two-day workshop</div>
-        <div class="path-card-body">Day 1 covers Modules 1&ndash;3 (foundations + greenfield lab); day 2 covers Modules 4&ndash;7 (brownfield lab + practice + team aspects).</div>
+        <div class="path-card-body">Day 1 covers Modules 1&ndash;3 (foundations + greenfield lab); day 2 covers Modules 4&ndash;7 (brownfield lab + practice + team aspects + AI-DLC).</div>
       </div>
       <div class="path-card">
         <div class="path-card-title">Engineering-leadership track</div>
-        <div class="path-card-body">Modules 1, 5, 6, 7 only. Skips the labs but covers everything needed to sponsor adoption.</div>
+        <div class="path-card-body">Modules 1, 5, 6, and AI-DLC only. Skips the labs but covers everything needed to sponsor adoption &mdash; including how the lifecycle itself changes.</div>
       </div>
       <div class="path-card">
         <div class="path-card-title">Hands-on track</div>

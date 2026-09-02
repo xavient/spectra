@@ -442,6 +442,18 @@
     overflow-x: auto;
     white-space: pre;
   }
+  /* Figure (diagram image + caption) */
+  figure.fig { margin: 26px 0; }
+  figure.fig > a { display: block; border-bottom: none; }
+  figure.fig img {
+    display: block; width: 100%; height: auto;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: #fff; box-shadow: var(--shadow-md);
+  }
+  figure.fig figcaption {
+    margin-top: 10px; font-size: 13px; color: var(--text-subtle);
+    font-style: italic; text-align: center;
+  }
   /* Responsive */
   @media (max-width: 600px) {
     main { padding: 40px 20px 80px; }
@@ -625,7 +637,7 @@
       <a href="module-4.html" title="Module 4 — Brownfield Lab — Add “Due Date” ★">4</a>
       <a href="module-5.html" title="Module 5 — Best Practices &amp; Pitfalls">5</a>
       <a href="module-6.html" title="Module 6 — Quality, Testing &amp; Team Collaboration" class="is-active">6</a>
-      <a href="module-7.html" title="Module 7 — Measurement &amp; Adoption Roadmap">7</a>
+      <a href="module-7.html" title="AI-DLC — From SDLC to AI-Driven Development">AI-DLC</a>
     </div>
   </div>
 </nav>
@@ -812,13 +824,13 @@ Scenario: Overdue todos are visually distinct
       <li><strong>Where would we hit the multi-repo problem?</strong> Are there features today that span repos? How do we coordinate them currently? How would SDD make that easier or harder?</li>
       <li><strong>What's the smallest pilot we could run?</strong> Pick one team, one type of feature, four weeks. What would success look like? What would failure look like? What would we measure?</li>
     </ol>
-    <p>The last question is the most important. The next module gives a framework for measurement and adoption &mdash; but the questions above need answers from your team specifically. No external framework can substitute for that judgment.</p>
+    <p>The last question is the most important. The next module shows what the lifecycle looks like once this way of working is the default &mdash; but the questions above need answers from your team specifically. No external framework can substitute for that judgment.</p>
 
     <hr>
 
     <h3>What's next</h3>
-    <p><strong>Module 7</strong> &mdash; the final module &mdash; is about measurement and adoption. Five-bucket metric framework, anti-metrics that distort behavior, phased rollout pattern with realistic timelines, and a planning template you can fill in to design your team's adoption roadmap.</p>
-    <p>If Module 6 was about <em>how</em> SDD changes collaboration, Module 7 is about <em>whether</em> the change is working and how to course-correct when it isn't.</p>
+    <p><strong>AI-DLC</strong> &mdash; the final module &mdash; is about the lifecycle itself. AWS's AI-Driven Development Life Cycle collapses the six SDLC phases into three, replaces sprints with bolts measured in hours, and puts humans and AI in the room together at every phase. The module maps all of it onto the Spec Kit commands you already know.</p>
+    <p>If Module 6 was about <em>how</em> SDD changes collaboration within the existing lifecycle, the final module is about what happens when the lifecycle itself catches up.</p>
 
     <div class="module-footer-nav">
       <a class="mod-nav-prev" href="module-5.html">
@@ -827,7 +839,7 @@ Scenario: Overdue todos are visually distinct
       </a>
       <a class="mod-nav-next" href="module-7.html">
         <span class="mod-nav-label">Next · Module 7 →</span>
-        <span class="mod-nav-title">Measurement &amp; Adoption Roadmap</span>
+        <span class="mod-nav-title">AI-DLC</span>
       </a>
     </div>
   </article>

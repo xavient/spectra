@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Module 7 &mdash; Measurement &amp; Adoption Roadmap &middot; SDD with SPECTRA</title>
+<title>Module 7 &mdash; AI-DLC &middot; SDD with SPECTRA</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,400;1,9..144,500&family=JetBrains+Mono:wght@400;500;600&family=Mona+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -442,6 +442,18 @@
     overflow-x: auto;
     white-space: pre;
   }
+  /* Figure (diagram image + caption) */
+  figure.fig { margin: 26px 0; }
+  figure.fig > a { display: block; border-bottom: none; }
+  figure.fig img {
+    display: block; width: 100%; height: auto;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: #fff; box-shadow: var(--shadow-md);
+  }
+  figure.fig figcaption {
+    margin-top: 10px; font-size: 13px; color: var(--text-subtle);
+    font-style: italic; text-align: center;
+  }
   /* Responsive */
   @media (max-width: 600px) {
     main { padding: 40px 20px 80px; }
@@ -625,7 +637,7 @@
       <a href="module-4.html" title="Module 4 — Brownfield Lab — Add “Due Date” ★">4</a>
       <a href="module-5.html" title="Module 5 — Best Practices &amp; Pitfalls">5</a>
       <a href="module-6.html" title="Module 6 — Quality, Testing &amp; Team Collaboration">6</a>
-      <a href="module-7.html" title="Module 7 — Measurement &amp; Adoption Roadmap" class="is-active">7</a>
+      <a href="module-7.html" title="AI-DLC — From SDLC to AI-Driven Development" class="is-active">AI-DLC</a>
     </div>
   </div>
 </nav>
@@ -633,16 +645,16 @@
 <main>
   <header class="hero">
     <div class="hero-eyebrow">Module 7 &middot; final module</div>
-    <h1>Measurement &amp; Adoption Roadmap</h1>
-    <p class="hero-lede">A five-bucket metric framework, the four anti-metrics that distort behavior, a phased rollout pattern with realistic timelines, and a planning template you can adapt for your team.</p>
+    <h1>AI-DLC</h1>
+    <p class="hero-lede">The lifecycle itself is the next thing to change. AI-DLC collapses the SDLC into Inception &rarr; Construction &rarr; Operation, turns sprints into bolts, and puts humans and AI in the room together at every phase. This module maps that shift onto the Spec Kit commands you already know.</p>
     <div class="meta">
       <div class="meta-item">
         <span class="meta-label">Time</span>
-        <span class="meta-value">45 min</span>
+        <span class="meta-value">60 min</span>
       </div>
       <div class="meta-item">
         <span class="meta-label">Format</span>
-        <span class="meta-value">Reading + planning template</span>
+        <span class="meta-value">Reading + knowledge check</span>
       </div>
       <div class="meta-item">
         <span class="meta-label">Prerequisites</span>
@@ -656,254 +668,444 @@
     <h3>Learning objectives</h3>
     <p>By the end of this module, you will be able to:</p>
     <ol>
-      <li>Track SDD adoption across five metric categories (productivity, quality, adoption, ROI, harness quality) without falling for vanity numbers.</li>
-      <li>Recognize and avoid the four anti-metrics that distort SDD behavior.</li>
-      <li>Design a phased rollout from pilot to org-wide using the 4 / 8 / 12+ week pattern.</li>
-      <li>Set realistic ROI expectations across the first 12 months and beyond.</li>
-      <li>Fill in a concrete adoption plan for your team.</li>
+      <li>Explain why accelerating individual SDLC phases with AI hits a ceiling, and what AI-DLC changes structurally.</li>
+      <li>Name the three AI-DLC phases and describe what each one produces.</li>
+      <li>Run the <strong>Plan &rarr; Clarify &rarr; Approve &rarr; Execute</strong> loop that repeats inside every phase.</li>
+      <li>Map the six traditional SDLC phases onto the three AI-DLC phases, and say what actually changes at each boundary.</li>
+      <li>Use the AI-DLC vocabulary correctly &mdash; bolt, unit of work, mob elaboration, mob construction.</li>
+      <li>Say who is in the room at each phase, what those people own, and what AI does alongside them.</li>
+      <li>Translate all of it into concrete Spec Kit and SPECTRA commands, and run your first bolt.</li>
     </ol>
 
-    <h2><span class="h2-num">1.</span>The five-bucket metric framework</h2>
-    <p>If you measure only velocity, you optimize for velocity at the expense of everything else. If you measure only quality, you optimize for safety at the expense of throughput. SDD adoption needs to be tracked across multiple dimensions because the practice affects all of them, often in trade-off relationships.</p>
-    <p>Five categories that span the relevant dimensions:</p>
+    <div class="note"><span class="note-label">Where this comes from.</span><strong>AI-DLC</strong> is AWS's <a href="https://aws.amazon.com/blogs/devops/ai-driven-development-life-cycle/">AI-Driven Development Life Cycle</a>. This module teaches the AI-DLC <em>process</em> and runs it with the tooling this course has used throughout &mdash; <strong>Spec Kit and SPECTRA</strong>. Every definition below comes from the AWS post; the practical framing draws on two community write-ups linked at the end.</div>
 
-    <h3>Bucket 1 &mdash; Productivity</h3>
-    <p>These measure throughput and where engineering time is being spent.</p>
-    <ul>
-      <li><strong>Cycle time:</strong> feature request to production. The headline number. SDD should reduce this on well-specified work, but expect it to <em>increase</em> in the first few months as the team learns.</li>
-      <li><strong>Story points per sprint:</strong> velocity in your existing measurement system. Useful for comparing pre- and post-adoption, with the caveat that point estimation often re-baselines after methodology changes.</li>
-      <li><strong>Time allocation breakdown:</strong> how much engineering time is spent writing specs vs. writing code vs. debugging vs. reviewing. The expected SDD shift: more time on specs, less on debugging, similar or less on coding.</li>
-      <li><strong>Iterations per spec:</strong> how many times a spec gets revised before producing acceptable output. Lower is better but never zero. A team trending from 5 iterations to 2 over six months is on the right path.</li>
-    </ul>
+    <h2><span class="h2-num">1.</span>Why the lifecycle itself has to change</h2>
+    <p>Everything in this course so far has made one phase of your work better. Module 1 sharpened what a spec is. Modules 3 and 4 put the four-phase loop into your hands. Module 5 covered what breaks. Module 6 covered how the team splits the work.</p>
+    <p>But the lifecycle those improvements sit inside has not moved. The traditional SDLC &mdash; plan, design, implement, test, deploy, maintain &mdash; was designed to coordinate <em>human</em> execution at scale. Its phases, hand-offs, and documentation all exist to solve one problem: humans are the only engine that can turn intent into working software, and humans need to pass work to each other.</p>
+    <p>That assumption is the thing AI broke. When an agent can draft the requirements, the design, the code, and the tests, the question stops being &ldquo;how do we organize human effort?&rdquo; and becomes something much less comfortable:</p>
+    <blockquote>How do we keep speed from turning into chaos?</blockquote>
+    <p>Teams answering that question tend to land in one of two ditches.</p>
+    <h3>Ditch one: AI-assisted SDLC</h3>
+    <p>AI helps with isolated tasks. Generate this function. Summarize that ticket. Draft some tests. The lifecycle is untouched &mdash; same phases, same hand-offs, same documents. You get faster locally and the overall cadence barely moves, because the waiting was never in the typing. Drift and late discovery survive completely intact. This is the &ldquo;faster typist&rdquo; problem, and it is exactly what Module 1 warned about when it said the bottleneck moved upstream.</p>
+    <h3>Ditch two: AI-autonomous &ldquo;build it all&rdquo;</h3>
+    <p>The opposite move: hand the agent a paragraph and expect a system. Output arrives fast. Alignment, traceability, and safety do not. You end up with something that runs and nobody can explain, which is worse than slow.</p>
+    <p><strong>AI-DLC sits between these two.</strong> It uses AI broadly &mdash; across the whole lifecycle, not one phase &mdash; but channels it through a structured workflow with explicit human approval points. Not vibe coding. Not a rubber stamp. Velocity with governance.</p>
 
-    <h3>Bucket 2 &mdash; Quality</h3>
-    <p>These measure whether the code SDD produces is actually better.</p>
-    <ul>
-      <li><strong>Defect density (bugs per KLOC):</strong> compare AI-generated to human-generated code in your codebase. Track the gap closing or widening.</li>
-      <li><strong>Production incidents linked to AI-generated code:</strong> the bottom-line quality metric. Should trend down as harnesses mature.</li>
-      <li><strong>Security findings per PR:</strong> SAST hits, dependency vulnerabilities, secrets detected. Should trend down as the Constitution and validation gates absorb security learnings.</li>
-      <li><strong>Architectural violations:</strong> the metric specific to SDD. Track where they're caught &mdash; at spec gate (cheap), at PR review (medium), or in production (expensive). The shift over time should be from production toward spec gate.</li>
-    </ul>
-
-    <h3>Bucket 3 &mdash; Adoption</h3>
-    <p>These measure whether the practice is being used, not just installed.</p>
-    <ul>
-      <li><strong>Percentage of new features using SDD workflow:</strong> the headline adoption number. Mature SDD: ~80% of new feature work, with the remaining 20% being legitimately &ldquo;skip the spec&rdquo; cases.</li>
-      <li><strong>Percentage of bug fixes flowing through specs:</strong> mature SDD teams tend toward 100% on bug fixes, because the spec for a bug is often shorter than the code change and forces clarity about root cause.</li>
-      <li><strong>Specification template reuse rate:</strong> how often new specs adapt existing templates. High reuse signals a healthy harness; low reuse signals every author is starting from scratch.</li>
-      <li><strong>Developer satisfaction:</strong> qualitative survey, every 4&ndash;6 weeks. SDD adoption that's making developers miserable will fail eventually regardless of what other metrics say.</li>
-    </ul>
-
-    <h3>Bucket 4 &mdash; ROI</h3>
-    <p>These measure whether the practice is paying for itself.</p>
-    <ul>
-      <li><strong>Spec-writing time vs. implementation time saved:</strong> target 20&ndash;40% spec overhead for 50&ndash;80% implementation savings on well-specified features. If you're writing specs that take 60% of feature time and getting 30% implementation savings, your spec process needs work.</li>
-      <li><strong>Tool licensing + training + validation infrastructure costs:</strong> the visible cost of adoption. Include AI model spend.</li>
-      <li><strong>Break-even point:</strong> when monthly savings exceed monthly costs. Realistic: 3&ndash;6 months for small teams, up to 6 months for enterprise. If you're not at break-even by month 9, something is wrong with your adoption &mdash; escalate, don't continue silently.</li>
-    </ul>
-
-    <h3>Bucket 5 &mdash; Harness quality</h3>
-    <p>The most distinctive SDD-specific bucket. Tracks whether the supporting infrastructure (Constitution, templates, validation gates, agent configurations) is improving over time.</p>
-    <ul>
-      <li><strong>Spec-to-implementation gap rate:</strong> bugs where the code diverged from a clear spec. High rate means validation is too loose; tighten the gates.</li>
-      <li><strong>Intent-to-spec gap rate:</strong> bugs where the spec itself was incomplete. High rate means the spec-writing process is missing something; improve elicitation patterns and review checklists.</li>
-      <li><strong>CI gate pass rate on first attempt:</strong> how often code generated from a spec passes all gates without intervention. Should trend up as harnesses mature.</li>
-      <li><strong>Harness improvements per quarter:</strong> count of meaningful Constitution / template / validation-gate updates. Steady improvement is the leading indicator that the team is treating the harness as a real artifact, not a one-time install.</li>
-    </ul>
-
-    <h2><span class="h2-num">2.</span>Anti-metrics &mdash; do not use these</h2>
-    <p>Some metrics actively distort behavior in the wrong direction. The four most common:</p>
-
-    <h3>Lines of code generated</h3>
-    <p>Rewards bloat. A team writing 10,000 lines of generated code per sprint is not necessarily doing better work than a team writing 2,000 lines &mdash; it's plausibly doing much worse. Generated code that does the job in fewer lines is generally higher quality, not lower.</p>
-    <p>If your organization tracks LoC for any reason, separate AI-generated from human-written and don't celebrate the AI-generated number going up.</p>
-
-    <h3>AI suggestion acceptance rate (in isolation)</h3>
-    <p>GitHub publishes data on Copilot acceptance rates around 30%. People sometimes take this as a benchmark to beat &mdash; &ldquo;our team only accepts 25%, we need to push acceptance up.&rdquo;</p>
-    <p>Don't. Acceptance rate without quality control rewards accepting noise. A team that carefully accepts the 30% of suggestions that are correct, rejecting the 70% that aren't, is doing better than a team that accepts 80% indiscriminately and patches the failures downstream.</p>
-    <p>If you track acceptance rate, pair it with downstream quality metrics. Acceptance rate alone is meaningless.</p>
-
-    <h3>Speed-to-first-PR without quality controls</h3>
-    <p>SDD can reduce time to first PR. It can also produce PRs faster than they can be properly reviewed, leading to the Agoda outcome from Module 6. Measuring speed-to-PR without measuring downstream quality, review time, and rework volume gives a falsely positive picture.</p>
-    <p>If you measure this, also measure cycle time to <em>production</em> and rework rate. Those tell the real story.</p>
-
-    <h3>Spec word count</h3>
-    <p>Tempting to measure because it's easy to count. Disastrous to optimize because it incentivizes the exact failure mode (spec bloat, markdown monsters) that Module 5 warned about.</p>
-    <p>If anything, measure the opposite: <em>concision under quality threshold</em>. A team writing shorter specs that still produce correct outputs is doing better than a team writing long ones. But &ldquo;shorter is better&rdquo; is also wrong as an isolated metric &mdash; really short specs produce wrong outputs. The honest answer is that spec length isn't a useful signal in either direction. Measure the outcomes, not the artifact size.</p>
-
-    <h2><span class="h2-num">3.</span>Phased rollout pattern</h2>
-    <p>The pattern that recurs across sources: pilot, then team expansion, then org-wide. Three to six months total, not two weeks.</p>
-
-    <h3>Phase 1 &mdash; Pilot (4 weeks)</h3>
-    <ul>
-      <li><strong>Scope:</strong> 1&ndash;2 developers, working on non-critical greenfield or small brownfield features.</li>
-      <li><strong>Tool:</strong> one chosen tool (SPECTRA for this course), low-friction install.</li>
-      <li><strong>Goal:</strong> the pilot pair becomes fluent, drafts initial spec templates, identifies the first 3&ndash;5 anti-patterns to avoid.</li>
-      <li><strong>Output:</strong> a &ldquo;lessons learned&rdquo; document and a refined Constitution template that the rest of the team can use.</li>
-      <li><strong>Success criteria:</strong> the pair can confidently produce a specced feature in roughly the same time as their previous baseline (not faster yet &mdash; that's a Phase 3 goal).</li>
-    </ul>
-    <p>The key constraint: don't pick a feature where failure has high cost. The pilot will produce some misfires. That's the point &mdash; better to misfire on internal tooling than on a customer-facing payment flow.</p>
-
-    <h3>Phase 2 &mdash; Team expansion (8 weeks)</h3>
-    <ul>
-      <li><strong>Scope:</strong> the full team, mix of greenfield and brownfield features.</li>
-      <li><strong>Workshops:</strong> formal spec-writing workshops based on Modules 2 and 5. The pilot pair leads.</li>
-      <li><strong>Goal:</strong> every team member writes at least one spec per week. About half the team's new feature work goes through SDD.</li>
-      <li><strong>Output:</strong> stable Constitution, several reusable spec templates, established CI validation gates.</li>
-      <li><strong>Success criteria:</strong> team retro indicates positive sentiment (not unanimous; &ldquo;cautiously hopeful&rdquo; is a win); cycle time on specced features is at parity with non-specced work.</li>
-    </ul>
-    <p>This phase is where most adoptions stall. The friction is real &mdash; engineers get faster at the typing part of coding before they get faster at the spec part. Cycle times for specced work might be temporarily worse than non-specced. The pilot pair's role is to keep the team from concluding &ldquo;SDD doesn't work&rdquo; prematurely.</p>
-    <p>A red flag during Phase 2: if specs are being written but ignored during implementation, you're heading toward spec rot before adoption is even complete. Address it directly. Specs that don't constrain implementation are pure overhead.</p>
-
-    <h3>Phase 3 &mdash; Org-wide (12+ weeks)</h3>
-    <ul>
-      <li><strong>Scope:</strong> all teams.</li>
-      <li><strong>Governance:</strong> policies on which features require specs, which can skip them, how Constitutions are reviewed, who owns harness improvements.</li>
-      <li><strong>Goal:</strong> 80%+ of new feature work uses SDD; quality and ROI metrics are net positive.</li>
-      <li><strong>Output:</strong> functional SDD practice with measurable improvement on most metrics.</li>
-      <li><strong>Success criteria:</strong> the ROI metrics from Bucket 4 are net positive; harness improvements (Bucket 5) are happening regularly; developer satisfaction is at or above pre-adoption baseline.</li>
-    </ul>
-    <p>Org-wide rollout is also when multi-team coordination problems emerge (Module 6, Section 5). Plan for them: which Constitutions are shared, which are per-team, how cross-team specs get reviewed.</p>
-
-    <h3>Microsoft research timeline</h3>
-    <p>Microsoft's research on AI coding tools, cited in the SoftwareSeni guide, suggests <strong>about 11 weeks for productivity gains to fully realize</strong>. That's consistent with the 4 + 8 = 12 week structure above. Set expectations accordingly with leadership: don't promise quarterly results in the first quarter.</p>
-
-    <h2><span class="h2-num">4.</span>ROI timeline &mdash; realistic expectations</h2>
-    <p>The honest version of what to tell your VP of engineering, your CTO, or your finance partner.</p>
-
-    <h3>Months 1&ndash;3: net negative ROI</h3>
-    <p>Training, tooling setup, process change. Engineers are simultaneously doing their normal work and learning a new methodology. Cycle times may go up, not down. Some bugs ship that wouldn't have under the old process because the team is still calibrating.</p>
-    <p>This phase has happened to every team that adopts SDD. It's not a sign of failure; it's the expected cost of methodology change. Budget for it explicitly.</p>
-
-    <h3>Months 4&ndash;6: break-even</h3>
-    <p>Initial productivity costs are recouped. The first features specced under SDD are showing measurable quality benefits (fewer architectural violations caught at PR review, faster integration testing, better cross-team API stability if you have multiple repos).</p>
-    <p>Not yet net positive &mdash; but positive trajectory.</p>
-
-    <h3>Months 7&ndash;12: net positive</h3>
-    <p>The harness has accumulated improvements. Spec templates are reused. Validation gates catch what they're meant to catch. Engineers write specs in their natural workflow without it feeling like overhead. The team's overall throughput exceeds pre-adoption levels and quality is measurably better.</p>
-    <p>This is where the adoption either succeeds or quietly collapses. Teams that haven't seen net-positive results by month 9&ndash;12 typically give up. Teams that have, continue.</p>
-
-    <h3>Year 2 and beyond: significant positive ROI</h3>
-    <p>Conditional on harness and team-practice maturity. Compounded benefits emerge:</p>
-    <ul>
-      <li>New engineers onboard faster (specs and Constitutions are excellent learning material).</li>
-      <li>Cross-team integrations are smoother (shared spec format, shared validation expectations).</li>
-      <li>Architectural drift slows (Constitution + CI gates catch what would have been silent erosion).</li>
-      <li>Bug-classification habits (SpecOps loop) feed back into harness improvements that prevent whole classes of recurring issues.</li>
-    </ul>
-    <p>The compounding is the actual ROI. Year 1 is the investment. Year 2 onward is the return.</p>
-    <p>If you're being asked for a 12-month business case, be honest: the case is for getting through year 1 in net-positive territory. The bigger payoff is in year 2.</p>
-
-    <h2><span class="h2-num">5.</span>Adoption plan template</h2>
-    <p>Spend the next 15 minutes filling this in for your team. Don't aim for a polished document; aim for a draft that captures the team's current judgment. A bad draft today is better than a great draft in three weeks. <strong>Use the Copy button to grab the template &mdash; then paste into your team's planning doc and fill it in.</strong></p>
-
-<pre><code># SDD Adoption Plan &mdash; [Team / Org Name]
-
-## Why SDD now
-What problem are we trying to solve? Be specific. ("AI agents are
-generating code our reviewers can't keep up with" is a real reason.
-"It's the modern way" is not.)
-
-[answer]
-
-## Phase 1 &mdash; Pilot
-
-- Pilot pair: [names]
-- Pilot duration: 4 weeks, starting [date]
-- Pilot feature: [a specific upcoming piece of work &mdash; be concrete]
-- Tool: SPECTRA (built on GitHub Spec Kit) + [chosen AI agent]
-- Success criteria:
-  - [ ] Pair completes the feature using full SDD workflow
-  - [ ] Constitution v1 written and committed
-  - [ ] At least 1 spec template captured for reuse
-  - [ ] "Lessons learned" doc written for the rest of the team
-
-## Phase 2 &mdash; Team expansion
-
-- Start: [4 weeks after pilot start]
-- Duration: 8 weeks
-- Workshops scheduled: [dates, owners]
-- Success criteria:
-  - [ ] Every team member writes &gt;=1 spec per week
-  - [ ] ~50% of new feature work uses SDD
-  - [ ] Team retro indicates net-positive sentiment
-  - [ ] Cycle time on specced features &lt;= baseline cycle time
-
-## Phase 3 &mdash; Org-wide (or full team if small org)
-
-- Start: [12 weeks after pilot start]
-- Goal adoption rate: 80% of new feature work
-- Governance owner: [name]
-- Harness owner: [name]
-
-## Metrics we'll track from day 1
-
-Productivity:
-- [ ] Cycle time
-- [ ] Time allocation breakdown (spec vs code vs debug vs review)
-
-Quality:
-- [ ] Defect density (AI-generated vs human-written)
-- [ ] Production incidents linked to AI-generated code
-
-Adoption:
-- [ ] % of new features using SDD
-- [ ] Developer satisfaction (survey every 4 weeks)
-
-ROI:
-- [ ] Spec-writing time vs implementation time saved
-- [ ] Total tool/training cost vs. estimated savings
-
-Harness quality:
-- [ ] Spec-to-implementation gap count (per month)
-- [ ] Intent-to-spec gap count (per month)
-
-## Anti-metrics we will NOT track
-
-- Lines of code generated
-- AI suggestion acceptance rate in isolation
-- Speed-to-first-PR without quality follow-through
-- Spec word count
-
-## Risks and mitigations
-
-| Risk                                    | Likelihood | Mitigation |
-|-----------------------------------------|------------|------------|
-| Spec rot in a year                      | [H/M/L]    | [plan]     |
-| Specification theater                   | [H/M/L]    | [plan]     |
-| Review bottleneck not addressed         | [H/M/L]    | [plan]     |
-| Pilot pair leaves before Phase 3        | [H/M/L]    | [plan]     |
-| Tooling friction worse than expected    | [H/M/L]    | [plan]     |
-| Leadership impatient before ROI lands   | [H/M/L]    | [plan]     |
-
-## Decision points
-
-- Month 3: Phase 1 retrospective. Continue, adjust, or stop.
-- Month 6: Phase 2 retrospective. Are we on the trajectory we expected?
-- Month 9: ROI checkpoint. Are quality / cycle time / cost metrics
-  net positive? If not, what specifically is failing?
-- Month 12: Year-1 review. Adoption rate, harness maturity, team sentiment.</code></pre>
-    <p>The template is deliberately blunt. SDD adoptions that succeed have someone willing to make these decisions explicitly, not someone hoping things will work out.</p>
-
-    <h2><span class="h2-num">6.</span>The honest summary</h2>
-    <p>You've now been through the practice (Modules 3 and 4), the patterns (Module 5), the team aspects (Module 6), and the measurement (this module). A short summary of what's worth holding onto:</p>
-    <p><strong>SDD is most valuable</strong> when stakes are high, when AI agents are doing meaningful generation work, and when the team is willing to change collaboration patterns. It's less valuable for solo work on throwaway code or for teams where AI adoption is purely individual.</p>
-    <p><strong>The methodology isn't new</strong>, but the combination of AI-as-spec-consumer, mature CI/CD, and modern tooling makes spec-first practice more powerful and more enforceable than it has been before. Bryan Finster is half right when he calls it &ldquo;BDD with branding&rdquo; &mdash; the underlying idea is BDD, but the leverage is genuinely greater than BDD alone gave you in 2015.</p>
-    <p><strong>The hardest problems are organizational, not technical.</strong> SPECTRA installs in five minutes. Restructuring how PM, architecture, engineering, and quality collaborate takes a year. The technical part is the easy part.</p>
-    <p><strong>The biggest single risk</strong> is the markdown-monster failure mode &mdash; generating elaborate specs that nobody reviews. The biggest single defense is the human-reviewability test: if a spec is too long to read carefully, slice it.</p>
-    <p><strong>The biggest single opportunity</strong> is the SpecOps feedback loop. Bug classification (intent-to-spec vs. spec-to-implementation) drives different harness improvements. Teams that build this habit see compounding quality gains. Teams that don't plateau after the initial productivity bump.</p>
-    <p><strong>The honest ROI</strong> is year-2-positive, not year-1-positive. Sell it to leadership accordingly.</p>
-
-    <h2><span class="h2-num">7.</span>Where to go from here</h2>
-    <p>This is the end of the formal course. From here, the most useful next steps are:</p>
+    <h2><span class="h2-num">2.</span>What AI-DLC is</h2>
+    <p>AI-DLC is a lifecycle in which AI does not merely help you write software &mdash; it helps you <em>build</em> software end to end: clarifying requirements, proposing a staged plan, generating and refining artifacts, and supporting operational readiness. AWS states the operating principle directly:</p>
+    <blockquote>AI creates plans, seeks clarification, and implements plans, while humans make critical decisions.</blockquote>
+    <p>Read that twice, because both halves are load-bearing. AI is not waiting to be told what to do next &mdash; it proposes. And AI does not decide &mdash; it defers, to the people who hold the business context.</p>
+    <h3>The four principles</h3>
     <ol>
-      <li><strong>Use what's in your adoption plan template above.</strong> A plan that gets executed is worth more than a plan that gets polished.</li>
-      <li><strong>Pick a real upcoming piece of work</strong> and apply the brownfield pattern from Module 4 to it. Real work teaches faster than labs.</li>
-      <li><strong>Run the discussion prompts from Module 6 with your team.</strong> The answers your team gives matter more than what this course says.</li>
-      <li><strong>Re-read Module 5's pitfalls list quarterly.</strong> Most teams hit at least three of them in the first year. Catching them early is cheaper than fixing them late.</li>
-      <li><strong>Update the Constitution often.</strong> A Constitution that hasn't changed in three months is either perfect or stale, and it's almost always stale.</li>
+      <li><strong>AI-powered execution with human oversight.</strong> AI systematically creates detailed work plans, actively seeks clarification, and defers critical decisions to humans.</li>
+      <li><strong>Dynamic team collaboration.</strong> Because AI absorbs the routine work, the team's time goes into real-time problem solving and rapid decision-making &mdash; together, not in a queue of hand-offs.</li>
+      <li><strong>Persistent context.</strong> Plans, requirements, and design artifacts are written into the project repository and carried across every phase, so nothing has to be re-explained.</li>
+      <li><strong>Quality through alignment.</strong> The team builds precisely what it has in mind, rather than an abstract AI interpretation of the intent.</li>
     </ol>
-    <p>Good luck.</p>
+    <p>If you keep one sentence from this module, keep this one: <strong>AI executes, humans govern.</strong></p>
+    <div class="note"><span class="note-label">Already familiar?</span>Principle 3 is the argument this whole course is built on. A spec that lives in the repo and is read by every phase <em>is</em> persistent context. AI-DLC did not invent that idea &mdash; it made it the organizing principle of the lifecycle.</div>
+
+    <h2><span class="h2-num">3.</span>The three phases</h2>
+    <p>AI-DLC collapses the six familiar SDLC phases into three, executed in order.</p>
+    <h3>Inception &mdash; what are we building, and why?</h3>
+    <p>Turns business intent into validated direction: requirements, user stories, constraints, success criteria, and a decomposition into <em>units of work</em>. The goal is not more documentation. The goal is <strong>less ambiguity</strong>, established while changing your mind is still cheap.</p>
+    <h3>Construction &mdash; how are we building it?</h3>
+    <p>Uses that validated context to produce logical architecture, domain models, working code, and tests. AI moves very fast here, which is exactly why the humans stay responsible for correctness of intent and for quality boundaries.</p>
+    <h3>Operation &mdash; how do we run and ship it safely?</h3>
+    <p>Deployment, infrastructure-as-code, monitoring, and the feedback that informs the next cycle. AI applies the context accumulated in the two earlier phases rather than meeting the system cold. This is the phase that turns &ldquo;coding faster&rdquo; into &ldquo;delivering faster.&rdquo;</p>
+
+    <h2><span class="h2-num">4.</span>The loop inside every phase</h2>
+    <p>Here is the part that makes AI-DLC feel different in practice. The traditional SDLC is a <em>sequence</em>: finish a phase, hand it on. AI-DLC is a <em>loop</em>, and the same four beats repeat inside every phase and every stage.</p>
+    <div class="diagram">   ┌────────────────────────────────────────────────────────────┐
+   │                                                            │
+   ▼                                                            │
+┌─────────┐    ┌──────────┐    ┌──────────┐    ┌─────────┐      │
+│  PLAN   │ ─► │ CLARIFY  │ ─► │ APPROVE  │ ─► │ EXECUTE │ ─────┘
+└─────────┘    └──────────┘    └──────────┘    └─────────┘
+   AI            AI asks          HUMANS          AI
+ proposes        targeted         confirm      generates
+  what's       questions to       intent,      artifacts
+    next         remove         constraints,      and
+                ambiguity          risk        work products
+
+           └──── AI executes ────┘  └─ humans govern ─┘</div>
+    <p>Four beats, in order, every time:</p>
+    <ol>
+      <li><strong>Plan.</strong> AI proposes what to do next &mdash; the stages, the outputs, the checks.</li>
+      <li><strong>Clarify.</strong> AI asks targeted questions to remove ambiguity <em>before</em> generating anything.</li>
+      <li><strong>Approve.</strong> Humans confirm intent, constraints, and risk decisions.</li>
+      <li><strong>Execute.</strong> AI generates the artifacts and work products.</li>
+    </ol>
+    <p>Then the loop runs again with more accumulated context than it had last time. That is the whole shift, and it is smaller than it sounds: <strong>you are not asking AI for an answer, you are running a lifecycle.</strong></p>
+    <p>You have already run this loop, by the way. It is what Modules 3 and 4 had you do. Section 8 puts the command names on each beat.</p>
+
+    <h2><span class="h2-num">5.</span>Mapping AI-DLC onto the SDLC you already run</h2>
+    <p>This is the picture worth holding in your head. Traditional phases on the left, AI-DLC phases in the middle, and &mdash; the part most summaries leave out &mdash; who is actually in the room for each phase on the right.</p>
+    <figure class="fig">
+      <a href="https://raw.githubusercontent.com/xavient/spectra/main/assets/SDLC-to-AIDLC.png" target="_blank" rel="noopener"><img src="https://raw.githubusercontent.com/xavient/spectra/main/assets/SDLC-to-AIDLC.png" alt="Diagram mapping the six traditional SDLC phases (Plan, Design, Implement, Test, Deploy, Maintain) onto the three AI-DLC phases (Inception, Construction, Operation), alongside the personas working in each AI-DLC phase: Product Owner and Developers plus Architects plus QE Leads with AI in Inception; Developers and QE Engineers with AI in Construction; DevOps Engineers and Developers with AI in Operation." /></a>
+      <figcaption>Six SDLC phases collapse into three AI-DLC phases &mdash; and every one of them has humans and AI working the phase together. <a href="https://raw.githubusercontent.com/xavient/spectra/main/assets/SDLC-to-AIDLC.png" target="_blank" rel="noopener">Open full size</a> to read the persona detail, or see the tables below.</figcaption>
+    </figure>
+    <h3>The phase collapse</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Traditional SDLC</th><th>AI-DLC</th><th>What actually changes</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Plan</strong></td><td><strong>Inception</strong></td><td>Requirements stop being a document handed downstream. They are elaborated with the whole team present, with AI drafting and the room correcting, until ambiguity is gone.</td></tr>
+          <tr><td><strong>Design</strong> + <strong>Implement</strong> + <strong>Test</strong></td><td><strong>Construction</strong></td><td>The three hand-offs that cost the most time disappear. Design, code, and tests are produced from the same validated context in one continuous loop instead of three sequential ones.</td></tr>
+          <tr><td><strong>Deploy</strong> + <strong>Maintain</strong></td><td><strong>Operation</strong></td><td>Deployment is not a separate project with its own discovery. AI carries the context from the earlier phases into infrastructure, release, and monitoring.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Notice what the middle row is really saying. <strong>The point is not that the phases got renamed. The point is that the hand-offs between them were deleted.</strong> Every hand-off in the traditional SDLC is a place where context is dropped, re-derived, and slightly changed. AI-DLC removes the hand-off by keeping one shared context and one continuous loop.</p>
+    <h3>What changes, dimension by dimension</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Dimension</th><th>Traditional SDLC</th><th>AI-DLC</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Core assumption</td><td>Humans create most artifacts</td><td>AI can create many artifacts quickly</td></tr>
+          <tr><td><strong>Main risk</strong></td><td>Miscommunication across hand-offs</td><td>Moving fast in the wrong direction</td></tr>
+          <tr><td>Main bottleneck</td><td>Coordination and lead time</td><td>Alignment, traceability, and quality gates</td></tr>
+          <tr><td>Docs and designs</td><td>Created manually, and they drift</td><td>Continuously regenerated as context evolves</td></tr>
+          <tr><td>Quality control</td><td>Concentrated late, in QA</td><td>Recurring gates plus continuous refinement</td></tr>
+          <tr><td>Definition of done</td><td>Code, and maybe tests</td><td>Validated intent, artifacts, and evidence at each gate</td></tr>
+          <tr><td>How work is organized</td><td>Epics, sprints, hand-offs</td><td>Phases and stages, with depth adapted to risk</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>The <strong>main risk</strong> row is the one to internalize, because it tells you where to spend your attention. Under the SDLC you defended against misunderstanding. Under AI-DLC you defend against building the wrong thing beautifully and at speed. Those need different countermeasures &mdash; which is what sections 7 and 8 are about.</p>
+    <p>One line summarizes the whole table: <strong>the SDLC manages humans; AI-DLC manages change.</strong></p>
+
+    <h2><span class="h2-num">6.</span>Sprints become bolts</h2>
+    <p>The vocabulary changes too, and the new words are not cosmetic &mdash; each one marks something that genuinely has no equivalent in the old model.</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Traditional term</th><th>AI-DLC term</th><th>What it means</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Sprint</td><td><strong>Bolt</strong></td><td>A work cycle measured in <strong>hours or days rather than weeks</strong>. Shorter, and considerably more intense.</td></tr>
+          <tr><td>Epic</td><td><strong>Unit of work</strong></td><td>How scope is decomposed during Inception &mdash; a coherent slice the team can elaborate, build, and validate as a whole.</td></tr>
+          <tr><td>&mdash;</td><td><strong>Mob elaboration</strong></td><td>The whole team, together, validating the questions and proposals AI raises during Inception. No SDLC equivalent.</td></tr>
+          <tr><td>&mdash;</td><td><strong>Mob construction</strong></td><td>The team giving real-time clarification on technical and architectural decisions while Construction is running. No SDLC equivalent.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h3>What a bolt actually feels like</h3>
+    <p>A sprint is a container for coordinating work that people do separately: you plan on Monday, disperse, and reconvene. A bolt is the opposite shape. The team is <em>together</em>, AI is producing artifacts inside the session, and the questions that would normally have become Slack threads get answered in the room while the work is still warm.</p>
+    <p>Activities that previously took weeks land in hours or days. Not because anyone is typing faster, but because the waiting is gone &mdash; the waiting for a review slot, for a clarification, for the next ceremony, for someone to have the context you needed.</p>
+    <div class="note"><span class="note-label">The misread to avoid.</span>A bolt is <strong>not</strong> &ldquo;a sprint, but rushed.&rdquo; It is short <em>because</em> the elaboration was done properly and collectively up front. Compressing a sprint without doing mob elaboration first does not give you a bolt &mdash; it gives you the same work with less thinking in it.</div>
+    <h3>The demand this places on you</h3>
+    <p>Bolts have a real cost, and it is worth naming honestly: <strong>the team has to be available inside the bolt.</strong> Mob elaboration assumes the mob turns up. A bolt that stalls for six hours waiting on an absent approver is not a bolt &mdash; it is a slower sprint with worse ergonomics.</p>
+    <p>This is a scheduling problem before it is a tooling problem. If your product owner is in back-to-back meetings all week, AI-DLC will not work for your team yet, and no command will fix that.</p>
+
+    <div class="reveal">
+      <button class="reveal-trigger" type="button">
+        <span><span class="reveal-trigger-label">Exercise</span>Re-cut a real feature as bolts and units of work</span>
+        <span class="reveal-trigger-icon">+</span>
+      </button>
+      <div class="reveal-content">
+        <p>Take a feature your team actually shipped last quarter &mdash; one you remember the shape of. Then answer, on paper:</p>
+        <ol>
+          <li>What were its <strong>units of work</strong>? Not tickets &mdash; coherent slices that could each be elaborated, built, and validated as a whole.</li>
+          <li>How many <strong>bolts</strong> would it have taken, and who needed to be in the room for each?</li>
+          <li>Where did the original timeline actually go? Add up the <em>waiting</em>: review queues, clarification round-trips, the gap between &ldquo;design done&rdquo; and &ldquo;implementation started.&rdquo;</li>
+        </ol>
+        <p><strong>Sample answer &mdash; a &ldquo;saved search&rdquo; feature that took six weeks:</strong></p>
+        <ul>
+          <li><strong>Units of work:</strong> (1) persistence and data model for saved searches, (2) the save/apply/delete API surface, (3) the UI for managing saved searches, (4) sharing a saved search with a teammate.</li>
+          <li><strong>Bolts:</strong> four, roughly one per unit, one to two days each &mdash; but only after a single half-day Inception bolt covering all four, with the PO, two engineers, and the QE lead in the room together.</li>
+          <li><strong>Where the six weeks went:</strong> nine calendar days of actual building. The rest was a week waiting on a design review, two rounds of &ldquo;what should happen if the underlying filter is deleted?&rdquo; over Slack across four days, and eleven days of PR review latency spread across the whole thing.</li>
+        </ul>
+        <p>That last bullet is the point of the exercise. When you total the waiting, the case for AI-DLC stops being about typing speed. <strong>Most of your lead time is not spent building.</strong> Notice also that the two rounds of &ldquo;what happens if the filter is deleted?&rdquo; are precisely the questions mob elaboration is designed to surface on day one &mdash; and that a real Inception run would have asked.</p>
+      </div>
+    </div>
+
+    <h2><span class="h2-num">7.</span>Who is in the room &mdash; personas at every phase</h2>
+    <p>This is the most misunderstood part of AI-DLC, so it is worth stating flatly before anything else:</p>
+    <blockquote><strong>At every phase it is humans <em>and</em> AI, working the phase together.</strong> Not a hand-off to AI. Not a hand-back from AI. The same room, the whole way through.</blockquote>
+    <p>The diagram in section 5 shows this on the right-hand side, and it is the reason that diagram has three columns instead of one. Every AI-DLC phase has named human roles with real responsibilities <em>and</em> a defined AI contribution running alongside them. Here it is in full.</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Phase</th><th>Humans in the room</th><th>What the humans own</th><th>What AI does alongside them</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td rowspan="2"><strong>Inception</strong></td>
+            <td><strong>Product Owner</strong></td>
+            <td>Validates intent &middot; refines requirements &middot; approves business alignment</td>
+            <td rowspan="2">Generates the requirements document &mdash; user stories, scenarios, acceptance criteria, and the in-scope vs. out-of-scope split</td>
+          </tr>
+          <tr>
+            <td><strong>Developers + Architects + QE Leads</strong></td>
+            <td>Review technical feasibility &middot; validate architecture alignment</td>
+          </tr>
+          <tr>
+            <td rowspan="2"><strong>Construction</strong></td>
+            <td><strong>Developers</strong></td>
+            <td>Validate domain models &middot; approve logical design &middot; review generated code</td>
+            <td rowspan="2">Creates the technical design document and architecture &middot; generates code and tests &middot; executes automated testing</td>
+          </tr>
+          <tr>
+            <td><strong>QE Engineers</strong></td>
+            <td>Validate test scenarios &middot; approve test executions &middot; guide quality improvement</td>
+          </tr>
+          <tr>
+            <td rowspan="2"><strong>Operation</strong></td>
+            <td><strong>DevOps Engineers</strong></td>
+            <td>Validate deployment &middot; approve scaling decisions &middot; monitor system health</td>
+            <td rowspan="2">Analyzes logs &middot; predicts SLA violations &middot; recommends resolutions</td>
+          </tr>
+          <tr>
+            <td><strong>Developers</strong></td>
+            <td>Approve AI fixes &middot; validate optimizations &middot; monitor system health</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Read down the third column and you will notice every single entry is a verb of judgment: <em>validates, approves, reviews, guides</em>. Read down the fourth and they are all verbs of production: <em>generates, creates, executes, analyzes</em>. That split is the entire operating model, and it holds in all three phases.</p>
+    <h3>The anti-pattern</h3>
+    <p>The most common way AI-DLC quietly degrades is this: <strong>the product owner writes a ticket and leaves.</strong> The developers and AI then do Inception without the person who holds the intent, which means the requirements document is a guess that looks authoritative. Everything downstream inherits the guess, and it surfaces in Operation.</p>
+    <p>If the PO is not in the room during Inception, you are not running AI-DLC. You are running the SDLC with a chatbot attached &mdash; ditch one from section 1, with extra steps.</p>
+    <h3>Where humans decide: three gates</h3>
+    <p>&ldquo;Humans govern&rdquo; only means something if you can say <em>where</em>. In practice the decisions cluster at three points, one per phase boundary:</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Gate</th><th>Question it answers</th><th>What must be approved</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Gate A</strong> &mdash; end of Inception</td><td>Is the intent correct?</td><td>Scope, success criteria, key constraints, and the in-scope/out-of-scope split</td></tr>
+          <tr><td><strong>Gate B</strong> &mdash; within Construction</td><td>Is the approach correct?</td><td>Architecture direction, definition of done, test strategy &mdash; approved <em>before</em> bulk code generation starts</td></tr>
+          <tr><td><strong>Gate C</strong> &mdash; before Operation</td><td>Is this release responsible?</td><td>Deployment and readiness checklist, rollback plan, what you are monitoring</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Gates are not bureaucracy, and they are not a return to stage-gate waterfall. AI-DLC does not remove engineering discipline &mdash; <strong>it relocates the discipline to a small number of high-value checkpoints</strong> and then lets execution run fast between them. Fast execution between gates; clear accountability at gates.</p>
+    <p>The reason they are non-negotiable is the uncomfortable fact from section 5: AI can move fast enough to produce the wrong thing, beautifully and with excellent test coverage. A gate is the difference between &ldquo;the AI generated some stuff&rdquo; and &ldquo;we delivered something we can stand behind.&rdquo;</p>
+
+    <h2><span class="h2-num">8.</span>Doing it with Spec Kit and SPECTRA</h2>
+    <p>Everything above is methodology. Here is the part that makes it something you can run on Monday &mdash; because you already know these commands. The four-phase loop from Module 1 <em>is</em> AI-DLC; it just did not have these phase names attached to it.</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>AI-DLC phase</th><th>Commands</th><th>Who is at the keyboard</th><th>Loop</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Inception</strong></td>
+            <td><code>/speckit.constitution</code><br><code>/speckit.specify</code><br><code>/speckit.clarify</code></td>
+            <td>PO + tech leads + architects + QE leads + AI<br><em>(mob elaboration)</em></td>
+            <td>Plan &rarr; Clarify &rarr; <strong>Gate A</strong></td>
+          </tr>
+          <tr>
+            <td><strong>Construction</strong></td>
+            <td><code>/speckit.plan</code><br><code>/speckit.tasks</code><br><code>/speckit.implement</code><br><code>/speckit.analyze</code> &middot; <code>/speckit.checklist</code></td>
+            <td>Developers + QE + AI<br><em>(mob construction)</em></td>
+            <td><strong>Gate B</strong> &rarr; Execute</td>
+          </tr>
+          <tr>
+            <td><strong>Operation</strong></td>
+            <td><code>/speckit.spectra.create-pr</code><br><code>/speckit.spectra.review-pr</code></td>
+            <td>Developers + DevOps + AI</td>
+            <td><strong>Gate C</strong> &rarr; Execute</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Three things about that table deserve to be said out loud, because they are what turn it from a lookup into a practice.</p>
+    <h3><code>/speckit.clarify</code> <em>is</em> mob elaboration</h3>
+    <p>This is the single most important mapping on the page. That command exists for exactly one reason: to make the AI ask its questions <strong>while the room is still assembled</strong>. Run it alone at your desk and you have converted mob elaboration back into an individual guessing exercise.</p>
+    <p>Expect volume. A real Inception run on a modestly sized feature produces well over a dozen verification questions spanning functional behavior, non-functional requirements, and UX &mdash; all of them <em>before</em> any requirements document is written. Answering them together, in one sitting, is not overhead. That <em>is</em> the work of Inception, and it is where the rework you never had to do gets prevented.</p>
+    <h3>Durable rules beat chat history &mdash; and <code>/speckit.constitution</code> is where they live</h3>
+    <p>AI-DLC only holds together if the agent's understanding survives between sessions. Conventions, non-negotiables, security and testing rules, and product constraints have to live somewhere versioned and reviewable &mdash; treated as an artifact, not as chat history that evaporates when the window closes.</p>
+    <p>In this course that place already exists: <code>.specify/memory/constitution.md</code>, written by <code>/speckit.constitution</code> and enforced across every phase by SPECTRA's Guardrails agent. It is the first thing to write and the thing to keep current. No additional tooling required &mdash; if you completed Module 3, it is already in your project.</p>
+    <h3>The artifacts are your audit trail</h3>
+    <p>AI-DLC insists on keeping a visible record of where the lifecycle is and why each decision was made. Speed without receipts is how teams end up unable to explain their own system six months later.</p>
+    <p>Spec Kit gives you that for free: the <code>specs/&lt;NNN&gt;-&lt;name&gt;/</code> directory &mdash; spec, plan, tasks, and design artifacts, versioned alongside the code. When someone asks &ldquo;why did we do it this way?&rdquo;, the answer is a file, not an archaeology project. This is the same point Module 6 made about specs as a review surface, now doing double duty as the lifecycle's memory.</p>
+    <h3>One bolt, end to end</h3>
+    <p>A single bolt on a small feature, with the gates marked:</p>
+<pre><code># ── Inception ─────────────────────────────────────────────
+# Whole room: PO, tech lead, an architect, QE lead.
+/speckit.constitution     # once per project, not per bolt
+/speckit.specify          # AI drafts the spec from stated intent
+/speckit.clarify          # AI interrogates it — answer together, out loud
+# ▸ GATE A — the room approves scope, success criteria, constraints.
+#   Do not proceed on "looks fine, ship it." Say what is out of scope.
+
+# ── Construction ──────────────────────────────────────────
+# Developers + QE. PO reachable for questions.
+/speckit.plan             # architecture direction and technical approach
+/speckit.tasks            # decomposition into ordered, checkable work
+# ▸ GATE B — approve the approach, the definition of done, the test
+#   strategy. This is the last cheap moment to change your mind.
+/speckit.implement        # AI builds; the team reviews as it lands
+/speckit.analyze          # cross-artifact consistency: spec vs plan vs tasks
+/speckit.checklist        # targeted quality checks where risk is highest
+
+# ── Operation ─────────────────────────────────────────────
+# Developers + DevOps.
+# ▸ GATE C — readiness: what breaks, how you would know, how you roll back.
+/speckit.spectra.create-pr    # PR with the spec as its own justification
+/speckit.spectra.review-pr    # AI-assisted review against spec and constitution</code></pre>
+    <p>Compare that against the diagram in section 5 one more time. Same three phases, same personas, same gates &mdash; expressed as commands you have already run in Modules 3 and 4.</p>
+    <div class="note"><span class="note-label">SPECTRA's optional agents fit the same map.</span>Add-ons slot into the phase where their work belongs: <code>/speckit.spectra.brd</code> and <code>/speckit.spectra.domain-analyzer</code> in Inception, <code>/speckit.spectra.adr</code> in Construction alongside <code>/speckit.plan</code>, <code>/speckit.spectra.flaky-test-detector</code> in Construction's quality loop. Every agent in the SPECTRA roster is published with the AI-DLC phase it belongs to, so the mapping is not something you have to work out yourself.</div>
+
+    <div class="reveal">
+      <button class="reveal-trigger" type="button">
+        <span><span class="reveal-trigger-label">Exercise</span>Who has to be in the room for your <code>/speckit.clarify</code>?</span>
+        <span class="reveal-trigger-icon">+</span>
+      </button>
+      <div class="reveal-content">
+        <p>For a feature your team is picking up <em>next</em>, write down:</p>
+        <ol>
+          <li>Who must be present when <code>/speckit.clarify</code> runs &mdash; by name, not by role.</li>
+          <li>For each person: what class of question can <strong>only</strong> they answer?</li>
+          <li>What happens today when that person is not available? Be specific about the mechanism.</li>
+        </ol>
+        <p><strong>Sample answer:</strong></p>
+        <ul>
+          <li><strong>PO:</strong> the only one who can answer &ldquo;should this apply retroactively to existing records?&rdquo; and &ldquo;is this in scope for the launch?&rdquo;</li>
+          <li><strong>Tech lead:</strong> the only one who knows the migration will collide with the partitioning work in flight.</li>
+          <li><strong>QE lead:</strong> the only one who knows which of these paths has no automated coverage today, so &ldquo;we'll catch it in test&rdquo; is untrue for exactly this feature.</li>
+          <li><strong>What happens today when they are absent:</strong> the developer picks the interpretation that is easiest to build, writes it into the spec as though it were decided, and nobody notices until review &mdash; where it is now expensive, socially awkward to reopen, and usually shipped anyway.</li>
+        </ul>
+        <p>That last line is the honest cost of skipping mob elaboration. The decision still gets made &mdash; it just gets made silently, by whoever is closest to the keyboard, at the worst possible moment.</p>
+      </div>
+    </div>
+
+    <h2><span class="h2-num">9.</span>What a real run looks like</h2>
+    <p>The three phases are tidy at a distance. Up close a real run has more structure than &ldquo;Inception, then Construction&rdquo; &mdash; and the structure is reassuringly familiar.</p>
+    <h3>It starts by working out what kind of codebase it is</h3>
+    <p>AI-DLC's first move is <strong>workspace detection</strong>: is this greenfield, or is there an existing system to retrofit? Everything downstream adapts to the answer &mdash; a greenfield run generates from intent, a brownfield run has to reverse-engineer the current behavior before it can safely add to it.</p>
+    <p>You have already run both halves of that split. <strong>Module 3 was the greenfield path. Module 4 was the retrofit path</strong>, and the incremental-spec pattern it taught is exactly what AI-DLC does when detection comes back &ldquo;existing code: yes.&rdquo;</p>
+    <h3>Inception runs in stages, not in one shot</h3>
+    <p>Requirements &rarr; user stories &rarr; workflow planning &rarr; application design &rarr; decomposition into units of work. In Spec Kit terms that is <code>/speckit.specify</code> and <code>/speckit.clarify</code> doing the first two, and <code>/speckit.plan</code> beginning where design starts. The staging matters because it gives you somewhere to stop: you can approve requirements without having committed to a design.</p>
+    <h3>Construction runs a repeatable loop per unit of work</h3>
+    <p>For each unit: functional design &rarr; non-functional requirements &rarr; NFR design &rarr; infrastructure design &rarr; code generation. Note where NFRs and infrastructure sit in that list &mdash; <strong>before</strong> code generation, not after the demo. That ordering is deliberate, and it is why AI-DLC trends toward deployment readiness rather than toward an impressive prototype that nobody can operate.</p>
+    <p>In Spec Kit terms this is the <code>/speckit.plan</code> &rarr; <code>/speckit.tasks</code> &rarr; <code>/speckit.implement</code> cycle, run once per unit of work rather than once per feature.</p>
+    <div class="note"><span class="note-label">Structured is not the same as rigid.</span>In a real run the plan gets revised mid-flight &mdash; a framework choice changes, an assumption breaks, a library turns out to be wrong for the job. That is normal and AI-DLC accommodates it. What makes it survivable is that the change goes <em>through</em> the artifacts rather than around them: the plan is updated, the reason is recorded, and traceability holds. A change that bypasses the spec is how you get back to code as the only source of truth.</div>
+
+    <h2><span class="h2-num">10.</span>What this does not fix</h2>
+    <p>Every module in this course ends with the honest limits, and AI-DLC has several worth knowing before you propose it to anyone.</p>
+    <ul>
+      <li><strong>It does not rescue a vague spec.</strong> A bolt run on a woolly <code>/speckit.specify</code> does not fail less than a sprint would &mdash; it fails <em>faster</em>, and with more code already written. Compression amplifies whatever quality of thinking you put in. Everything Module 2 taught about spec anatomy matters more here, not less.</li>
+      <li><strong>Team availability becomes the binding constraint.</strong> Mob elaboration assumes the mob shows up. In an organization where the PO is fully booked and the QE lead is split across four teams, AI-DLC will stall at Gate A regardless of tooling. This is a calendar problem, and it is usually the real blocker.</li>
+      <li><strong>Review capacity is still finite.</strong> Module 6's bottleneck argument applies harder, not less. Generating more, faster, means more to review &mdash; and if review is already your constraint, AI-DLC will find that constraint immediately. The gates help by moving judgment upstream where it is cheap, but they do not create reviewer hours.</li>
+      <li><strong>Depth has to be adaptive or it becomes ceremony.</strong> Not every stage deserves equal rigor. Go deep where risk is high &mdash; a payments path, a migration, anything touching auth &mdash; and stay deliberately light where it is not. AI makes it very easy to overproduce artifacts, and a lifecycle drowning in generated documents nobody reads is its own failure mode.</li>
+      <li><strong>It is a change to how people work together, not a tool install.</strong> The commands take an afternoon to learn. Getting four people into a room at the same time to elaborate a feature is the actual adoption problem, and it is organizational.</li>
+    </ul>
+
+    <h2><span class="h2-num">11.</span>Run your first bolt this week</h2>
+    <p>You do not need to rewrite your process to start. The shift is smaller than it looks: <strong>you keep the lifecycle, you change the engine.</strong> Pick one small, real change &mdash; not a demo &mdash; and run it end to end.</p>
+    <ul class="checklist">
+      <li><strong>Name your three gates and who holds each.</strong> Write it down before you start. Gate A: who approves intent? Gate B: who approves the approach? Gate C: who approves the release? If any answer is &ldquo;whoever's around,&rdquo; fix that first.</li>
+      <li><strong>Get the constitution written.</strong> Run <code>/speckit.constitution</code> before anything else. Conventions, non-negotiables, security and testing rules. This is the durable context every later step reads.</li>
+      <li><strong>Book the Inception session and get the room.</strong> PO, a tech lead, an architect if the change warrants one, the QE lead. Ninety minutes, calendars cleared. This booking is the hard part &mdash; do it first.</li>
+      <li><strong>Force plan-then-clarify before any generation.</strong> Run <code>/speckit.specify</code>, then <code>/speckit.clarify</code>, and answer every question in the room. Resist the urge to skip ahead to code &mdash; this is where the value is.</li>
+      <li><strong>Stop at Gate A and say it out loud.</strong> State what is in scope, what is explicitly out, and what &ldquo;done&rdquo; means. Approving in silence is not approving.</li>
+      <li><strong>Run Construction in one sitting.</strong> <code>/speckit.plan</code> &rarr; <code>/speckit.tasks</code> &rarr; Gate B &rarr; <code>/speckit.implement</code>, with QE present rather than queued behind you.</li>
+      <li><strong>Close the loop through the artifacts.</strong> <code>/speckit.analyze</code> for consistency, then <code>/speckit.spectra.create-pr</code> so the spec ships as the PR's own justification.</li>
+      <li><strong>Debrief for fifteen minutes.</strong> Where did you wait? Which question should have been asked at Inception and was not? That answer is your next improvement.</li>
+    </ul>
+    <p>Do it once and the comparison makes itself. The gain is rarely &ldquo;the AI wrote code quickly&rdquo; &mdash; it is finishing with a change whose reasoning is recorded, whose scope held, and whose process you can run again next week.</p>
+
+    <h3>Where to go from here</h3>
+    <ul>
+      <li><a href="https://aws.amazon.com/blogs/devops/ai-driven-development-life-cycle/">AWS &mdash; AI-Driven Development Life Cycle</a> &mdash; the canonical description of AI-DLC, and the source of every definition in this module.</li>
+      <li><a href="https://builder.aws.com/content/376vNVPtBqlCvqIjHPub8iPBSxa/sdlc-who-meet-ai-dlc-the-new-build-loop">SDLC Who? Meet AI-DLC: The New Build Loop</a> and <a href="https://builder.aws.com/content/37A3lwV9pkYlYVN8teXLWfIO3Vv/sdlc-who-meet-ai-dlc-ai-dlc-in-action-with-kiro-part-2">AI-DLC in Action</a> &mdash; two community write-ups of the AI-DLC <em>process</em>, and the source of the loop, the gates, and the shape of a real run described above. They demonstrate the process with their own tooling; this course runs the same process with Spec Kit and SPECTRA.</li>
+      <li><a href="https://xavient.github.io/spectra/">The SPECTRA landing page</a> &mdash; the full agent roster, each agent published with the AI-DLC phase it belongs to.</li>
+      <li><strong>Module 4</strong> &mdash; if you want to feel a bolt rather than read about one, the brownfield lab is the practice ground. Run it again, but this time with a second person in the room for <code>/speckit.clarify</code> and see what changes.</li>
+    </ul>
+
+    <h2><span class="h2-num">12.</span>Knowledge check</h2>
+    <p>Five questions. Pick an answer to see whether it holds.</p>
+    <div class="quiz">
+      <div class="quiz-header">
+        <span class="quiz-title">Knowledge check</span>
+        <span class="quiz-progress">5 questions</span>
+      </div>
+
+      <div class="quiz-question" data-type="mc" data-correct="c">
+        <div class="quiz-q-prompt">Q1. Your team adopts an AI coding agent. Velocity on individual tickets improves noticeably, but the time from &ldquo;idea accepted&rdquo; to &ldquo;in production&rdquo; barely moves. What does AI-DLC say is going on?</div>
+        <div class="quiz-options">
+          <button class="quiz-opt" data-choice="a"><span class="quiz-opt-letter">a</span><span>The agent needs better prompts</span></button>
+          <button class="quiz-opt" data-choice="b"><span class="quiz-opt-letter">b</span><span>The team is not using enough of the agent's features</span></button>
+          <button class="quiz-opt" data-choice="c"><span class="quiz-opt-letter">c</span><span>The lifecycle is unchanged &mdash; AI accelerated the typing, but the hand-offs between phases are still human-paced</span></button>
+          <button class="quiz-opt" data-choice="d"><span class="quiz-opt-letter">d</span><span>The tickets are too large and should be split further</span></button>
+        </div>
+        <div class="quiz-feedback">
+          <div class="quiz-feedback-title">Answer: c &mdash; the lifecycle is unchanged</div>
+          <div>This is &ldquo;ditch one&rdquo; from section 1: AI-assisted SDLC. Local speed improves, but the waiting &mdash; review queues, clarification round-trips, the gap between design and implementation &mdash; is untouched, because that waiting lives in the hand-offs, not in the typing. AI-DLC's answer is to collapse the phases so there are fewer hand-offs to wait on.</div>
+        </div>
+      </div>
+
+      <div class="quiz-question" data-type="mc" data-correct="b">
+        <div class="quiz-q-prompt">Q2. Which statement about a <strong>bolt</strong> is correct?</div>
+        <div class="quiz-options">
+          <button class="quiz-opt" data-choice="a"><span class="quiz-opt-letter">a</span><span>It is a two-week sprint with a stricter definition of done</span></button>
+          <button class="quiz-opt" data-choice="b"><span class="quiz-opt-letter">b</span><span>It is a work cycle measured in hours or days, and it is short because elaboration was done collectively up front</span></button>
+          <button class="quiz-opt" data-choice="c"><span class="quiz-opt-letter">c</span><span>It is the same as a sprint, renamed for the AI era</span></button>
+          <button class="quiz-opt" data-choice="d"><span class="quiz-opt-letter">d</span><span>It is a period during which AI works autonomously without human involvement</span></button>
+        </div>
+        <div class="quiz-feedback">
+          <div class="quiz-feedback-title">Answer: b &mdash; hours or days, earned by up-front elaboration</div>
+          <div>The duration is the visible part; the cause is the important part. A bolt is short <em>because</em> mob elaboration removed the ambiguity first &mdash; not because anyone is working faster. Option d gets it exactly backwards: a bolt is the phase with the <em>most</em> human involvement, not the least.</div>
+        </div>
+      </div>
+
+      <div class="quiz-question" data-type="mc" data-correct="d">
+        <div class="quiz-q-prompt">Q3. During Inception, who should be in the room?</div>
+        <div class="quiz-options">
+          <button class="quiz-opt" data-choice="a"><span class="quiz-opt-letter">a</span><span>The AI agent, working from the product owner's written ticket</span></button>
+          <button class="quiz-opt" data-choice="b"><span class="quiz-opt-letter">b</span><span>The product owner alone, since Inception is about business intent</span></button>
+          <button class="quiz-opt" data-choice="c"><span class="quiz-opt-letter">c</span><span>The developers, who will translate the requirements into a design</span></button>
+          <button class="quiz-opt" data-choice="d"><span class="quiz-opt-letter">d</span><span>Product owner, developers, architects and QE leads &mdash; together, with AI</span></button>
+        </div>
+        <div class="quiz-feedback">
+          <div class="quiz-feedback-title">Answer: d &mdash; all of them, at the same time, with AI</div>
+          <div>The PO validates intent and business alignment; developers, architects and QE leads review technical feasibility and architecture alignment; AI generates the requirements document, stories, scenarios and the in-scope/out-of-scope split. Option a is the anti-pattern from section 7 &mdash; the PO who writes a ticket and leaves &mdash; and it is the most common way AI-DLC degrades back into the SDLC with a chatbot attached.</div>
+        </div>
+      </div>
+
+      <div class="quiz-question" data-type="mc" data-correct="a">
+        <div class="quiz-q-prompt">Q4. In Spec Kit terms, which command <em>is</em> mob elaboration &mdash; the one that specifically exists to have AI ask its questions while the whole team is still assembled?</div>
+        <div class="quiz-options">
+          <button class="quiz-opt" data-choice="a"><span class="quiz-opt-letter">a</span><span><code>/speckit.clarify</code></span></button>
+          <button class="quiz-opt" data-choice="b"><span class="quiz-opt-letter">b</span><span><code>/speckit.plan</code></span></button>
+          <button class="quiz-opt" data-choice="c"><span class="quiz-opt-letter">c</span><span><code>/speckit.analyze</code></span></button>
+          <button class="quiz-opt" data-choice="d"><span class="quiz-opt-letter">d</span><span><code>/speckit.implement</code></span></button>
+        </div>
+        <div class="quiz-feedback">
+          <div class="quiz-feedback-title">Answer: a &mdash; <code>/speckit.clarify</code></div>
+          <div><code>/speckit.clarify</code> is an Inception command and it is the &ldquo;Clarify&rdquo; beat of the loop. Running it alone at your desk converts mob elaboration into an individual guessing exercise &mdash; the questions still get answered, just by whoever is closest to the keyboard. <code>/speckit.plan</code>, <code>/speckit.analyze</code> and <code>/speckit.implement</code> are all Construction.</div>
+        </div>
+      </div>
+
+      <div class="quiz-question" data-type="mc" data-correct="b">
+        <div class="quiz-q-prompt">Q5. Why does AI-DLC insist on explicit approval gates rather than letting a well-configured agent run end to end?</div>
+        <div class="quiz-options">
+          <button class="quiz-opt" data-choice="a"><span class="quiz-opt-letter">a</span><span>Because AI output is generally low quality and needs correcting</span></button>
+          <button class="quiz-opt" data-choice="b"><span class="quiz-opt-letter">b</span><span>Because AI can move fast enough to produce the wrong thing beautifully &mdash; the risk shifts from miscommunication to confident misdirection</span></button>
+          <button class="quiz-opt" data-choice="c"><span class="quiz-opt-letter">c</span><span>Because compliance frameworks require a human signature on every artifact</span></button>
+          <button class="quiz-opt" data-choice="d"><span class="quiz-opt-letter">d</span><span>Because gates slow the process down, which improves quality</span></button>
+        </div>
+        <div class="quiz-feedback">
+          <div class="quiz-feedback-title">Answer: b &mdash; speed makes wrong-direction the dominant risk</div>
+          <div>Under the traditional SDLC the main risk is miscommunication across hand-offs. Under AI-DLC it is moving fast in the wrong direction &mdash; with good tests and clean structure around the wrong thing. Gates are not a slowdown (option d) and not a rubber stamp for compliance (option c); they relocate engineering discipline to a few high-value checkpoints so execution can run fast in between.</div>
+        </div>
+      </div>
+    </div>
+
+    <hr>
+
+    <h3>You have finished the course</h3>
+    <p>You started with what a spec is and why code stopped being a sufficient source of truth. You wrote specs, ran the four-phase loop on a greenfield project and then on an inherited one, learned what breaks and what teams get wrong, and worked through how the practice changes review and collaboration.</p>
+    <p>This module put a name on where all of that is heading. Spec-driven development is not a technique bolted onto the SDLC &mdash; it is how the lifecycle works once AI is at the centre of it. You already have the commands. What is left is getting the right people in the room and running your first bolt.</p>
 
     <div class="module-footer-nav">
       <a class="mod-nav-prev" href="module-6.html">

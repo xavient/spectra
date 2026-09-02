@@ -442,6 +442,18 @@
     overflow-x: auto;
     white-space: pre;
   }
+  /* Figure (diagram image + caption) */
+  figure.fig { margin: 26px 0; }
+  figure.fig > a { display: block; border-bottom: none; }
+  figure.fig img {
+    display: block; width: 100%; height: auto;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: #fff; box-shadow: var(--shadow-md);
+  }
+  figure.fig figcaption {
+    margin-top: 10px; font-size: 13px; color: var(--text-subtle);
+    font-style: italic; text-align: center;
+  }
   /* Responsive */
   @media (max-width: 600px) {
     main { padding: 40px 20px 80px; }
@@ -625,7 +637,7 @@
       <a href="module-4.html" title="Module 4 — Brownfield Lab — Add “Due Date” ★" class="is-active">4</a>
       <a href="module-5.html" title="Module 5 — Best Practices &amp; Pitfalls">5</a>
       <a href="module-6.html" title="Module 6 — Quality, Testing &amp; Team Collaboration">6</a>
-      <a href="module-7.html" title="Module 7 — Measurement &amp; Adoption Roadmap">7</a>
+      <a href="module-7.html" title="AI-DLC — From SDLC to AI-Driven Development">AI-DLC</a>
     </div>
   </div>
 </nav>
