@@ -203,6 +203,74 @@ Questions). It then tells you to run the specify command with the BRD; its only 
   /speckit-spectra-brd reqs/ticket-merge-brief.docx
   ```
 
+<!-- SPECTRA:AGENT id=impact -->
+### Impact Analyzer ✅
+
+**`speckit.spectra.impact`** — Find out what a proposed feature would actually touch, **before** anyone
+commits to building it. A Business Analyst gives it one paragraph — what should be true after this ships
+that is not true today — and it reads the project, works out the blast radius, asks at most five questions
+about the things code cannot answer, and writes one numbered document to take to stakeholders for a go /
+no-go decision. It runs before `specify`, because the point is to inform the decision that authorizes the
+spend.
+
+The reason to use it instead of an hour of interviews is **evidence**. A BA cannot read an entire
+repository, so conventional impact analysis is a memory exercise that systematically misses coupling —
+the config file naming a column, the handler registered by string key, the service that reads a table
+nobody remembers. Every finding it reports carries a `path/to/file.ts:142` citation and one of three
+confidence levels, and every run states how much of the repository it actually read.
+
+What it refuses to do is as important as what it does:
+
+- **It never says there is no impact.** "No consumers found in what was scanned" is allowed; "no downstream
+  impact" is not. The limit of a search is never reported as a property of the system.
+- **The impact rating is a lookup, not an opinion** — derived from a defined trigger set (irreversible data
+  change, external contract change, no rollback path, and so on) and reported with the trigger that fired,
+  so two runs on the same change agree.
+- **It never reproduces a secret.** Where a line it would cite holds a token or a credential, it gives the
+  location and the kind and says the value was withheld.
+- **It routes rather than judges.** Touching auth or personal data flags the finding and names the security
+  or compliance agent that owns the question; it renders no compliance verdict of its own. Things a
+  repository simply cannot know — stakeholders, training, support model, vendor cost — come back as
+  explicit follow-up items rather than plausible filler.
+
+- **Arguments** — the feature intent as one paragraph (required), plus optional document paths
+  (`.md`, `.txt`, `.pdf`, `.docx`) for a brief, an epic, or a prior analysis. `--non-interactive` for CI.
+  Five cap overrides — `--seed-cap`, `--hops`, `--max-files`, `--identifier-cap`, `--per-system-cap` —
+  when the defaults are too tight for a large repository.
+- **Use it when** — a feature has been proposed and someone has to decide whether to fund it, and the
+  honest answer to "what else does this touch?" is currently a guess.
+- **More than one repository?** It asks. Other systems are declared as a sentence, as a document, or as a
+  **path to a local copy** it reads in place. It accepts no repository URL and makes **no network request
+  at all** — not even for a public repo with `gh` authenticated. A system with no local checkout is
+  recorded as described, and still produces a handoff item naming the owning team and the exact contract to
+  confirm with them.
+- **Where it writes** — `docs/impact-analysis/` by default, as `NNN-<name>.md` plus an auto-maintained
+  index. Declare `Artifact root: documents/` in the constitution to move it, and every Spectra document
+  agent follows. Since `docs/` is GitHub Pages' only non-root branch source and the default for MkDocs and
+  Docusaurus, it checks for that setup first and asks before writing an analysis somewhere it would be
+  published — this document names internal systems, owning teams, and unmitigated risks.
+- **Approval is yours, and manual.** Every run writes `status: draft`. You take it to your stakeholders and
+  record their answer in the front matter yourself; the command never sets any other status. The index is
+  rebuilt from the documents on each run, so an approval you record by hand shows up there without the
+  command editing anything.
+- **Re-runs never overwrite.** Every run takes the next number and writes a new document — including a
+  re-run with identical input. Each report carries its own timestamp and a verbatim record of what it was
+  asked, and the one it supersedes is linked rather than replaced.
+- **Template** — `impact-analysis-template.md`, a ten-section structure. Override it at
+  `.specify/templates/overrides/impact-analysis-template.md` to reshape or drop sections; the override is
+  committed, team-wide, and survives extension updates. Each run reports which template it used. The
+  citation rule, the confidence levels, the rating triggers, and the coverage statement stay with the
+  command — a template shapes the document, not the standards.
+- **It does not** design the solution, estimate in story points, write requirements, create or link a
+  spec, or touch `specs/`. An impact analysis and a specification are independent; feed one into the other
+  by hand if you want to.
+- **Examples (Claude)** —
+  ```
+  /speckit-spectra-impact We want to email customers who leave items in their cart for more than 24 hours
+  /speckit-spectra-impact Add a nickname field to accounts reqs/nickname-brief.docx
+  /speckit-spectra-impact --non-interactive Retire the v1 pricing endpoint
+  ```
+
 <!-- SPECTRA:AGENT id=flaky-test-detector -->
 ### Flaky Test Detector ✅
 
