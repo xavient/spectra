@@ -4,7 +4,7 @@
 
 **Created**: 2026-08-21
 
-**Status**: Draft
+**Status**: Implemented
 
 **Input**: User description: "currently adr commands writes the md files into `Docs/ADR/` (project root) and brd writes
 into `/brds`. I want a consistent way for producing brds and adrs. On any project that Spectra is installed and being

@@ -4,7 +4,7 @@
 
 **Created**: 2026-08-20
 
-**Status**: Draft
+**Status**: Implemented
 
 **Input**: BRD-007 — `brds/full-integration-coverage.md` ("Full Integration Coverage on Install and Update")
 

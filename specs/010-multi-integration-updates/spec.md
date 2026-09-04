@@ -4,7 +4,7 @@
 
 **Created**: 2026-08-19
 
-**Status**: Draft
+**Status**: Implemented
 
 **Input**: BRD-006 — `brds/multi-integration-updates.md` ("Multi-Integration Stack Updates")
 

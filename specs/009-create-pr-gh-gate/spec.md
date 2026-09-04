@@ -4,7 +4,7 @@
 
 **Created**: 2026-08-19
 
-**Status**: Draft
+**Status**: Implemented
 
 **Input**: User description: "Take a look at `review-pr` command and how that relies on `gh`. We want to
 do the same for `create-pr` — both commands rely on `gh` being available and authenticated."

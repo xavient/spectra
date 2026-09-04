@@ -4,7 +4,7 @@
 
 **Created**: 2026-08-26
 
-**Status**: Draft
+**Status**: Implemented
 
 **Input**: `brds/flaky-test-detector.md` (BRD-008, v0.1.0) — the Flaky Test Detector agent
 (`speckit.spectra.flaky-test-detector`): a source-only agent that identifies the project's test

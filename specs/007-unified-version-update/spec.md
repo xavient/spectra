@@ -4,7 +4,7 @@
 
 **Created**: 2026-08-16
 
-**Status**: Draft
+**Status**: Implemented
 
 **Input**: GitHub Issue #10 — "Unify `spectra version` and `spectra update` to check all 4 components"
 

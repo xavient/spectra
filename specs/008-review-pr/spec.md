@@ -4,7 +4,7 @@
 
 **Created**: 2026-08-17
 
-**Status**: Draft
+**Status**: Implemented
 
 **Input**: `brds/review-pr.md` (BRD-005, v0.1.0) — the Review PR agent (`speckit.spectra.review-pr`):
 a GitHub-only conformance review agent that judges a pull request against the spec, plan, tasks, ADRs,

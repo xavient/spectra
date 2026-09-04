@@ -4,7 +4,7 @@
 
 **Created**: 2026-07-14
 
-**Status**: Draft
+**Status**: Implemented
 
 **Input**: User description: "@brds/brd-generator.md" — a Spectra add-on command (`speckit.spectra.brd`) that transforms a raw business requirement (plain text or a document file such as `.docx`/`.pdf`) into a structured, specify-ready BRD written under a `/brds` folder, working interactively with clarifying questions and shipping the BRD template with the extension.
 

@@ -4,7 +4,7 @@
 
 **Created**: 2026-08-22
 
-**Status**: Draft
+**Status**: Implemented
 
 **Input**: Maintainer report — "as per the new spec-kit update, `feature.json` is ignored and not present in the remote.
 `review-pr` relies on it, but it's not really mandatory. Validate that, and check if we can safely remove the reliance."

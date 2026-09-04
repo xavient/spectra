@@ -4,7 +4,7 @@
 
 **Created**: 2026-09-03
 
-**Status**: Draft
+**Status**: Implemented
 
 **Input**: Command design spec `speckit.spectra.impact` (rev 2, draft for review) — a Requirements &
 Discovery add-on agent that produces a codebase-grounded feature impact analysis a Business Analyst

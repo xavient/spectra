@@ -4,7 +4,7 @@
 
 **Created**: 2026-06-24
 
-**Status**: Draft
+**Status**: Implemented
 
 **Input**: User description: "@brds/open-pr.md"
 
