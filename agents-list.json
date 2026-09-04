@@ -69,6 +69,16 @@
       "command": "speckit.spectra.brd"
     },
     {
+      "id": "impact",
+      "title": "Impact Analyzer",
+      "description": "Find out what a proposed feature would actually touch, with cited evidence, before anyone commits to building it.",
+      "status": "available",
+      "phase": "requirements-discovery",
+      "type": "add-on",
+      "provider": "spectra",
+      "command": "speckit.spectra.impact"
+    },
+    {
       "id": "clarify",
       "title": "Clarifier",
       "description": "Interrogate vague or missing requirements up front, before they turn into expensive rework.",

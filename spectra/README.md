@@ -13,6 +13,7 @@ extension that bundles Spectra's agentic SDLC commands. Every command lives unde
 | ------- | ------------ |
 | `speckit.spectra.domain-analyzer` | Infer the project's business domain from its code and docs, then propose opt-in candidate guardrails for SME review. |
 | `speckit.spectra.brd` | Turn a raw business requirement, typed or in a document, into a structured, specify-ready BRD. |
+| `speckit.spectra.impact` | Find out what a proposed feature would actually touch, with cited evidence, before anyone commits to building it. |
 | `speckit.spectra.adr` | Capture a context-aware Architecture Decision Record grounded in the codebase, prior ADRs, and the constitution. |
 | `speckit.spectra.flaky-test-detector` | Find the tests that pass and fail on the same code, then fix the ones you approve, one at a time. |
 | `speckit.spectra.create-pr` | Open a correctly-targeted GitHub PR for the current spec branch and return its URL. |
@@ -393,6 +394,91 @@ agent's, described [above](#change-the-shape-of-your-adrs).
 One caveat worth knowing: **Section 6 — User Journeys** is what the Spec Kit `specify` command leans on most
 heavily. Dropping it is allowed, and the command will say it did so, but expect the resulting spec to have
 thinner user stories.
+
+## `speckit.spectra.impact` — Impact Analyzer
+
+A Requirements & Discovery-phase command that runs **before** the spec-driven loop. Give it one paragraph
+describing what should be true after a feature ships, and it produces a numbered impact analysis a Business
+Analyst takes to stakeholders for a go / no-go decision — before the organization commits development spend.
+It:
+
+1. Reads the project — the constitution, existing specs, source, ADRs, API contracts, migrations, tests, CI.
+   Where specs and a constitution exist it orients on them and reads code to confirm and extend them; where
+   they do not, it reconstructs the same understanding from source and says so. Which mode it ran is in the
+   output.
+2. Asks, before scanning, whether this repository is the whole system. Other systems are declared as a
+   sentence, a document, or a **path to a local copy read in place**. It accepts no repository URL and makes
+   no network request at all.
+3. Scans in five bounded phases — structural map, term expansion across naming conventions, a role-weighted
+   seed search, two-hop graph expansion, and two sweeps for what static reading misses: dynamic dispatch and
+   string-keyed registries, then every contract identifier (tables, columns, endpoints, events, topics,
+   config keys, flags, env vars) swept as a raw string across the whole project.
+4. Asks at most **5** clarifying questions, generated from what the scan found ambiguous, each with options
+   and a recommendation grounded in a cited finding. Pressing enter accepts the recommendation and records
+   the answer as unconfirmed.
+5. Analyzes through five core lenses — blast radius, data, behavioural change, risk and reversibility, effort
+   and sequencing — plus security/privacy and compliance lenses that fire on trigger and **route to the agent
+   that owns the question** rather than answering it.
+6. Writes one analysis to `docs/impact-analysis/NNN-<name>.md` plus an index, and reports coverage.
+
+Every finding carries a `path/to/file.ts:142` citation and one of three confidence levels, fixed by the kind
+of evidence rather than by how convincing it felt. The impact rating is derived from a defined trigger set
+rather than judged, and reported with the trigger that fired. The output never claims absence of impact — "no
+consumers found in what was scanned" is as far as it goes — and it never reproduces a secret value: where a
+cited line holds one, it gives the location and the kind and says the value was withheld.
+
+Usage (Claude):
+
+```
+/speckit-spectra-impact We want to email customers who leave items in their cart for more than 24 hours
+```
+
+With a supporting document, or unattended in CI:
+
+```
+/speckit-spectra-impact Add a nickname field to accounts reqs/nickname-brief.docx
+/speckit-spectra-impact --non-interactive Retire the v1 pricing endpoint
+```
+
+Analyses land in `docs/impact-analysis/` by default, and the same one-line override applies —
+`Artifact root: documents/` in `.specify/memory/constitution.md` sends them to `documents/impact-analysis/`
+instead. The command checks whether `docs/` is a published site source before defaulting there and asks first
+if it is; an impact analysis names internal systems, owning teams, unmitigated risks, and where secrets live.
+Unanswered, it picks the non-publishing folder.
+
+**Approval is manual, and stays yours.** Every run writes `status: draft`. You take it to your stakeholders
+and record the outcome in the front matter yourself; the command never sets any other status. The folder index
+is rebuilt from the documents on every run, so an approval you record by hand appears there without the
+command editing a document to do it.
+
+**Re-runs never overwrite.** Every run takes the next number — one greater than the highest present, not a
+count of the files — and writes a new document, including a re-run with identical input. Each report carries
+its own timestamp and a verbatim copy of what it was asked, and the analysis it supersedes is linked rather
+than replaced. An interrupted run leaves the folder untouched and consumes no number.
+
+It does not design the solution, estimate in story points, write requirements, or create or link a spec.
+Impact analysis and specification are independent processes; nothing under `specs/` is written or depended
+on, and there is no `spec_refs` field.
+
+### Change the shape of your impact analyses
+
+Same mechanism as the ADR and BRD agents, with `impact-analysis-template.md`:
+
+```bash
+mkdir -p .specify/templates/overrides
+cp .specify/extensions/spectra/templates/impact-analysis-template.md \
+   .specify/templates/overrides/impact-analysis-template.md
+```
+
+Commit it, and every analysis follows your structure — the ten shipped sections are a default, not a fixed
+contract. Delete a section, including a whole lens, and the command notes the omission rather than putting it
+back. Resolution order, the reported template path, and the survives-updates guarantee are identical to the
+ADR agent's, described [above](#change-the-shape-of-your-adrs).
+
+What an override **cannot** change is the part that makes the document usable at a gate: citations, confidence
+levels, the rating and its trigger, the coverage statement, the no-absence-of-impact phrasing, and the refusal
+to reproduce a secret. Those live in the command. Drop *Sources consulted* and the section goes — the command
+still tells you what it read and what it could not reach.
 
 ## `speckit.spectra.flaky-test-detector` — Flaky Test Detector
 

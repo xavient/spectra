@@ -530,6 +530,13 @@
           <pre><code>/speckit-spectra-brd Support agents need to merge duplicate customer tickets while preserving history</code></pre>
         </li>
         <li>
+          <span class="name">speckit.spectra.impact</span>
+          <span class="cdesc">Find out what a proposed feature would actually touch — <b>before</b> anyone commits to building it. Give it one paragraph of intent and it scans the project, asks at most five questions about what the code cannot answer, and writes a numbered analysis under <code>docs/impact-analysis/</code>, or wherever your constitution declares its <code>Artifact root:</code>. Every finding carries a <code>path:line</code> citation and a confidence level; the impact rating comes from a defined trigger set rather than a judgement; and the output states how much of the repository it read, so a reviewer can tell &ldquo;checked and found nothing&rdquo; from &ldquo;did not check&rdquo;. It never claims there is no impact, never reproduces a secret it finds, and routes security and compliance questions to the agents that own them instead of answering them. Multi-repository systems are declared as text, a document, or a local directory read in place — it accepts no URL and makes no network request. Ten sections, overridable at <code>.specify/templates/overrides/impact-analysis-template.md</code>.</span>
+          <span class="args"><b>Arguments:</b> the feature intent as one paragraph (required), optional document paths (<code>.md</code>/<code>.txt</code>/<code>.pdf</code>/<code>.docx</code>), <code>--non-interactive</code> for CI, and five cap overrides for large repositories.</span>
+          <span class="lbl">Example (Claude)</span>
+          <pre><code>/speckit-spectra-impact We want to email customers who leave items in their cart for more than 24 hours</code></pre>
+        </li>
+        <li>
           <span class="name">speckit.spectra.adr</span>
           <span class="cdesc">Create a context-aware Architecture Decision Record grounded in your codebase, prior ADRs, and constitution — it asks a few clarifying questions, then writes the ADR under <code>docs/adr/</code> (or your declared <code>Artifact root:</code>). Its section structure is a template you can override per project at <code>.specify/templates/overrides/adr-template.md</code>. Use it when making a significant architecture or technology choice.</span>
           <span class="args"><b>Arguments:</b> a short description of the decision. If omitted, you'll be asked for one before drafting.</span>

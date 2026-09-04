@@ -3,7 +3,7 @@ schema_version: "1.0"
 extension:
   id: "spectra"
   name: "Spectra"
-  version: "1.11.1"
+  version: "1.12.0"
   description: "TELUS Digital - Agentic software engineering across the entire SDLC."
   category: "workflow"
   effect: "read-write"
@@ -48,6 +48,9 @@ provides:
     - name: "speckit.spectra.flaky-test-detector"
       file: "commands/flaky-test-detector.md"
       description: "Find the tests that pass and fail on the same code by reading the test source alone — no test run, no CI history — report each with a confidence rating and a concrete fix, then, behind two explicit gates, write a resumable task list to .specify/memory/flaky-test-analysis.md and apply the fixes the developer approves."
+    - name: "speckit.spectra.impact"
+      file: "commands/impact.md"
+      description: "Produce a codebase-grounded feature impact analysis for a stakeholder go / no-go decision before any specification work begins — cited findings, a defined impact rating, at most five clarifying questions, and a stated coverage boundary — written under docs/impact-analysis/ (or the project's declared artifact root). Makes no network request and accepts no repository URL: other systems are declared as text, a document, or a local directory read in place."
 
   # The section structure of every document Spectra produces. Both are resolved through Spec Kit's template
   # stack, so a project overrides one by dropping its own copy at .specify/templates/overrides/<name>.md —
@@ -67,6 +70,9 @@ provides:
     - name: "review-template"
       file: "templates/review-template.md"
       description: "Findings presentation for speckit.spectra.review-pr — the summary body and the inline comment. Override at .specify/templates/overrides/review-template.md. The revision anchor, the AI-assisted disclosure, and the coverage statement stay with the command."
+    - name: "impact-analysis-template"
+      file: "templates/impact-analysis-template.md"
+      description: "Section structure for the feature impact analyses produced by speckit.spectra.impact. Override at .specify/templates/overrides/impact-analysis-template.md. The citation rule, the confidence levels, the impact-rating triggers, the coverage statement, and the prohibition on reproducing a secret stay with the command."
 
 hooks:
   after_implement:
@@ -94,3 +100,6 @@ tags:
   - "testing"
   - "flaky-tests"
   - "quality"
+  - "impact-analysis"
+  - "discovery"
+  - "risk"

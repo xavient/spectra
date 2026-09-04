@@ -3,6 +3,67 @@
 All notable changes to the `spectra` extension are documented here. This project follows
 [Semantic Versioning](https://semver.org/).
 
+## [1.12.0] - 2026-09-03
+
+### Added
+- **`speckit.spectra.impact` — a feature impact analysis a BA can take to a stakeholder gate.** Give it one
+  paragraph describing what should be true after a feature ships, and it scans the project, works out what
+  the change would touch, asks at most five clarifying questions about the things code cannot answer, and
+  writes a numbered Markdown document under `docs/impact-analysis/` — or the project's declared artifact
+  root. It runs *before* `specify`, because the point is to inform the go / no-go decision that authorizes
+  development spend.
+
+  What makes the output usable at a gate is what it refuses to do. **Every finding carries a
+  `path/to/file.ext:142` citation and one of three confidence levels**, with the level fixed by the *kind* of
+  evidence rather than by how convincing it felt — a document with no code citation never reaches
+  `confirmed`. **The impact rating is a lookup, not a judgement**, derived from a defined trigger set and
+  reported with the trigger that fired. **Absence of evidence is never reported as absence of impact**: "no
+  consumers found in what was scanned" is permitted, "no downstream impact" is not. **Coverage is stated per
+  system** — files read of files present, and by what method — alongside the terms that were searched for and
+  produced nothing, so a reviewer can tell "I checked and found nothing" from "I did not check".
+
+  Five bounded phases do the work — a structural map, term expansion across naming conventions, a
+  role-weighted seed search, two-hop graph expansion, and two sweeps for the coupling static reading misses:
+  dynamic dispatch, string-keyed registries, config-driven behaviour, and a raw-string sweep of every
+  contract identifier (table and column names, endpoints, events, topics, config keys, flags, env vars)
+  across the whole project. Each phase has a disclosed cap, overridable per run, and reaching one is
+  reported rather than absorbed.
+
+- **`impact-analysis-template`, the fifth registered template.** The document's ten sections resolve through
+  Spec Kit's four-layer stack, so a team reshapes every future analysis by committing
+  `.specify/templates/overrides/impact-analysis-template.md` — including deleting a section, which the
+  command notes rather than reinstating. The trustworthiness rules stay with the command: an override can
+  drop *Sources consulted*, and coverage is still reported in the session.
+
+### Notes
+Three decisions in this command are deliberate and worth stating, because each one is a capability someone
+will look for and not find.
+
+- **No network access, and no external repository fetching at all.** The command accepts no repository URL,
+  credential, or token, and never clones or downloads anything — not even a public repo with `gh` already
+  authenticated. Where a system spans more than one repository, the other systems are declared as free text,
+  as a document, or as a **path to a local copy that is read in place** and never modified or copied. A
+  system with no local checkout is *described* rather than searched, and still produces a targeted handoff
+  item naming the owning team and the contract to confirm. Spectra opens no channel your agent does not
+  already use, and this command holds that line rather than becoming the first exception.
+
+- **No link to specifications, in either direction.** An impact analysis and a spec are independent
+  processes. The document carries no `spec_refs` field, nothing under `specs/` is written or depended on, and
+  `speckit.specify` is unchanged and unaware. Existing specs *are* read — as evidence, and they make the scan
+  cheaper and better-oriented — but reading one creates no relationship to it, and a spec that disagrees with
+  the code becomes a finding rather than a resolution.
+
+- **The approval gate is manual.** Every run writes `status: draft`. The BA takes the draft to stakeholders
+  and records the outcome in the front matter themselves; the command never sets, prompts for, or infers any
+  other status. Because a human owns that field, the folder index is **rebuilt from the documents on every
+  run** rather than appended to, so an approval recorded by hand reaches the index without the command
+  touching a document to get it there.
+
+Re-runs never overwrite. Every run allocates the next number — one greater than the highest present, not a
+count of the files — and identical input twice produces two reports, each carrying its own timestamp and its
+own verbatim record of what it was asked. An interrupted run leaves the folder untouched and consumes no
+number, because the document and the index are written once, as the run's final act.
+
 ## [1.11.1] - 2026-08-31
 
 ### Added

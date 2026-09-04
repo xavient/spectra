@@ -35,6 +35,7 @@ DOCUMENT_COMMANDS = {
     "brd.md": "brd-template",
     "create-pr.md": "pr-template",
     "review-pr.md": "review-template",
+    "impact.md": "impact-analysis-template",
 }
 
 # The resolution stack, in priority order. Every document command must name all of it.

@@ -314,6 +314,34 @@ And one pass on `review-pr`, whose new surface is the hardest to verify by readi
 6. **Atomicity.** Nothing to force here, but confirm the report names the template path, the inline/body
    counts, and the authorizing context it used.
 
+And one pass on `impact`, whose most important behaviours are the three a unit test on the prompt text
+cannot prove: that an abandoned run leaves nothing behind, that a secret stays out of the document, and that
+a template override is honoured rather than repaired. Work through
+[`specs/019-impact-analysis/quickstart.md`](../specs/019-impact-analysis/quickstart.md) in a scratch project
+with a migration, a route handler, and a config file naming a table, then confirm at least these:
+
+1. **Interrupt it.** Start a run and Ctrl-C during the scan. `docs/impact-analysis/` must be byte-identical
+   to before — no partial document, no half-written index — and the next successful run must take the number
+   the interrupted one would have. A consumed number is the regression.
+2. **A secret in the blast radius.** Plant something like
+   `const STRIPE_KEY = "sk_live_EXAMPLE_NOT_A_REAL_KEY";` where the scan will reach it. The finding must
+   give the location and the kind and say the value was withheld;
+   `grep -r "sk_live_EXAMPLE" docs/impact-analysis/` must find nothing. This is the check that cannot be
+   replaced by a unit test.
+3. **Template override.** Copy `impact-analysis-template.md` into `.specify/templates/overrides/`, delete
+   the *Effort & sequencing* section, and confirm the next analysis follows your version, says the section
+   was omitted rather than putting it back, reports the override path — and **still** carries citations,
+   confidence levels, the rating with its trigger, and the coverage statement.
+4. **No network, offered a URL.** Answer "no" to the scope question and hand it a GitHub URL. It must
+   explain that it reads only local directories, record the system as described, and fetch nothing — with
+   `gh` authenticated, which is exactly when the temptation exists.
+5. **Read in place.** Declare a sibling checkout as a local path. Afterwards `git -C <path> status` must be
+   clean and no file's mtime may have changed.
+6. **Re-run and the manual gate.** Run twice with the same paragraph. Two documents, the second numbered one
+   higher, the first unchanged apart from `status: superseded` and `superseded_by`. Then hand-edit an earlier
+   analysis to `status: approved`, re-run, and confirm the index row follows while the document itself is not
+   touched.
+
 And one pass on `flaky-test-detector`, which is the only command that edits code you wrote — so the
 things worth checking are the ones a diff can prove. Plant the patterns from
 [`specs/018-flaky-test-detector/quickstart.md`](../specs/018-flaky-test-detector/quickstart.md) in a

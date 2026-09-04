@@ -35,6 +35,7 @@ CONSTITUTION = h.repo_file(".specify", "memory", "constitution.md")
 CANONICAL = {
     "adr.md": "docs/adr/",
     "brd.md": "docs/brd/",
+    "impact.md": "docs/impact-analysis/",
 }
 
 # Output locations shipped before 1.6.0. Still readable by the commands, never writable.
