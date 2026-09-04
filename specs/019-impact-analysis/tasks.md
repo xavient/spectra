@@ -246,8 +246,8 @@ agrees with the extension folder.
 
 ## Phase 11: Publish (Constitution Development Workflow step 6)
 
-- [ ] T080 Commit the whole set on branch `019-impact-analysis`: `spectra/`, `specs/019-impact-analysis/`, `agents-list.json`, `catalog.json`, `docs/`, `README.md`, `AGENTS_LIST.md`, `test/README.md`, and `tests/`.
-  > **Not done — awaiting explicit approval.** Every file is written and the gate is green; nothing is staged or committed. 16 paths are modified or added (see `git status`).
+- [X] T080 Commit the whole set on branch `019-impact-analysis`: `spectra/`, `specs/019-impact-analysis/`, `agents-list.json`, `catalog.json`, `docs/`, `README.md`, `AGENTS_LIST.md`, `test/README.md`, and `tests/`.
+  > **Done 2026-09-03** as commit `e31bf11` via the `after_implement` git hook — 27 files, 4485 insertions. Working tree clean. One pre-commit fix: the documented example secret in `quickstart.md` and `test/README.md` was changed from Stripe's `sk_live_4eC39…` docs value to `sk_live_EXAMPLE_NOT_A_REAL_KEY`, because the original matches the `sk_live_[0-9a-zA-Z]{24,}` pattern secret scanners use and would likely have been blocked by push protection on a public repository.
 - [ ] T081 Open the pull request for branch `019-impact-analysis` with `speckit.spectra.create-pr` — the extension's own `after_implement` hook — and confirm the body states the version bump, the new `spectra/commands/impact.md` and `spectra/templates/impact-analysis-template.md`, and the three decisions from T064.
   > **Not done — pushes to a shared remote, so it needs explicit approval.** Offered as the optional `after_implement` hook.
 - [ ] T082 Record the deferred validation as follow-up work, not as done: SC-004 (recall ≥ 70%) and SC-005 (noise) require running the command retroactively against at least five features this repository has already shipped and comparing its findings to what actually broke. Open an issue for it rather than closing it silently; the numbers belong in the `spectra/CHANGELOG.md` entry of whichever release reports them.
