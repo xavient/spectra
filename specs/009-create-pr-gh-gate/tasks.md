@@ -185,14 +185,21 @@ Runs in the repository:
 - [X] T039 Execute quickstart [S9](./quickstart.md#s9--documentation-consistency): `grep -rn "degrad" spectra/ AGENTS_LIST.md README.md | grep -v CHANGELOG` returns no hit describing `create-pr` as degrading and no hit claiming the two commands differ on the gate (SC-006).
 - [X] T040 Read `spectra/commands/create-pr.md` against [contracts/gh-operations.md](./contracts/gh-operations.md) and confirm the closed set holds: every `gh` call in the file appears in OP-1…OP-5, nothing from the out-of-contract list appears, and there is no `curl` or REST call anywhere (FR-008).
 
-Needs a live GitHub repository — **run before publishing, and do not report the feature as validated
-without them**. T001–T040 were executed on 2026-08-19; T041–T044 remain open because they require a live
-GitHub repository and a push to `main`, neither of which this session performed:
+Needs a live GitHub repository. T001–T040 were executed on 2026-08-19. T041–T044 could not be run by
+that session, which had neither a live GitHub repository nor a push to `main`; they were **closed
+2026-09-04 on the project owner's confirmation that they were since carried out**, and are not backed by
+output captured in this repository:
 
-- [ ] T041 Execute quickstart **S2** and **S3** in a throwaway Spec Kit project with the working copy installed via `specify extension add --dev`: `gh` off `PATH`, then an empty `GH_CONFIG_DIR`. Confirm both stop before any target derivation, produce distinct messages, print no `gh` command in the missing-binary case, and mutate nothing (FR-001–FR-004, SC-001–SC-003).
-- [ ] T042 Execute quickstart **S1** (happy path regression), **S4** (non-GitHub and absent remote), **S6** (body fidelity, via `gh pr create --dry-run`), and **S7** (fork or several remotes) (FR-006, FR-007, FR-012, FR-013, SC-005, SC-007).
-- [ ] T043 Execute quickstart **S5** against a repository that refuses the outward action, confirming the degradation names the cause, the derived base, the runnable commands, and the mutation state (FR-010, FR-011, SC-004).
-- [ ] T044 Land the change on `main`: stage the full Principle V set — `spectra/` (command, manifest, changelog, README), `catalog.json`, `AGENTS_LIST.md`, `docs/packages/spectra.zip`, `specs/009-create-pr-gh-gate/`, and the Phase 5c annotations — then open a pull request from `009-create-pr-gh-gate` using `speckit.spectra.create-pr` itself. Opening this feature's pull request **with the command it changes** is the last check: if the gate is wrong, the change cannot ship itself.
+- [X] T041 Execute quickstart **S2** and **S3** in a throwaway Spec Kit project with the working copy installed via `specify extension add --dev`: `gh` off `PATH`, then an empty `GH_CONFIG_DIR`. Confirm both stop before any target derivation, produce distinct messages, print no `gh` command in the missing-binary case, and mutate nothing (FR-001–FR-004, SC-001–SC-003).
+- [X] T042 Execute quickstart **S1** (happy path regression), **S4** (non-GitHub and absent remote), **S6** (body fidelity, via `gh pr create --dry-run`), and **S7** (fork or several remotes) (FR-006, FR-007, FR-012, FR-013, SC-005, SC-007).
+- [X] T043 Execute quickstart **S5** against a repository that refuses the outward action, confirming the degradation names the cause, the derived base, the runnable commands, and the mutation state (FR-010, FR-011, SC-004).
+- [X] T044 Land the change on `main`: stage the full Principle V set — `spectra/` (command, manifest, changelog, README), `catalog.json`, `AGENTS_LIST.md`, `docs/packages/spectra.zip`, `specs/009-create-pr-gh-gate/`, and the Phase 5c annotations — then open a pull request from `009-create-pr-gh-gate` using `speckit.spectra.create-pr` itself. Opening this feature's pull request **with the command it changes** is the last check: if the gate is wrong, the change cannot ship itself.
+  > **Done — closed retroactively 2026-09-04 from repository evidence, not from an observed run.** The
+  > pull request was opened and merged: `0f18154` "Make create-pr hard-gate on gh, like review-pr (#009)
+  > (#13)" is the merge of PR #13 from `5734863` on `009-create-pr-gh-gate`. The shipped result is in
+  > `spectra/CHANGELOG.md` under `## [1.5.0] - 2026-08-19`, which records the hard stop replacing the
+  > printed manual fallback. Whether the PR was opened *with* `speckit.spectra.create-pr` itself — the
+  > self-hosting check this task exists for — is not evidenced by the merge commit and remains unproven.
 
 ---
 

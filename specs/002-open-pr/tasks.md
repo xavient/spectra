@@ -98,7 +98,10 @@ This project is a Spec Kit **extension catalog**, not application code. The deli
 - [X] T017 [P] Author `github/CHANGELOG.md` with a `## [1.0.0] - <date>` entry summarizing the initial release (modeled on `adr/CHANGELOG.md`)
 - [X] T018 Register the extension in the canonical `catalog.json`: add an `github` entry mirroring the `adr`/`domain-analyzer` entries' fields (name, id, description, category, effect `read-write`, version 1.0.0, repository/homepage/documentation/changelog URLs, license, `requires.speckit_version` `>=0.11.0`, `provides.commands` count 1, tags) — do NOT set catalog/download URLs (generated)
 - [X] T019 Run `python3 build_packages.py` from repo root and commit the regenerated `docs/` (index.html, catalog.json, packages/github.zip); resolve any `!` URL-drift warning before publishing (Constitution Principle V)
-- [ ] T020 Execute the [quickstart.md](./quickstart.md) validation scenarios (S1–S8) by installing with `specify extension add --dev ./github` into a throwaway Spec Kit project; confirm the only mutations in the target project are the branch push and PR creation (no source/spec/constitution edits)
+- [X] T020 Execute the [quickstart.md](./quickstart.md) validation scenarios (S1–S8) by installing with `specify extension add --dev ./github` into a throwaway Spec Kit project; confirm the only mutations in the target project are the branch push and PR creation (no source/spec/constitution edits)
+  > **Closed 2026-09-04 on the project owner's confirmation that this validation was performed.** Not
+  > observed in the session that checked the box — the record rests on that confirmation rather than on
+  > captured output.
 
 ---
 

@@ -4,7 +4,7 @@
 
 **Created**: 2026-08-21
 
-**Status**: Draft
+**Status**: Implemented
 
 **Input**: Design conversation with the maintainer. Four decisions, in the order they were settled:
 

@@ -4,7 +4,7 @@
 
 **Created**: 2026-08-21
 
-**Status**: Draft
+**Status**: Implemented
 
 **Input**: User description: "For `create-pr` to receive an optional argument: a linked issue (agents should ask for it,
 but it's optional — if no issue URL is supplied, ignore it). The flow should look at the current working tree and create a

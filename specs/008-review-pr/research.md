@@ -197,9 +197,43 @@ strictly more capable (it is the only route to line-anchored inline comments, FR
 hand-built JSON and diff-position arithmetic. Deferred with FR-037 rather than adopted now; the
 single-body form ships first, exactly as the spec's constraints state.
 
-**Not verified without network**: that `--request-changes` rejects an empty body, and that approving
-one's own PR returns 422. Both are carried into quickstart as validation steps rather than asserted
-here.
+**Superseded in 1.9.0 — read this section as history.** Spec
+[015-review-context-and-template](../015-review-context-and-template/spec.md) FR-028 replaced the single
+`gh pr review` call with one `gh api --method POST "repos/$REPO/pulls/<n>/reviews" --input -` call, in
+order to carry line-anchored inline comments (FR-037, which this section deferred). `spectra/commands/review-pr.md`
+now states "Use `gh api`, not `gh pr review`." The decision above, its flag table, and its
+*Alternatives considered* verdict are the pre-1.9.0 record; the alternative it declined is what ships.
+
+**Resolution of the three open behaviours (T060, closed 2026-09-04).** These were written against the
+`gh pr review` path, and the supersession changes what each one means:
+
+1. **Does `--request-changes` reject an empty body?** **Moot — no such call remains.** The verdict now
+   travels as `"event": "REQUEST_CHANGES"` in the JSON payload, so `gh pr review`'s argument validation
+   is not on any code path this command takes. Whether the reviews endpoint rejects an empty `body`
+   alongside `REQUEST_CHANGES` is a *different* question, and one the command sidesteps: a review is only
+   published from a composed, previewed body, so an empty body cannot be reached through the documented
+   steps. Recorded as dissolved rather than verified.
+
+2. **Does approving your own PR return 422 with an intelligible message?** **Still open, and sharper than
+   when it was written.** `gh pr review` wrapped API failures in friendly prose; `gh api` does not, so
+   the raw-error outcome this behaviour was checking *for* is now the more likely one. Closed on the
+   project owner's judgment rather than by execution. The exposure is bounded: the failure mode is a
+   confusing message on a path the reviewer is refused either way — not a wrong review, a lost review,
+   or a mutation. Worth a look if a reviewer ever reports an unreadable error on self-review.
+
+3. **Does `--body-file -` carry a long body with backticks, quotes, and newlines intact?**
+   **Substantively confirmed, on `create-pr`'s path rather than this one.** `review-pr` no longer uses
+   `--body-file -`; it uses `--input -` with a quoted heredoc, for the same stated reason ("bodies
+   contain backticks, quotes, and newlines; `--input -` takes bytes"). Meanwhile
+   `spectra/commands/create-pr.md` does use `gh pr create --body-file -` for exactly this class of body
+   ("Markdown — headings, backticks, code fences, quotes"), and the project owner reports having created
+   pull requests against other repositories with it in normal use without body corruption. That is real
+   evidence for the underlying claim — stdin transfer of awkward Markdown through `gh` is sound — though
+   it exercises `gh pr create`, not the reviews endpoint.
+
+None of the three rests on captured output in this repository. A script that would settle (2) by
+execution, and (1) in its endpoint form, is described in this feature's task T060 discussion; it needs a
+throwaway repository and a live PR.
 
 ---
 
@@ -357,3 +391,10 @@ toward the persistence FR-026 forbids.
 **No unresolved unknowns remain.** Three behaviours could not be verified without a live pull request —
 empty-body rejection on `--request-changes`, the 422 on self-approval, and end-to-end publication — and
 each is an explicit validation step in [quickstart.md](./quickstart.md).
+
+**Update 2026-09-04 (T060).** All three are closed, none by execution. R-007's `gh pr review` decision was
+superseded in 1.9.0 by spec 015's move to `gh api`, which dissolved the empty-body question, left the
+self-approval 422 open on the owner's judgment, and shifted the body-fidelity question onto `create-pr`'s
+`--body-file -` — where normal use supports it. See the resolution block under
+[R-007](#r-007--publishing-as-a-single-review-event-resolves-fr-033). The R-007 row above describes the
+pre-1.9.0 design.

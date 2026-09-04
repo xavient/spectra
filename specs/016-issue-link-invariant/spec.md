@@ -4,7 +4,7 @@
 
 **Created**: 2026-08-21
 
-**Status**: Draft
+**Status**: Implemented
 
 **Input**: Maintainer question — "when using `create-pr` we pass the issue to it; does that get saved in the PR as
 `Closes <issue>`?" Verification found the rendering already correct, and one loophole: the reference is presentational, so

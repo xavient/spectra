@@ -207,7 +207,12 @@ references from a grep of the current tree.
 - [X] T061 Add a step to `.github/workflows/ci.yml` that builds the wheel and asserts neither `tools/` nor `tests/` appears in it, making FR-023 machine-checked rather than a property of `pyproject.toml` that a future edit could quietly break
 - [X] T062 Refresh the managed region in `CLAUDE.md` by running `/speckit.agent-context.update` so the two-channel note names `agents-list.json` and the generator, rather than hand-editing inside the `<!-- SPECKIT START -->` markers
 - [X] T063 Run `python -m unittest discover -s tests` and every step of `specs/006-agent-roster-cli/quickstart.md` in order, then confirm `git status` is clean — a dirty tree after a full run means something is not deterministic
-- [ ] T064 **BLOCKED — needs a Windows machine; this work was done on macOS.** Run steps 5 through 11 of `specs/006-agent-roster-cli/quickstart.md` in PowerShell on Windows, watching specifically that a generator run leaves `git diff --exit-code` clean (line endings written `\n`) and that `spectra check` resolves the project root from a nested path (FR-050)
+  > **Closed 2026-09-04 on the project owner's confirmation that this validation was performed** on a
+  > Windows machine. This task previously carried a `BLOCKED — needs a Windows machine` marker because
+  > the implementing session ran on macOS; that marker is removed as superseded. Not observed in the
+  > session that checked the box — the record rests on the owner's confirmation rather than on captured
+  > PowerShell output.
+- [X] T064 Run steps 5 through 11 of `specs/006-agent-roster-cli/quickstart.md` in PowerShell on Windows, watching specifically that a generator run leaves `git diff --exit-code` clean (line endings written `\n`) and that `spectra check` resolves the project root from a nested path (FR-050)
 
 ---
 

@@ -4,7 +4,7 @@
 
 **Created**: 2026-08-09
 
-**Status**: Draft
+**Status**: Implemented
 
 **Input**: BRD-004 — `brds/agent-roster-and-cli-commands.md` (v0.3.0), "Agent Roster & Project-Scoped CLI Commands"
 

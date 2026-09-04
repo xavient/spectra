@@ -4,7 +4,7 @@
 
 **Created**: 2026-08-21
 
-**Status**: Draft
+**Status**: Implemented
 
 **Input**: User observation: "`brd` command follows a template, but `adr` does not. That makes the produced BRDs consistent
 while allowing end users to customize their templates depending on their project needs." Confirmed as half true — `adr`
